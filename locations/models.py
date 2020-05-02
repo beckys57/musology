@@ -10,6 +10,9 @@ class City(models.Model):
   def __str__(self):
     return "City of {}".format(self.name)
 
+  def initialize(self):
+    [district.initialize() for district in self.districts.all()]
+
     
 class District(models.Model):
   city = models.ForeignKey(City, on_delete=models.PROTECT)
@@ -18,12 +21,20 @@ class District(models.Model):
   def __str__(self):
     return "{} District (City of {})".format(self.name, self.city.name)
 
+  def initialize(self):
+    self.population.initialize()
+
 class Location(models.Model):
   BUILDING_CHOICES = (
         ('venue', 'music venue'),
         ('bar', 'bar'),
         ('park', 'park'),
         ('record', 'record store'),
+        ('inst', 'musical instrument shop'),
+        ('lesson', 'music lessons'),
+        ('studio', 'recording studio'),
+        ('promo', 'promo office'),
+        ('works', 'workshop'),
     )
 
   brand = models.ForeignKey('brand.Brand', null=True, blank=True, on_delete=models.SET_NULL)
