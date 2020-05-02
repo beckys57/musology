@@ -51,7 +51,8 @@ class Location(models.Model):
 
   def arrange_gigs(self, gigs):
     gigs = []
-    for gig in gigs[0:3]:
+    # Make sure 4 max, 4 slots per turn (weeks per month ish)
+    for gig in gigs[0:4]:
       print(gig)
 
 

@@ -87,12 +87,15 @@ class Musician(Job):
   def __str__(self):
     return "{} ({})".format(self.person.name, self.band)
 
+  class Meta:
+    verbose_name_plural = "musicians (job)"
+
 class BarStaff(Job):
   def __str__(self):
     return "{} (Bar Staff)".format(self.person.name)
 
   class Meta:
-    verbose_name_plural = "bar staff"
+    verbose_name_plural = "bar staff (job)"
 
   def __str__(self):
     return "{} (Bar staff at {})".format(self.person.name, self.workplace)
@@ -101,17 +104,29 @@ class Techie(Job):
   def __str__(self):
     return "{} (Techie at {})".format(self.person.name, self.workplace)
 
+  class Meta:
+    verbose_name_plural = "techies (job)"
+
 class Roadie(Job):
   def __str__(self):
     return "{} (Roadie at {})".format(self.person.name, self.workplace)
+
+  class Meta:
+    verbose_name_plural = "roadies (job)"
 
 class Promoter(Job):
   def __str__(self):
     return "{} (Promoter at {})".format(self.person.name, self.workplace)
 
+  class Meta:
+    verbose_name_plural = "promoters (job)"
+
 class VenueOwner(Job):
   def __str__(self):
     return "{} (Venue Owner at {})".format(self.person.name, self.workplace)
+
+  class Meta:
+    verbose_name_plural = "venue owners (job)"
 
 
 

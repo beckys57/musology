@@ -23,7 +23,7 @@ class RecordLabel(models.Model):
 
 class Event(models.Model):
   name = models.CharField(max_length=128)
-  location = models.ForeignKey('locations.Location', null=True, blank=True, on_delete=models.SET_NULL)
+  location = models.ForeignKey('locations.Location', null=True, blank=True, on_delete=models.SET_NULL, related_name="events")
   starts_at = models.DateField()
   ends_at = models.DateField()
   acts = models.ManyToManyField(Band)
