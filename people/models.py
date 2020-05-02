@@ -7,7 +7,7 @@ from django.contrib.contenttypes.fields import GenericRelation
 
 class Population(models.Model):
   district = models.OneToOneField('locations.District', on_delete=models.SET_NULL, null=True, blank=True)
-  crowds = models.ManyToManyField('genres.Genre', through='Crowd')
+  size = models.PositiveSmallIntegerField(null=True, blank=True)
 
   class Meta:
     verbose_name_plural = "populus"
@@ -15,11 +15,20 @@ class Population(models.Model):
   def __str__(self):
     return "people of {}".format(self.district)
 
+  # def respond_to(self, event):
+
+
+
+
   def initialize(self):
+    if self.crowds:
+      return self.crowds.all()
+
     # Initialize crowds
     from genres.models import Genre
     # Take all genres except one
-    genres = list(Genre.objects.all())[:-1]
+    genres = list(Genre.objects.all())
+    print("{} Genres".format(len(genres)))
     # Make one the main genre
     majority = random.choice(genres)
     maj_proportion = random.randint(40,80)
@@ -27,31 +36,35 @@ class Population(models.Model):
     crowds.append(Crowd.objects.create(population=self, genre=majority, proportion=maj_proportion))
 
     remaining = 100-maj_proportion
-    for g in genres:
-      if not g == majority and remaining > 0:
-        proportion = random.randint(0, remaining)
+    for genre in [g for g in genres if not g == majority][:-1]:
+      if remaining > 0:
+        proportion = random.randint(1, remaining)
         remaining -= proportion
-        crowds.append(Crowd.objects.create(population=self, genre=g, proportion=proportion))
+        crowds.append(Crowd.objects.create(population=self, genre=genre, proportion=proportion))
 
-    self.crowds.add(crowds)
+    self.crowds.set(crowds)
+    return self.crowds.all()
 
 class Crowd(models.Model):
-  population = models.ForeignKey(Population, on_delete=models.CASCADE)
+  population = models.ForeignKey(Population, on_delete=models.CASCADE, related_name="crowds")
   genre = models.ForeignKey('genres.Genre', on_delete=models.PROTECT)
   proportion = models.PositiveSmallIntegerField(null=True, blank=True)
 
+  def __str__(self):
+    return "{}% {}".format(self.proportion, self.genre)
+
 class Job(models.Model):
   JOB_ROLES = [
-    ('bar s', 'bar staff'),
-    ('techi', 'techie'),
-    ('roadi', 'roadie'),
-    ('music', 'musician'),
-    ('promo', 'promoter'),
-    ('venue', 'venue owner'),
+    ('bar staff', 'bar staff'),
+    ('techie', 'techie'),
+    ('roadie', 'roadie'),
+    ('musician', 'musician'),
+    ('promoter', 'promoter'),
+    ('venue owner', 'venue owner'),
   ]
   workplace = models.ForeignKey('locations.Location', null=True, blank=True, on_delete=models.SET_NULL)
   brand = models.ForeignKey('brand.Brand', null=True, blank=True, on_delete=models.SET_NULL)
-  title = models.CharField(max_length=5, choices=JOB_ROLES)
+  role = models.CharField(max_length=27, choices=JOB_ROLES)
 
   def __str__(self):
     if self.role:
@@ -63,8 +76,13 @@ class Job(models.Model):
 #   class Meta:
 #     abstract = True
 
-# class Musician(Employee):
-#   band = models.ForeignKey('brand.Band', null=True, blank=True, on_delete=models.SET_NULL, related_name="musicians")
+class Musician(models.Model):
+  band = models.ForeignKey('brand.Band', null=True, blank=True, on_delete=models.SET_NULL, related_name="musicians")
+  person = models.ForeignKey('people.Person', on_delete=models.CASCADE, related_name="music_career")
+  
+  # @property
+  # def show_current(self):
+  #   return "Jammin' with {}".format(self.band)
 
 #   def __str__(self):
 #     if self.band:
@@ -128,14 +146,15 @@ class Person(models.Model):
     ("8", "yeahhh! ROCK OONN!"),
     ("9", "cloud 9, this is nirvana, man..."),
   ]
-  name = models.CharField(max_length=60)
-  birthday = models.DateField()
+
   genre = models.ForeignKey('genres.Genre', on_delete=models.PROTECT)
   location = models.ForeignKey('locations.Location', null=True, blank=True, on_delete=models.SET_NULL)
   job = models.ForeignKey(Job, null=True, blank=True, on_delete=models.SET_NULL)
 
+  name = models.CharField(max_length=60)
   happiness = models.CharField(max_length=1, null=True, blank=True)
   influence = models.PositiveSmallIntegerField(null=True, blank=True)
+  created_at = models.DateTimeField(auto_now_add=True)
 
   class Meta:
     verbose_name_plural = "people"

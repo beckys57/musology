@@ -2,7 +2,7 @@ from django.db import models
 
 # Create your models here.
 class City(models.Model):
-  name = models.CharField(max_length=128)
+  name = models.CharField(max_length=127)
 
   class Meta:
     verbose_name_plural = "cities"
@@ -16,7 +16,7 @@ class City(models.Model):
     
 class District(models.Model):
   city = models.ForeignKey(City, on_delete=models.PROTECT)
-  name = models.CharField(max_length=128)
+  name = models.CharField(max_length=127)
 
   def __str__(self):
     return "{} District (City of {})".format(self.name, self.city.name)
@@ -25,23 +25,26 @@ class District(models.Model):
     self.population.initialize()
 
 class Location(models.Model):
-  BUILDING_CHOICES = (
-        ('venue', 'music venue'),
-        ('bar', 'bar'),
-        ('park', 'park'),
-        ('record', 'record store'),
-        ('inst', 'musical instrument shop'),
-        ('lesson', 'music lessons'),
-        ('studio', 'recording studio'),
-        ('promo', 'promo office'),
-        ('works', 'workshop'),
-    )
+  BUILDING_CHOICES = [(n, n) for n in ['music venue',
+                                       'bar',
+                                       'park',
+                                       'record store',
+                                       'musical instrument shop',
+                                       'music lessons',
+                                       'recording studio',
+                                       'promo office',
+                                       'workshop',
+                                       'band house',
+                                      ]
+                                    ]
 
+  slots = models.ForeignKey('EventSlot', null=True, blank=True, on_delete=models.SET_NULL)
   brand = models.ForeignKey('brand.Brand', null=True, blank=True, on_delete=models.SET_NULL)
-  name = models.CharField(max_length=128)
   genre = models.ForeignKey('genres.Genre', on_delete=models.PROTECT)
   capacity = models.PositiveSmallIntegerField(null=True, blank=True)
-  building = models.CharField(max_length=6, choices=BUILDING_CHOICES)
+  slots_available = models.PositiveSmallIntegerField(default=4)
+  building = models.CharField(max_length=27, choices=BUILDING_CHOICES)
+  name = models.CharField(max_length=127)
 
   def __str__(self):
     return "{} ({})".format(self.name, self.get_building_display())
@@ -49,11 +52,16 @@ class Location(models.Model):
   def available_actions(self):
     return [('arrange_gigs', [{"slot": 0, "band_ids": []}, {"slot": 1, "band_ids": []}])]
 
-  def arrange_gigs(self, gigs):
-    gigs = []
-    # Make sure 4 max, 4 slots per turn (weeks per month ish)
-    for gig in gigs[0:4]:
-      print(gig)
+class EventSlot(models.Model):
+  # Usually 4 events can be added to a building's slots. These can be added per turn. Some events can be 
+  venue = models.ForeignKey(to='locations.Location', null=True, blank=True, on_delete=models.SET_NULL)
+  event = models.ForeignKey(to='brand.Event', null=True, blank=True, on_delete=models.SET_NULL)
+  parties_involved = models.ManyToManyField(to='people.Person') # Covers all staff, musicians etc
+  brands_involved = models.ManyToManyField(to='brand.Brand')
+  bands_involved = models.ManyToManyField(to='brand.Band')
+
+
+
 
 
 
