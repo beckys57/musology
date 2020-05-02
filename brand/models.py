@@ -7,8 +7,14 @@ class Brand(models.Model):
 class Band(models.Model):
   name = models.CharField(max_length=128)
 
+  def __str__(self):
+    return self.name
+
 class RecordLabel(models.Model):
   name = models.CharField(max_length=128)
+
+  def __str__(self):
+    return self.name
 
 class Event(models.Model):
   name = models.CharField(max_length=128)
@@ -16,3 +22,6 @@ class Event(models.Model):
   starts_at = models.DateField()
   ends_at = models.DateField()
   acts = models.ManyToManyField(Band)
+
+  def __str__(self):
+    return "{} at {} on {}-{}".format(self.name, self.location, self.starts_at, self.ends_at)

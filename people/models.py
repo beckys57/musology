@@ -17,7 +17,6 @@ class Person(models.Model):
   class Meta:
     verbose_name_plural = "people"
 
-
   def __str__(self):
     return self.name
 
@@ -27,6 +26,9 @@ class Population(models.Model):
 
   class Meta:
     verbose_name_plural = "populus"
+
+  def __str__(self):
+    return "people of {}".format(self.district)
 
 class Crowd(models.Model):
   population = models.ForeignKey(Population, on_delete=models.CASCADE)
@@ -44,6 +46,9 @@ class Job(models.Model):
 class Musician(Job):
   band = models.ForeignKey('brand.Band', null=True, blank=True, on_delete=models.SET_NULL)
 
+  def __str__(self):
+    return "{} ({})".format(self.person.name, self.band)
+
 class BarStaff(Job):
   def __str__(self):
     return "{} (Bar Staff)".format(self.person.name)
@@ -51,21 +56,24 @@ class BarStaff(Job):
   class Meta:
     verbose_name_plural = "bar staff"
 
+  def __str__(self):
+    return "{} (Bar staff at {})".format(self.person.name, self.workplace)
+
 class Techie(Job):
   def __str__(self):
-    return "{} (Techie)".format(self.person.name)
+    return "{} (Techie at {})".format(self.person.name, self.workplace)
 
 class Roadie(Job):
   def __str__(self):
-    return "{} (Roadie)".format(self.person.name)
+    return "{} (Roadie at {})".format(self.person.name, self.workplace)
 
 class Promoter(Job):
   def __str__(self):
-    return "{} (Promoter)".format(self.person.name)
+    return "{} (Promoter at {})".format(self.person.name, self.workplace)
 
 class VenueOwner(Job):
   def __str__(self):
-    return "{} (Venue Owner)".format(self.person.name)
+    return "{} (Venue Owner at {})".format(self.person.name, self.workplace)
 
 
 
