@@ -61,10 +61,10 @@ class Population(models.Model):
 
     remaining = 100-maj_proportion
     for g in genres:
-      if not g == majority and remaining > 0 :
+      if not g == majority and remaining > 0:
         proportion = random.randint(0, remaining)
         remaining -= proportion
-        crowds.append(Crowd.objects.create(population=self, genre=majority, proportion=proportion))
+        crowds.append(Crowd.objects.create(population=self, genre=g, proportion=proportion))
 
     self.crowds.add(crowds)
 
@@ -74,7 +74,7 @@ class Crowd(models.Model):
   proportion = models.PositiveSmallIntegerField(null=True, blank=True)
 
 class Job(models.Model):
-  person = GenericRelation(Person)
+  person = models.ForeignKey('Person', null=True, blank=True, on_delete=models.SET_NULL)
   workplace = models.ForeignKey('locations.Location', null=True, blank=True, on_delete=models.SET_NULL)
   brand = models.ForeignKey('brand.Brand', null=True, blank=True, on_delete=models.SET_NULL)
 
