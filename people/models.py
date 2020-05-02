@@ -85,7 +85,10 @@ class Musician(Job):
   band = models.ForeignKey('brand.Band', null=True, blank=True, on_delete=models.SET_NULL, related_name="musicians")
 
   def __str__(self):
-    return "{} ({})".format(self.person.name, self.band)
+    if self.band:
+      return "{} ({})".format(self.person.name, self.band)
+
+    return "{} (not in band)".format(self.person.name)
 
   class Meta:
     verbose_name_plural = "musicians (job)"
