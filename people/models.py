@@ -54,23 +54,30 @@ class Crowd(models.Model):
     return "{}% {}".format(self.proportion, self.genre)
 
 class Job(models.Model):
-  JOB_ROLES = [
-    ('bar staff', 'bar staff'),
-    ('techie', 'techie'),
-    ('roadie', 'roadie'),
-    ('musician', 'musician'),
-    ('promoter', 'promoter'),
-    ('venue owner', 'venue owner'),
+  JOB_ROLES = [(r, r) for r in [
+      'bar staff',
+      'techie',
+      'roadie',
+      'musician',
+      'teacher', # Teaches skill based on where employed
+      'promoter',
+      'venue owner',
+    ]
   ]
   workplace = models.ForeignKey('locations.Location', null=True, blank=True, on_delete=models.SET_NULL)
   brand = models.ForeignKey('brand.Brand', null=True, blank=True, on_delete=models.SET_NULL)
   role = models.CharField(max_length=27, choices=JOB_ROLES)
 
-  def __str__(self):
-    if self.role:
-      return self.role
+  @property
+  def person(self):
+    return self.employees.first()
+  
+  class Meta:
+    verbose_name = 'Cool cat'
+    verbose_name_plural = 'People in the industry'
 
-    return "{} (unassigned to a role)".format(self.person.name)
+  def __str__(self):
+    return "{} ({})".format(self.role, self.person)
 
 # class Employee(models.Model):
 #   class Meta:
@@ -149,7 +156,7 @@ class Person(models.Model):
 
   genre = models.ForeignKey('genres.Genre', on_delete=models.PROTECT)
   location = models.ForeignKey('locations.Location', null=True, blank=True, on_delete=models.SET_NULL)
-  job = models.ForeignKey(Job, null=True, blank=True, on_delete=models.SET_NULL)
+  job = models.ForeignKey(Job, null=True, blank=True, on_delete=models.SET_NULL, related_name="employees")
 
   name = models.CharField(max_length=60)
   happiness = models.CharField(max_length=1, null=True, blank=True)
@@ -157,7 +164,8 @@ class Person(models.Model):
   created_at = models.DateTimeField(auto_now_add=True)
 
   class Meta:
-    verbose_name_plural = "people"
+    verbose_name_plural = "person"
+    verbose_name_plural = "contacts"
 
   def __str__(self):
     return self.name

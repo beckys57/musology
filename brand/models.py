@@ -49,17 +49,19 @@ class Event(models.Model):
 
 
 class Gig(object):
-  from people.models import Person
+  from people.models import Job, Person
   from locations.models import Location
 
-  people = {
-      Band: {"min": 1, "max": 5},
-      Location: {"min": 1, "max": 1},
-      "staff": {
-        "promoter": {"min": 1, "max": 2},
-        "techie": {"min": 1, "max": 2},
-      },
-  }
+  requirements = {
+      "objects": [
+        {"model": Band, "min": 1, "max": 5},
+        {"model": Location, "min": 1, "max": 1},
+      ],
+      "staff": [
+         {"role": "promoter", "min": 1, "max": 2},
+         {"role": "techie", "min": 1, "max": 2},
+        ]
+      }
 
   # def relay_outcome(self):
 
