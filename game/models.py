@@ -3,9 +3,28 @@ from django.db import models
 class Game(object):
   cities = models.OneToManyField('locations.City')
 
+  def current_tech(self):
+    from tech.models import Tech
+    return Tech.objects.filter(name__in=self._current_tech)
+
+  def all_venues(self):
+    return [[v for v in c.venues.all()] for c in self.cities.all()]
+
   def initialize(self):
+    self._current_tech = ["open mic"]
     [city.initialize() for city in self.cities.all()]
 
+  def send_datat(self):
+    data_example = {
+      "venues": {},
+      "notifications": [
+        {
+          "title": "You've won worst venue of the year!",
+          "body": "Oh dear.",
+          "actions": [], # TODO Later....
+        }
+      ],
+    }
 
   def take_turn(self, payload):
     payload_example = {
@@ -68,7 +87,8 @@ class Game(object):
                     },
                   },
 
-    }
+    },
+
 
 
 

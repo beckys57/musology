@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'brand',
     'locations',
     'people',
+    'tech',
 ]
 
 MIDDLEWARE = [
