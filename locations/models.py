@@ -45,3 +45,15 @@ class Location(models.Model):
 
   def __str__(self):
     return "{} ({})".format(self.name, self.get_building_display())
+
+  def available_actions(self):
+    return [('arrange_gigs', [{"slot": 0, "band_ids": []}, {"slot": 1, "band_ids": []}])]
+
+  def arrange_gigs(self, gigs):
+    gigs = []
+    for gig in gigs[0:3]:
+      print(gig)
+
+
+
+
