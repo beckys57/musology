@@ -1,13 +1,27 @@
 from django.contrib import admin
-from .models import Person, Population, Crowd, Musician, BarStaff, Techie, Roadie, Promoter, VenueOwner
+from .models import Person, Population, Job, Crowd
 
 # Register your models here.
-admin.site.register(Person)
-admin.site.register(Population)
-admin.site.register(Crowd)
-admin.site.register(Musician)
-admin.site.register(BarStaff)
-admin.site.register(Techie)
-admin.site.register(Roadie)
-admin.site.register(Promoter)
-admin.site.register(VenueOwner)
+admin.site.register(Job)
+
+
+@admin.register(Person)
+class PersonAdmin(admin.ModelAdmin):
+  list_display = ('name', 'job')
+
+
+
+# from django.contrib import admin
+# from django.contrib.contenttypes.admin import GenericTabularInline
+
+# from myproject.myapp.models import Image, Product
+
+# class ImageInline(GenericTabularInline):
+#     model = Image
+
+# class ProductAdmin(admin.ModelAdmin):
+#     inlines = [
+#         ImageInline,
+#     ]
+
+# admin.site.register(Product, ProductAdmin)

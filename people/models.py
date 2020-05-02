@@ -5,39 +5,6 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericRelation
 
-
-# All musicians should be in a band, even if solo artist
-class Person(models.Model):
-  HAPPINESS_LEVELS = [
-    ("0", "majorly foo'd off"),
-    ("1", "really???"),
-    ("2", "this sucks!!"),
-    ("3", "meh."),
-    ("4", "i mean, life's been better"),
-    ("5", "taking it as it comes"),
-    ("6", "pretty chill"),
-    ("7", "in the vibe!"),
-    ("8", "yeahhh! ROCK OONN!"),
-    ("9", "cloud 9, this is nirvana, man..."),
-  ]
-  name = models.CharField(max_length=60)
-  birthday = models.DateField()
-  genre = models.ForeignKey('genres.Genre', on_delete=models.PROTECT)
-  location = models.ForeignKey('locations.Location', null=True, blank=True, on_delete=models.SET_NULL)
-
-  job_type = models.ForeignKey(ContentType, null=True, blank=True, on_delete=models.CASCADE)
-  job_id = models.PositiveIntegerField(null=True, blank=True)
-  job_object = GenericForeignKey('job_type', 'job_id')
-
-  happiness = models.CharField(max_length=1, null=True, blank=True)
-  influence = models.PositiveSmallIntegerField(null=True, blank=True)
-
-  class Meta:
-    verbose_name_plural = "people"
-
-  def __str__(self):
-    return self.name
-
 class Population(models.Model):
   district = models.OneToOneField('locations.District', on_delete=models.SET_NULL, null=True, blank=True)
   crowds = models.ManyToManyField('genres.Genre', through='Crowd')
@@ -74,65 +41,104 @@ class Crowd(models.Model):
   proportion = models.PositiveSmallIntegerField(null=True, blank=True)
 
 class Job(models.Model):
-  person = models.ForeignKey('Person', null=True, blank=True, on_delete=models.SET_NULL)
+  JOB_ROLES = [
+    ('bar s', 'bar staff'),
+    ('techi', 'techie'),
+    ('roadi', 'roadie'),
+    ('music', 'musician'),
+    ('promo', 'promoter'),
+    ('venue', 'venue owner'),
+  ]
   workplace = models.ForeignKey('locations.Location', null=True, blank=True, on_delete=models.SET_NULL)
   brand = models.ForeignKey('brand.Brand', null=True, blank=True, on_delete=models.SET_NULL)
-
-  class Meta:
-    abstract = True
-
-class Musician(Job):
-  band = models.ForeignKey('brand.Band', null=True, blank=True, on_delete=models.SET_NULL, related_name="musicians")
+  title = models.CharField(max_length=5, choices=JOB_ROLES)
 
   def __str__(self):
-    if self.band:
-      return "{} ({})".format(self.person.name, self.band)
+    if self.role:
+      return self.role
 
-    return "{} (not in band)".format(self.person.name)
+    return "{} (unassigned to a role)".format(self.person.name)
+
+# class Employee(models.Model):
+#   class Meta:
+#     abstract = True
+
+# class Musician(Employee):
+#   band = models.ForeignKey('brand.Band', null=True, blank=True, on_delete=models.SET_NULL, related_name="musicians")
+
+#   def __str__(self):
+#     if self.band:
+#       return "{} ({})".format(self.person.name, self.band)
+
+#     return "{} (not in band)".format(self.person.name)
+
+#   class Meta:
+#     verbose_name_plural = "musicians (job)"
+
+# class BarStaff(Employee):
+#   def __str__(self):
+#     return "{} (Bar Staff)".format(self.person.name)
+
+#   class Meta:
+#     verbose_name_plural = "bar staff (job)"
+
+#   def __str__(self):
+#     return "{} (Bar staff at {})".format(self.person.name, self.workplace or "nowhere")
+
+# class Techie(Employee):
+#   def __str__(self):
+#     return "{} (Techie at {})".format(self.person.name, self.workplace or "nowhere")
+
+#   class Meta:
+#     verbose_name_plural = "techies (job)"
+
+# class Roadie(Employee):
+#   def __str__(self):
+#     return "{} (Roadie at {})".format(self.person.name, self.workplace or "nowhere")
+
+#   class Meta:
+#     verbose_name_plural = "roadies (job)"
+
+# class Promoter(Employee):
+#   def __str__(self):
+#     return "{} (Promoter at {})".format(self.person.name, self.workplace or "nowhere")
+
+#   class Meta:
+#     verbose_name_plural = "promoters (job)"
+
+# class VenueOwner(Employee):
+#   def __str__(self):
+#     return "{} (Venue Owner at {})".format(self.person.name, self.workplace or "nowhere")
+
+#   class Meta:
+#     verbose_name_plural = "venue owners (job)"
+
+
+# All performing musicians should be in a band, even if solo artist
+class Person(models.Model):
+  HAPPINESS_LEVELS = [
+    ("0", "majorly foo'd off"),
+    ("1", "really???"),
+    ("2", "this sucks!!"),
+    ("3", "meh."),
+    ("4", "i mean, life's been better"),
+    ("5", "taking it as it comes"),
+    ("6", "pretty chill"),
+    ("7", "in the vibe!"),
+    ("8", "yeahhh! ROCK OONN!"),
+    ("9", "cloud 9, this is nirvana, man..."),
+  ]
+  name = models.CharField(max_length=60)
+  birthday = models.DateField()
+  genre = models.ForeignKey('genres.Genre', on_delete=models.PROTECT)
+  location = models.ForeignKey('locations.Location', null=True, blank=True, on_delete=models.SET_NULL)
+  job = models.ForeignKey(Job, null=True, blank=True, on_delete=models.SET_NULL)
+
+  happiness = models.CharField(max_length=1, null=True, blank=True)
+  influence = models.PositiveSmallIntegerField(null=True, blank=True)
 
   class Meta:
-    verbose_name_plural = "musicians (job)"
-
-class BarStaff(Job):
-  def __str__(self):
-    return "{} (Bar Staff)".format(self.person.name)
-
-  class Meta:
-    verbose_name_plural = "bar staff (job)"
+    verbose_name_plural = "people"
 
   def __str__(self):
-    return "{} (Bar staff at {})".format(self.person.name, self.workplace or "nowhere")
-
-class Techie(Job):
-  def __str__(self):
-    return "{} (Techie at {})".format(self.person.name, self.workplace or "nowhere")
-
-  class Meta:
-    verbose_name_plural = "techies (job)"
-
-class Roadie(Job):
-  def __str__(self):
-    return "{} (Roadie at {})".format(self.person.name, self.workplace or "nowhere")
-
-  class Meta:
-    verbose_name_plural = "roadies (job)"
-
-class Promoter(Job):
-  def __str__(self):
-    return "{} (Promoter at {})".format(self.person.name, self.workplace or "nowhere")
-
-  class Meta:
-    verbose_name_plural = "promoters (job)"
-
-class VenueOwner(Job):
-  def __str__(self):
-    return "{} (Venue Owner at {})".format(self.person.name, self.workplace or "nowhere")
-
-  class Meta:
-    verbose_name_plural = "venue owners (job)"
-
-
-
-
-
-
+    return self.name
