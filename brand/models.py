@@ -8,6 +8,10 @@ class Brand(models.Model):
   def __str__(self):
     return self.name
 
+  @property
+  def display_attrs(self):
+    return {"id": self.id, "name": self.name}
+
 class BrandedModel(models.Model):
   brand = models.ForeignKey(to='Brand', null=True, blank=True, on_delete=models.SET_NULL)
 

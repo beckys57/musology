@@ -90,8 +90,19 @@ class Location(models.Model):
   def __str__(self):
     return "{} ({})".format(self.name, self.get_building_display())
 
-  def available_actions(self):
-    return [('events_gig', [{"slot": 0, "band_ids": []}, {"slot": 1, "band_ids": []}])]
+  # @property
+  # def available_actions(self):
+  #   return [('events_gig', [{"slot": 0, "band_ids": []}, {"slot": 1, "band_ids": []}])]
+
+  @property
+  def display_attrs(self):
+    return {k: v for k, v in self.__dict__.items()
+              if k in ["id", "brand_id", "capacity", "prestige", "running_cost", "name", "postcode", "slots_available"]}
+
+  # def construct_data(self):
+  #   return {
+  #     "attributes": self.display_attrs(),
+  #   }
 
 
 

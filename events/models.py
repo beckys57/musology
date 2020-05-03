@@ -52,7 +52,17 @@ class Gig(object):
         ]
       }
 
-  # def relay_outcome(self):
+  def calculate_outcome(self, params):
+    venue = params["location"]
+    # Reward: influence & money
+    # Factors: capacity full, overall capacity
+    # Stuff to do with all slots combined should be done at the end, so this should update a growing dict of modifiers
+    """
+    params eg
+    {
+      modifiers: {venue_obj: influence: -5, prestige: 1}
+    }
+    """
 
 
 
