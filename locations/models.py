@@ -41,7 +41,7 @@ class Location(models.Model):
   slots = models.ForeignKey('EventSlot', null=True, blank=True, on_delete=models.SET_NULL)
   brand = models.ForeignKey('brand.Brand', null=True, blank=True, on_delete=models.SET_NULL)
   genre = models.ForeignKey('genres.Genre', on_delete=models.PROTECT)
-  capacity = models.PositiveSmallIntegerField(null=True, blank=True)
+  capacity = models.PositiveSmallIntegerField(null=True, blank=True, default=100)
   slots_available = models.PositiveSmallIntegerField(default=4)
   prestige = models.PositiveSmallIntegerField(default=3) # Cleanliness, decor, damage etc
   running_cost = models.PositiveSmallIntegerField(default=50) # Cleanliness, decor, damage etc
