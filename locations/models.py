@@ -66,6 +66,7 @@ class Location(models.Model):
                                        'promo office',
                                        'workshop',
                                        'band house',
+                                       'empty plot',
                                       ]
                                     ]
 
@@ -96,8 +97,10 @@ class Location(models.Model):
 
   @property
   def display_attrs(self):
-    return {k: v for k, v in self.__dict__.items()
+    attrs = {k: v for k, v in self.__dict__.items()
               if k in ["id", "brand_id", "capacity", "prestige", "running_cost", "name", "postcode", "slots_available"]}
+    attrs['type'] = self.get_building_display()
+    return attrs
 
   # def construct_data(self):
   #   return {
