@@ -29,6 +29,10 @@ class Band(BrandedModel):
   def __str__(self):
     return self.name
 
+  @property
+  def display_attrs(self):
+    return {"id": self.id, "name": self.name, "genre": self.genre}
+
 class RecordLabel(BrandedModel):
   name = models.CharField(max_length=127)
 

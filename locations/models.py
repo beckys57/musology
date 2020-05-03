@@ -14,15 +14,28 @@ class City(models.Model):
 
   def initialize(self):
     [district.initialize() for district in self.districts.all()]
-
+  
+  def build_display_attrs():
+    city = City.objects.first()
+    return {
+      "city": city.name,
+      "districts": [d.display_attrs for d in city.districts.all()]
+    }
     
 class District(models.Model):
   city = models.ForeignKey(City, on_delete=models.PROTECT, related_name="districts")
   name = models.CharField(max_length=127)
   population = models.PositiveSmallIntegerField(default=100)
 
+  class Meta:
+    ordering = ['id']
+
   def __str__(self):
     return "{} District (City of {})".format(self.name, self.city.name)
+
+  @property
+  def display_attrs(self):
+    return {"id": self.id, "name": self.name, "population": self.population, "crowds": [c.display_attrs for c in self.crowds.all()]}
 
   # Generate some music-loving crowds
   def initialize(self):

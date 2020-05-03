@@ -7,3 +7,7 @@ class Genre(models.Model):
   
   def __str__(self):
     return self.name
+    
+  @property
+  def display_attrs(self):
+    return {"id": self.id, "name": self.name}

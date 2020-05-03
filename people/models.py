@@ -11,6 +11,10 @@ class Crowd(models.Model):
   def __str__(self):
     return "{}% {}".format(self.proportion, self.genre)
 
+  @property
+  def display_attrs(self):
+    return {"genre_id": self.genre.id, "proportion": self.proportion}
+
 class Job(models.Model):
   JOB_ROLES = [(r, r) for r in [
       'bar staff',
