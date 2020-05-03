@@ -2,10 +2,9 @@ from django.db import models
 
 # Create your models here.
 class Brand(models.Model):
-  COLOUR_CHOICES = [(c,c) for c in ['red', 'blue', 'yellow', 'green']]
   game = models.ForeignKey(to='game.Game', null=True, blank=True, on_delete=models.SET_NULL, related_name="brands")
   name = models.CharField(max_length=127)
-  colour = models.CharField(max_length=15, default=0, choices=COLOUR_CHOICES)
+  colour = models.CharField(max_length=15, default='blue')
   events_unlocked = models.ManyToManyField('events.EventType')
 
   def __str__(self):
