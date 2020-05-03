@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from brand.models import Band, Brand
 from genres.models import Genre
-from locations.models import Location
+from locations.models import City, Location
 
 # Create your views here.
 def take_turn(self):
