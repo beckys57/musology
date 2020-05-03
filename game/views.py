@@ -3,7 +3,6 @@ from brand.models import Band, Brand
 from genres.models import Genre
 from locations.models import City, Location
 
-# Create your views here.
 def take_turn(self):
   print("Taking turn...")
 

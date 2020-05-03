@@ -92,7 +92,7 @@ class VenueAssessment(models.Model):
     if va:
       return int(va.first().suitability)
     else:
-      return 3
+      return -1
     
 # Only of these should exist, as buildings become available. This is more of a building type
 class BuildingType(models.Model):
@@ -127,6 +127,7 @@ class BuildingType(models.Model):
 
   name = models.CharField(max_length=31, choices=BUILDING_CHOICES)
   category = models.CharField(max_length=31, choices=CATEGORY_CHOICES)
+  available_event_types = models.ManyToManyField('events.EventType', through='VenueAssessment')
 
   def __str__(self):
     return self.name

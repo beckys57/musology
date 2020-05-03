@@ -22,12 +22,24 @@ class EventType(models.Model):
 
   name = models.CharField(max_length=27, choices=EVENT_CHOICES, default='gig')
   class_name = models.CharField(max_length=15, default='Gig')
+  slots_required = models.PositiveSmallIntegerField(default=1)
 
-  def unlocked_for_brand(brand_id):
+  def __str__(self):
+    return "(event type)".format(self.name)
+
+  def unlocked_for_brand(self, brand_id):
     from tech.models import Tech
     EVENT_KINDS + [t.name for t in Tech.objects.filter(brand_id=brand_id, category='event')]
 
-  # def options_for_location(location):
+  def options_for_location(self, location):
+    # from locations.models import BuildingType
+    # Send locations to check for player
+    # Has enough slots in a turn
+    # Venue assessment exists (suitability is 5+?)
+    # TODO: Add some initialize functions eg add eventtype needs a venueassessment
+    # VenueAssessment.objects.filter(building_type=location.building_type, suitability__gt=3)
+    building_types = EventType.objects.filter(venueassessment__suitability__gt=3, venueassessment__building_type_id=location.building_type)
+
 
 
 # event outcome - modifies influence, update attributes eg increase capacity, new objects, skill up
