@@ -14,7 +14,7 @@ class Game(models.Model):
 
   def __str__(self):
     from brand.models import Brand
-    return self.brands.first().name, " vs ".join([b.name for b in (Brand.objects.all())])
+    return " vs ".join([b.name for b in (Brand.objects.all())])
 
   def all_venues(self):
     return [[v for v in c.venues.all()] for c in self.cities.all()]

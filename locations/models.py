@@ -85,6 +85,9 @@ class VenueAssessment(models.Model):
   event_type = models.ForeignKey('events.EventType', on_delete=models.CASCADE)
   suitability = models.PositiveSmallIntegerField()
 
+  def __str__(self):
+    return "{} - {} at {}".format(self.suitability, self.event_type, self.building_type)
+
   def calculate(location, event):
     building_type = location.building_type
     event_type = event.event_type
@@ -130,7 +133,7 @@ class BuildingType(models.Model):
   available_event_types = models.ManyToManyField('events.EventType', through='VenueAssessment')
 
   def __str__(self):
-    return self.name
+    return "{} (building type)".format(self.name)
 
 class Location(models.Model):
   POSTCODE_CHOICES = [(p, p) for p in [

@@ -9,6 +9,9 @@ class EventSlot(models.Model):
   brands_involved = models.ManyToManyField(to='brand.Brand')
   bands_involved = models.ManyToManyField(to='brand.Band')
 
+  def __str__(self):
+    return "{} event slot".format(self.venue)
+
 class EventType(models.Model):
   # TODO: Make it lambda
   EVENT_KINDS = [
@@ -40,6 +43,9 @@ class EventType(models.Model):
     # Annotate which player has requirements for, so UI can grey out eg if don't have a band
     # Return the event type name, slots_required and requirements
     return event_types
+
+  def options_for_location(location):
+    event_types = EventType.filter_for_location
 
 # event outcome - modifies influence, update attributes eg increase capacity, new objects, skill up
 class Event(models.Model):

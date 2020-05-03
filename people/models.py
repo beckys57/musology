@@ -49,6 +49,9 @@ class Musician(models.Model):
   band = models.ForeignKey('brand.Band', null=True, blank=True, on_delete=models.SET_NULL, related_name="musicians")
   person = models.ForeignKey('people.Person', on_delete=models.CASCADE, related_name="music_career")
   
+  def __str__(self):
+    return "{} (Musician in {})".format(self.person, self.band)
+
   # @property
   # def show_current(self):
   #   return "Jammin' with {}".format(self.band)
