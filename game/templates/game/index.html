@@ -1,84 +1,21 @@
 {% load js %}
 <!DOCTYPE html>
 <meta charset="utf-8">
-<style>
-
-body {
-  margin: 0;
-  background: #222;
-  min-width: 960px;
-}
-
-#background {
-  fill: none;
-}
-
-#location {
-  fill: none;
-  pointer-events: all;
-  stroke-width: 2.5px;
-}
-
-circle {
-  fill: none;
-  stroke-width: 2.5px;
-}
-
-</style>
+<head>
+    <link rel="stylesheet" href="/static/css/drawing.css">
+</head>
 <body>
 <script src="//d3js.org/d3.v3.min.js"></script>
+<script src="/static/js/templates.js"></script>
+<script src="/static/js/drawing.js"></script>
 <script>
     var data = {{ data|js }}
+    var brands = data.brands
     var locations = data.locations
-console.log(locations)
 
+    console.log(locations)
+    console.log(brands)
 
-var width = Math.max(960, innerWidth),
-    height = Math.max(500, innerHeight);
-
-var location_width = 200
-    location_height = 100
-
-var i = 0;
-
-var svg = d3.select("body").append("svg")
-    .attr("width", width)
-    .attr("height", height);
-
-svg.append("rect")
-    .attr("id", "background")
-    .attr("width", width)
-    .attr("height", height)
-
-locations.forEach(function(loc, idx) {
-    svg.append("image")
-        .attr("id", "location" + loc.id)
-        .attr("xlink:href","/static/venue.svg")
-        .attr('x', idx*location_width+10)
-        .attr('y', 10)
-        .attr('width', location_width)
-        .attr('height', location_height)
-        .style("stroke", d3.hsl((i = (i + 1) % 360), 1, .5))
-        .style("stroke-opacity", 1);
-
-    // create a tooltip
-    var tt = d3.select("body")
-      .append("div")
-        .style("position", "absolute")
-        .style("visibility", "hidden")
-        .style("background-color", "white")
-        .style("border", "solid")
-        .style("border-width", "1px")
-        .style("border-radius", "5px")
-        .style("padding", "10px")
-        .html("<p><h4>"+loc.name+"</h4><hr /><span>Capacity: "+loc.capacity+"<br />"+Prestige: "+loc.prestige""</span>");
-
-    d3.select("#location"+loc.id)
-        .on("mouseover", function(){return tt.style("visibility", "visible");})
-        .on("mousemove", function(){return tt.style("top", (event.pageY)+"px").style("left",(event.pageX)+"px");})
-        .on("mouseout", function(){return tt.style("visibility", "hidden");});
-})
-
-
-
+    setup()
+    locations.forEach(drawGameObject)
 </script>
