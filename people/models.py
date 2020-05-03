@@ -1,50 +1,10 @@
-import random
-
 from django.db import models
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericRelation
 
-class Population(models.Model):
-  district = models.OneToOneField('locations.District', on_delete=models.SET_NULL, null=True, blank=True)
-  size = models.PositiveSmallIntegerField(null=True, blank=True)
-
-  class Meta:
-    verbose_name_plural = "populus"
-
-  def __str__(self):
-    return "people of {}".format(self.district)
-
-  # def respond_to(self, event):
-
-  def initialize(self):
-    if self.crowds:
-      return self.crowds.all()
-
-    # Initialize crowds
-    from genres.models import Genre
-    # Take all genres except one
-    genres = list(Genre.objects.all())
-    print("{} Genres".format(len(genres)))
-    # Make one the main genre
-    majority = random.choice(genres)
-    maj_proportion = random.randint(40,80)
-    crowds = []
-    crowds.append(Crowd.objects.create(population=self, genre=majority, proportion=maj_proportion))
-
-    remaining = 100-maj_proportion
-    for genre in [g for g in genres if not g == majority][:-1]:
-      if remaining > 0:
-        proportion = random.randint(1, remaining)
-        remaining -= proportion
-        crowds.append(Crowd.objects.create(population=self, genre=genre, proportion=proportion))
-
-    self.crowds.set(crowds)
-    print(self.crowds.all())
-    return self.crowds.all()
-
 class Crowd(models.Model):
-  population = models.ForeignKey(Population, on_delete=models.CASCADE, related_name="crowds")
+  district = models.ForeignKey('locations.District', null=True, on_delete=models.CASCADE, related_name="crowds")
   genre = models.ForeignKey('genres.Genre', on_delete=models.PROTECT)
   proportion = models.PositiveSmallIntegerField(null=True, blank=True)
 
@@ -153,7 +113,7 @@ class Person(models.Model):
   ]
 
   genre = models.ForeignKey('genres.Genre', on_delete=models.PROTECT)
-  location = models.ForeignKey('locations.Location', null=True, blank=True, on_delete=models.SET_NULL)
+  location = models.ForeignKey('locations.Location', null=True, blank=True, on_delete=models.SET_NULL, related_name="people")
   job = models.ForeignKey(Job, null=True, blank=True, on_delete=models.SET_NULL, related_name="employees")
 
   name = models.CharField(max_length=60)

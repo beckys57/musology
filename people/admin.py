@@ -1,8 +1,9 @@
 from django.contrib import admin
-from .models import Person, Population, Job, Crowd
+from .models import Person, Job, Crowd
 
 # Register your models here.
 admin.site.register(Job)
+admin.site.register(Crowd)
 
 
 @admin.register(Person)

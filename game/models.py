@@ -21,9 +21,11 @@ class Game(models.Model):
 
   def initialize(self):
     from brand.models import Brand
+    from locations.models import City
     print("Initializing..")
     call_command('loaddata', 'fixtures/level1.json')
     self.brands.set([Brand.objects.first()])
+    self.cities.set([City.objects.first()])
     print("Tech:", self.current_tech)
     [city.initialize() for city in self.cities.all()]
 
