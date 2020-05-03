@@ -9,3 +9,8 @@ main()
 Click around in the admin and see what was created!
 
 We don't have any venues yet..
+
+Create a superuser..
+```
+./manage.py createsuperuser
+```
