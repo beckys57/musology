@@ -69,6 +69,13 @@ class Location(models.Model):
                                       ]
                                     ]
 
+  POSTCODE_CHOICES = [(p, p) for p in [
+                                        'A1', 'A2', 'A3', 'A4', 
+                                        'B1', 'B2', 'B3', 'B4', 
+                                        'C1', 'C2', 'C3', 'C4', 
+                                        'D1', 'D2', 'D3', 'D4', 
+                                      ]]
+
   slots = models.ForeignKey('events.EventSlot', null=True, blank=True, on_delete=models.SET_NULL)
   brand = models.ForeignKey('brand.Brand', null=True, blank=True, on_delete=models.SET_NULL)
   genre = models.ForeignKey('genres.Genre', on_delete=models.PROTECT)
@@ -78,12 +85,13 @@ class Location(models.Model):
   running_cost = models.PositiveSmallIntegerField(default=50) # Cleanliness, decor, damage etc
   building = models.CharField(max_length=27, choices=BUILDING_CHOICES)
   name = models.CharField(max_length=127)
+  postcode = models.CharField(max_length=2, default='D4', choices=POSTCODE_CHOICES)
 
   def __str__(self):
     return "{} ({})".format(self.name, self.get_building_display())
 
   def available_actions(self):
-    return [('arrange_gigs', [{"slot": 0, "band_ids": []}, {"slot": 1, "band_ids": []}])]
+    return [('events_gig', [{"slot": 0, "band_ids": []}, {"slot": 1, "band_ids": []}])]
 
 
 
