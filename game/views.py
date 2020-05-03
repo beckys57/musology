@@ -16,6 +16,7 @@ def index(request):
   context = {"data": {
               "genres": genre_data,
               "locations": location_data,
+              "map_data": map_data,
               "bands": band_data,
               "brands": brand_data,
             }}
