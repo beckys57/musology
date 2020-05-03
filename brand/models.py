@@ -12,7 +12,7 @@ class Brand(models.Model):
 
   @property
   def display_attrs(self):
-    return {"name": self.name, "colour": self.get_colour_display()}
+    return {"name": self.name, "colour": self.colour}
 
 class BrandedModel(models.Model):
   brand = models.ForeignKey(to='Brand', null=True, blank=True, on_delete=models.SET_NULL)
