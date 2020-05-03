@@ -1,5 +1,29 @@
 from django.db import models
 
+class Gig(object):
+  requirements = {
+      "objects": [
+        {"model": 'Band', "min": 1, "max": 5},
+        {"model": 'Location', "min": 1, "max": 1},
+      ],
+      "staff": [
+         {"role": "promoter", "min": 0, "max": 1},
+         {"role": "techie", "min": 1, "max": 2},
+        ]
+      }
+
+  def calculate_outcome(self, params):
+    venue = params["location"]
+    # Reward: influence & money
+    # Factors: capacity full, overall capacity
+    # Stuff to do with all slots combined should be done at the end, so this should update a growing dict of modifiers
+    """
+    params eg
+    {
+      modifiers: {venue_obj: influence: -5, prestige: 1}
+    }
+    """
+
 
 class EventSlot(models.Model):
   # Usually 4 events can be added to a building's slots. These can be added per turn. Some events can be 
@@ -24,7 +48,7 @@ class EventType(models.Model):
   EVENT_CHOICES = [(e,e) for e in EVENT_KINDS]
 
   name = models.CharField(max_length=27, choices=EVENT_CHOICES, default='gig')
-  class_name = models.CharField(max_length=15, default='Gig')
+  controller = models.CharField(max_length=15, default='Gig')
   slots_required = models.PositiveSmallIntegerField(default=1)
 
   def __str__(self):
@@ -41,11 +65,18 @@ class EventType(models.Model):
     # TODO: Add some initialize functions eg add eventtype needs a venueassessment
     event_types = EventType.objects.filter(venueassessment__building_type_id=location.building_type_id, slots_required__lte=location.slots_available)
     # Annotate which player has requirements for, so UI can grey out eg if don't have a band
-    # Return the event type name, slots_required and requirements
     return event_types
 
   def options_for_location(location):
-    event_types = EventType.filter_for_location
+    # Return the event type name, slots_required and requirements
+    event_types = EventType.filter_for_location(location)
+    # build a dict with requirements from controller
+    options = []
+    for et in event_types:
+      requirements = eval(et.controller).requirements
+      options.append({"type": et.name, "slots_required": et.slots_required, "requirements": requirements})
+    return options
+
 
 # event outcome - modifies influence, update attributes eg increase capacity, new objects, skill up
 class Event(models.Model):
@@ -63,35 +94,6 @@ class Event(models.Model):
   def validate_location(self, location):
     # Check 
     return (location.brand_id == 1 or location.building == 'park')
-
-class Gig(object):
-  from brand.models import Band
-  from locations.models import Location
-  from people.models import Job, Person
-
-  requirements = {
-      "objects": [
-        {"model": Band, "min": 1, "max": 5},
-        {"model": Location, "min": 1, "max": 1},
-      ],
-      "staff": [
-         {"role": "promoter", "min": 0, "max": 1},
-         {"role": "techie", "min": 1, "max": 2},
-        ]
-      }
-
-  def calculate_outcome(self, params):
-    venue = params["location"]
-    # Reward: influence & money
-    # Factors: capacity full, overall capacity
-    # Stuff to do with all slots combined should be done at the end, so this should update a growing dict of modifiers
-    """
-    params eg
-    {
-      modifiers: {venue_obj: influence: -5, prestige: 1}
-    }
-    """
-
 
 
 
