@@ -68,11 +68,12 @@ class District(models.Model):
   def people(self):
     Person.objects.filter(location__district=self)
 
-# class SuitabilityForEvents(models.Model):
+# class BuildingEventSuitability(models.Model):
+#   building = 
 #   def calculate(building, event):
     
-
-class Building(models.Model):
+# Only of these should exist, as buildings become available. This is more of a building type
+class BuildingType(models.Model):
   # When adding to BUILDING_CHOICES please also put the building in BUILDING_CATEGORIES
   BUILDING_CHOICES = [(n, n) for n in ['concert hall',
                                        'music bar',
@@ -116,7 +117,7 @@ class Location(models.Model):
   slots = models.ForeignKey('events.EventSlot', null=True, blank=True, on_delete=models.SET_NULL)
   brand = models.ForeignKey('brand.Brand', null=True, blank=True, on_delete=models.SET_NULL)
   genre = models.ForeignKey('genres.Genre', on_delete=models.PROTECT)
-  building = models.ForeignKey(Building, on_delete=models.PROTECT)
+  building = models.ForeignKey(BuildingType, on_delete=models.PROTECT)
   capacity = models.PositiveSmallIntegerField(null=True, blank=True, default=100)
   slots_available = models.PositiveSmallIntegerField(default=4)
   prestige = models.PositiveSmallIntegerField(default=3) # Cleanliness, decor, damage etc
@@ -143,14 +144,6 @@ class Location(models.Model):
     attrs['stats'] = stats
     attrs['type'] = self.building.name
     return attrs
-
-  # def construct_data(self):
-  #   return {
-  #     "attributes": self.display_attrs(),
-  #   }
-
-
-
 
 
 
