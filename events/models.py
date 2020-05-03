@@ -11,20 +11,24 @@ class EventSlot(models.Model):
 
 class EventType(models.Model):
   # TODO: Make it lambda
-  EVENT_KINDS = [(e,e) for e in [
+  EVENT_KINDS = [
       'gig',
       'tour',
       'party',
       'training',
       'recording',
     ]
-  ]
+  EVENT_CHOICES = [(e,e) for e in EVENT_KINDS]
+
+  name = models.CharField(max_length=27, choices=EVENT_CHOICES, default='gig')
+  class_name = models.CharField(max_length=15, default='Gig')
 
   def unlocked_for_brand(brand_id):
     from tech.models import Tech
-    Tech.objects.filter(brand_id=brand_id, category='event')
+    EVENT_KINDS + [t.name for t in Tech.objects.filter(brand_id=brand_id, category='event')]
 
-  name = models.CharField(max_length=27, choices=EVENT_KINDS, default='gig')
+  # def options_for_location(location):
+
 
 # event outcome - modifies influence, update attributes eg increase capacity, new objects, skill up
 class Event(models.Model):

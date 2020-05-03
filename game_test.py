@@ -57,8 +57,9 @@ def setup():
   t1 = Tech.objects.create(name="open mic", affects="[Venue]", effects="{'prestige': 1}")
   t1.brand.set([brand])
   Tech.objects.create(name="dishwasher", affects="[Venue]", effects="{'prestige': 1, 'running_costs': 5}")
-  from locations.models import Location
-  bar = Location.objects.create(building="bar", name="Bojo's", genre_id=1, brand_id=2)
+  from locations.models import Location, Building
+  bar = Building.objects.create(name='music bar', category='venue with stage')
+  venue = Location.objects.create(building=bar, name="Bojo's", genre_id=1, brand_id=2)
 
 
 def main():

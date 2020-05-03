@@ -68,9 +68,11 @@ class District(models.Model):
   def people(self):
     Person.objects.filter(location__district=self)
 
-class Location(models.Model):
-  BUILDING_CHOICES = [(n, n) for n in ['music venue',
-                                       'bar',
+class Building(models.Model):
+  # When adding to BUILDING_CHOICES please also put the building in BUILDING_CATEGORIES
+  BUILDING_CHOICES = [(n, n) for n in ['concert hall',
+                                       'music bar',
+                                       'local pub',
                                        'club',
                                        'record store',
                                        'musical instrument shop',
@@ -83,7 +85,23 @@ class Location(models.Model):
                                        'empty plot',
                                       ]
                                     ]
+  BUILDING_CATEGORIES = {
+    'venue with stage': ['concert hall', 'music bar'],
+    'pub or cafe': ['local pub', 'club'],
+    'shop': ['record store', 'musical instrument shop'],
+    'public place': ['park'],
+    'private place': ['band house'],
+    'training or work': ['music lessons',
+                         'recording studio',
+                         'promo office',
+                         'workshop',],
+  }
+  CATEGORY_CHOICES = [(l, l) for l in BUILDING_CATEGORIES.keys()]
 
+  name = models.CharField(max_length=31, choices=BUILDING_CHOICES)
+  category = models.CharField(max_length=31, choices=CATEGORY_CHOICES)
+
+class Location(models.Model):
   POSTCODE_CHOICES = [(p, p) for p in [
                                         'A1', 'A2', 'A3', 'A4', 
                                         'B1', 'B2', 'B3', 'B4', 
@@ -94,11 +112,11 @@ class Location(models.Model):
   slots = models.ForeignKey('events.EventSlot', null=True, blank=True, on_delete=models.SET_NULL)
   brand = models.ForeignKey('brand.Brand', null=True, blank=True, on_delete=models.SET_NULL)
   genre = models.ForeignKey('genres.Genre', on_delete=models.PROTECT)
+  building = models.ForeignKey(Building, on_delete=models.PROTECT)
   capacity = models.PositiveSmallIntegerField(null=True, blank=True, default=100)
   slots_available = models.PositiveSmallIntegerField(default=4)
   prestige = models.PositiveSmallIntegerField(default=3) # Cleanliness, decor, damage etc
   running_cost = models.PositiveSmallIntegerField(default=50) # Cleanliness, decor, damage etc
-  building = models.CharField(max_length=27, choices=BUILDING_CHOICES)
   name = models.CharField(max_length=127)
   postcode = models.CharField(max_length=2, default='D4', choices=POSTCODE_CHOICES)
 
@@ -113,7 +131,8 @@ class Location(models.Model):
   def display_attrs(self):
     attrs = {k: v for k, v in self.__dict__.items()
               if k in ["id", "brand_id", "capacity", "prestige", "running_cost", "name", "postcode", "slots_available"]}
-    attrs['type'] = self.get_building_display()
+    attrs['type'] = self.building.name
+    attrs['category'] = self.building.category
     return attrs
 
   # def construct_data(self):
