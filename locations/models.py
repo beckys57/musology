@@ -69,21 +69,21 @@ class District(models.Model):
     Person.objects.filter(location__district=self)
 
 class VenueAssessment(models.Model):
-  SUITABILITY_RATINGS = [
-    ('0', 'highly inappropriate'),
-    ('1', 'very inappropriate'),
-    ('2', 'inappropriate'),
-    ('3', 'random!'),
-    ('4', 'a bit odd'),
-    ('5', 'fair'),
-    ('6', 'fine'),
-    ('7', 'apt'),
-    ('8', 'very apt'),
-    ('9', 'a perfect fit'),
-  ]
+  SUITABILITY_RATINGS = {
+    0: 'highly inappropriate',
+    1: 'very inappropriate',
+    2: 'inappropriate',
+    3: 'random!',
+    4: 'a bit odd',
+    5: 'fair',
+    6: 'fine',
+    7: 'apt',
+    8: 'very apt',
+    9: 'a perfect fit',
+  }
   building_type = models.ForeignKey('BuildingType', on_delete=models.CASCADE)
   event_type = models.ForeignKey('events.EventType', on_delete=models.CASCADE)
-  suitability = models.CharField(max_length=1, choices=SUITABILITY_RATINGS)
+  suitability = models.PositiveSmallIntegerField()
 
   def calculate(location, event):
     building_type = location.building_type

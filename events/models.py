@@ -25,26 +25,24 @@ class EventType(models.Model):
   slots_required = models.PositiveSmallIntegerField(default=1)
 
   def __str__(self):
-    return "(event type)".format(self.name)
+    return "{} (event type)".format(self.name)
 
-  def unlocked_for_brand(self, brand_id):
+  def unlocked_for_brand(brand_id):
     from tech.models import Tech
     EVENT_KINDS + [t.name for t in Tech.objects.filter(brand_id=brand_id, category='event')]
 
-  def options_for_location(self, location):
-    # from locations.models import BuildingType
+  def filter_for_location(location):
     # Send locations to check for player
     # Has enough slots in a turn
     # Venue assessment exists (suitability is 5+?)
     # TODO: Add some initialize functions eg add eventtype needs a venueassessment
-    # VenueAssessment.objects.filter(building_type=location.building_type, suitability__gt=3)
-    building_types = EventType.objects.filter(venueassessment__suitability__gt=3, venueassessment__building_type_id=location.building_type)
-
-
+    event_types = EventType.objects.filter(venueassessment__building_type_id=location.building_type_id, slots_required__lte=location.slots_available)
+    # Annotate which player has requirements for, so UI can grey out eg if don't have a band
+    # Return the event type name, slots_required and requirements
+    return event_types
 
 # event outcome - modifies influence, update attributes eg increase capacity, new objects, skill up
 class Event(models.Model):
-
   event_type = models.ForeignKey(EventType, null=True, blank=True, on_delete=models.SET_NULL)
   brand = models.ForeignKey('brand.Brand', null=True, blank=True, on_delete=models.SET_NULL)
   location = models.ForeignKey('locations.Location', null=True, blank=True, on_delete=models.SET_NULL, related_name="events")
