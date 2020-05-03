@@ -68,9 +68,31 @@ class District(models.Model):
   def people(self):
     Person.objects.filter(location__district=self)
 
-# class BuildingEventSuitability(models.Model):
-#   building = 
-#   def calculate(building, event):
+class VenueAssessment(models.Model):
+  SUITABILITY_RATINGS = [
+    ('0', 'highly inappropriate'),
+    ('1', 'very inappropriate'),
+    ('2', 'inappropriate'),
+    ('3', 'random!'),
+    ('4', 'a bit odd'),
+    ('5', 'fair'),
+    ('6', 'fine'),
+    ('7', 'apt'),
+    ('8', 'very apt'),
+    ('9', 'a perfect fit'),
+  ]
+  building_type = models.ForeignKey('BuildingType', on_delete=models.CASCADE)
+  event_type = models.ForeignKey('events.EventType', on_delete=models.CASCADE)
+  suitability = models.CharField(max_length=1, choices=SUITABILITY_RATINGS)
+
+  def calculate(location, event):
+    building_type = location.building_type
+    event_type = event.event_type
+    va = VenueAssessment.objects.filter(building_type=building_type, event_type=event_type)
+    if va:
+      return int(va.first().suitability)
+    else:
+      return 3
     
 # Only of these should exist, as buildings become available. This is more of a building type
 class BuildingType(models.Model):
@@ -106,6 +128,9 @@ class BuildingType(models.Model):
   name = models.CharField(max_length=31, choices=BUILDING_CHOICES)
   category = models.CharField(max_length=31, choices=CATEGORY_CHOICES)
 
+  def __str__(self):
+    return self.name
+
 class Location(models.Model):
   POSTCODE_CHOICES = [(p, p) for p in [
                                         'A1', 'A2', 'A3', 'A4', 
@@ -117,7 +142,7 @@ class Location(models.Model):
   slots = models.ForeignKey('events.EventSlot', null=True, blank=True, on_delete=models.SET_NULL)
   brand = models.ForeignKey('brand.Brand', null=True, blank=True, on_delete=models.SET_NULL)
   genre = models.ForeignKey('genres.Genre', on_delete=models.PROTECT)
-  building = models.ForeignKey(BuildingType, on_delete=models.PROTECT)
+  building_type = models.ForeignKey(BuildingType, on_delete=models.PROTECT)
   capacity = models.PositiveSmallIntegerField(null=True, blank=True, default=100)
   slots_available = models.PositiveSmallIntegerField(default=4)
   prestige = models.PositiveSmallIntegerField(default=3) # Cleanliness, decor, damage etc
@@ -126,7 +151,7 @@ class Location(models.Model):
   postcode = models.CharField(max_length=2, default='D4', choices=POSTCODE_CHOICES)
 
   def __str__(self):
-    return "{} ({})".format(self.name, self.get_building_display())
+    return "{} ({})".format(self.name, self.building_type)
 
   # @property
   # def available_actions(self):
@@ -142,7 +167,7 @@ class Location(models.Model):
       "capacity": {"value": self.capacity, "label": "Capacity"},
     }
     attrs['stats'] = stats
-    attrs['type'] = self.building.name
+    attrs['type'] = self.building_type.name
     return attrs
 
 
