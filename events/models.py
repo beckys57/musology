@@ -9,9 +9,8 @@ class EventSlot(models.Model):
   brands_involved = models.ManyToManyField(to='brand.Brand')
   bands_involved = models.ManyToManyField(to='brand.Band')
 
-
-# event outcome - modifies influence, update attributes eg increase capacity, new objects, skill up
-class Event(models.Model):
+class EventType(models.Model):
+  # TODO: Make it lambda
   EVENT_KINDS = [(e,e) for e in [
       'gig',
       'tour',
@@ -21,13 +20,22 @@ class Event(models.Model):
     ]
   ]
 
+  def unlocked_for_brand(brand_id):
+    from tech.models import Tech
+    Tech.objects.filter(brand_id=brand_id, category='event')
+
+  name = models.CharField(max_length=27, choices=EVENT_KINDS, default='gig')
+
+# event outcome - modifies influence, update attributes eg increase capacity, new objects, skill up
+class Event(models.Model):
+
+  event_type = models.ForeignKey(EventType, null=True, blank=True, on_delete=models.SET_NULL)
   brand = models.ForeignKey('brand.Brand', null=True, blank=True, on_delete=models.SET_NULL)
   location = models.ForeignKey('locations.Location', null=True, blank=True, on_delete=models.SET_NULL, related_name="events")
   genre = models.ForeignKey('genres.Genre', null=True, blank=True, on_delete=models.PROTECT)
   people = models.ManyToManyField('people.Person')
   acts = models.ManyToManyField('brand.Band')
   name = models.CharField(max_length=127)
-  kind = models.CharField(max_length=27, choices=EVENT_KINDS, default='gig')
 
   def __str__(self):
     return "{} at {} on {}-{}".format(self.name, self.location, self.starts_at, self.ends_at)

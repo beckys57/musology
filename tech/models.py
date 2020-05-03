@@ -8,12 +8,34 @@ from django.db import models, transaction
 # You research a dishwasher
 # This would look like: Tech(game_id=1, name="dishwasher", affects="[Venue]", effects="{'prestige': 1, 'running_costs': -5}")
 class Tech(models.Model):
+  TECH_CATEGORIES = [(c, c) for c in [
+      'event',
+      'instruments',
+      'location',
+    ]
+  ]
+
+  PROGRESS_STAGES = [
+      ('0', 'undiscovered'),
+      ('1', '[|........]'),
+      ('2', '[||.......]'),
+      ('3', '[|||......]'),
+      ('4', '[||||.....]'),
+      ('5', '[|||||....]'),
+      ('6', '[||||||...]'),
+      ('7', '[|||||||..]'),
+      ('8', '[||||||||.]'),
+      ('9', 'finalizing discovery..'),
+  ]
+
   brand = models.ManyToManyField('brand.Brand', related_name="technologies")
   name = models.CharField(max_length=60)
   # lasts_for = models.SmallIntegerField(default=-1) # -1 = once applied, always applied. otherwise measured in turns
   # cost_per_turn = models.SmallIntegerField(default=0) # For example hiring pyrotechnic equipment
   affects = models.CharField(max_length=255, default="'global") # String list of models, it's a bit poo but I don't mind too much. eg [Venue, Population]
   effects = models.CharField(max_length=255, default="{'influence': 0}") # String list of attributes eg prestige, applied to all where attr exists. As an increment value
+  category = models.CharField(max_length=27, null=True, blank=True, choices=TECH_CATEGORIES)
+  progress = models.CharField(max_length=27, default=0, choices=TECH_CATEGORIES)
 
   def __str__(self):
     return self.name
