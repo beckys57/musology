@@ -6,6 +6,7 @@ class Brand(models.Model):
   name = models.CharField(max_length=127)
   colour = models.CharField(max_length=15, default='blue')
   events_unlocked = models.ManyToManyField('events.EventType')
+  money = models.SmallIntegerField(default=100)
 
   def __str__(self):
     return self.name
@@ -23,6 +24,7 @@ class BrandedModel(models.Model):
 class Band(BrandedModel):
   name = models.CharField(max_length=127)
   genre = models.ForeignKey('genres.Genre', null=True, blank=True, on_delete=models.PROTECT)
+  location = models.ForeignKey('locations.location', null=True, blank=True, on_delete=models.SET_NULL)
 
   def influence(self):
     # influence as sum of band influence (later, could go up with awesome events)
