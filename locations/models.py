@@ -68,6 +68,10 @@ class District(models.Model):
   def people(self):
     Person.objects.filter(location__district=self)
 
+# class SuitabilityForEvents(models.Model):
+#   def calculate(building, event):
+    
+
 class Building(models.Model):
   # When adding to BUILDING_CHOICES please also put the building in BUILDING_CATEGORIES
   BUILDING_CHOICES = [(n, n) for n in ['concert hall',
@@ -130,9 +134,14 @@ class Location(models.Model):
   @property
   def display_attrs(self):
     attrs = {k: v for k, v in self.__dict__.items()
-              if k in ["id", "brand_id", "capacity", "prestige", "running_cost", "name", "postcode", "slots_available"]}
+              if k in ["id", "brand_id", "name", "postcode", "slots_available"]}
+    stats = {
+      "prestige": {"value": self.prestige, "label": "Prestige"},
+      "running_cost": {"value": self.running_cost, "label": "Running cost"},
+      "capacity": {"value": self.capacity, "label": "Capacity"},
+    }
+    attrs['stats'] = stats
     attrs['type'] = self.building.name
-    attrs['category'] = self.building.category
     return attrs
 
   # def construct_data(self):
