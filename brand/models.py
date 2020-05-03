@@ -2,7 +2,7 @@ from django.db import models
 
 # Create your models here.
 class Brand(models.Model):
-  COLOUR_CHOICES = [(c,c) for c in ['red', 'blue', 'yellow']]
+  COLOUR_CHOICES = [(c,c) for c in ['red', 'blue', 'yellow', 'green']]
   game = models.ForeignKey(to='game.Game', null=True, blank=True, on_delete=models.SET_NULL, related_name="brands")
   name = models.CharField(max_length=127)
   colour = models.CharField(max_length=15, default=0, choices=COLOUR_CHOICES)
@@ -13,7 +13,7 @@ class Brand(models.Model):
 
   @property
   def display_attrs(self):
-    return {"name": self.name}
+    return {"name": self.name, "colour": self.get_colour_display()}
 
 class BrandedModel(models.Model):
   brand = models.ForeignKey(to='Brand', null=True, blank=True, on_delete=models.SET_NULL)
