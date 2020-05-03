@@ -29,7 +29,7 @@ class Game(models.Model):
     print("Tech:", self.current_tech)
     [city.initialize() for city in self.cities.all()]
 
-  def send_datat(self):
+  def send_data(self):
     data_example = {
       "venues": {},
       "notifications": [

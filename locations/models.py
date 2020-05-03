@@ -24,6 +24,7 @@ class District(models.Model):
   def __str__(self):
     return "{} District (City of {})".format(self.name, self.city.name)
 
+  # Generate some music-loving crowds
   def initialize(self):
     if self.crowds.first():
       return self.crowds.all()
@@ -68,7 +69,7 @@ class Location(models.Model):
                                       ]
                                     ]
 
-  slots = models.ForeignKey('EventSlot', null=True, blank=True, on_delete=models.SET_NULL)
+  slots = models.ForeignKey('events.EventSlot', null=True, blank=True, on_delete=models.SET_NULL)
   brand = models.ForeignKey('brand.Brand', null=True, blank=True, on_delete=models.SET_NULL)
   genre = models.ForeignKey('genres.Genre', on_delete=models.PROTECT)
   capacity = models.PositiveSmallIntegerField(null=True, blank=True, default=100)
@@ -83,15 +84,6 @@ class Location(models.Model):
 
   def available_actions(self):
     return [('arrange_gigs', [{"slot": 0, "band_ids": []}, {"slot": 1, "band_ids": []}])]
-
-class EventSlot(models.Model):
-  # Usually 4 events can be added to a building's slots. These can be added per turn. Some events can be 
-  venue = models.ForeignKey(to='locations.Location', null=True, blank=True, on_delete=models.SET_NULL)
-  event = models.ForeignKey(to='brand.Event', null=True, blank=True, on_delete=models.SET_NULL)
-  parties_involved = models.ManyToManyField(to='people.Person') # Covers all staff, musicians etc
-  brands_involved = models.ManyToManyField(to='brand.Brand')
-  bands_involved = models.ManyToManyField(to='brand.Band')
-
 
 
 

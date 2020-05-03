@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'tech',
     'game',
     'genres',
+    'events',
     'brand',
     'locations',
     'people',
