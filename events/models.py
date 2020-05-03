@@ -21,7 +21,7 @@ class Event(models.Model):
     ]
   ]
 
-  brand = models.ForeignKey(to='brand.Brand', null=True, blank=True, on_delete=models.SET_NULL)
+  brand = models.ForeignKey('brand.Brand', null=True, blank=True, on_delete=models.SET_NULL)
   location = models.ForeignKey('locations.Location', null=True, blank=True, on_delete=models.SET_NULL, related_name="events")
   genre = models.ForeignKey('genres.Genre', null=True, blank=True, on_delete=models.PROTECT)
   people = models.ManyToManyField('people.Person')
