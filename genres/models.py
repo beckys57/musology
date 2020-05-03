@@ -10,4 +10,4 @@ class Genre(models.Model):
     
   @property
   def display_attrs(self):
-    return {"id": self.id, "name": self.name}
+    return {"name": self.name}

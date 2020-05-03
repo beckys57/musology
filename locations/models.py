@@ -71,7 +71,7 @@ class District(models.Model):
 class Location(models.Model):
   BUILDING_CHOICES = [(n, n) for n in ['music venue',
                                        'bar',
-                                       'park',
+                                       'club',
                                        'record store',
                                        'musical instrument shop',
                                        'music lessons',
@@ -79,6 +79,7 @@ class Location(models.Model):
                                        'promo office',
                                        'workshop',
                                        'band house',
+                                       'park',
                                        'empty plot',
                                       ]
                                     ]
