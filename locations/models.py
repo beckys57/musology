@@ -157,14 +157,12 @@ class Location(models.Model):
   def __str__(self):
     return "{} ({})".format(self.name, self.building_type)
 
-  # @property
-  # def available_actions(self):
-  #   return [('events_gig', [{"slot": 0, "band_ids": []}, {"slot": 1, "band_ids": []}])]
-
   @property
   def display_attrs(self):
+    from events.models import EventType
+
     attrs = {k: v for k, v in self.__dict__.items()
-              if k in ["id", "brand_id", "name", "postcode", "slots_available"]}
+              if k in ["id", "brand_id", "genre_id", "name", "postcode", "slots_available"]}
     stats = {
       "prestige": {"value": self.prestige, "label": "Prestige"},
       "running_cost": {"value": self.running_cost, "label": "Running cost"},
@@ -172,6 +170,7 @@ class Location(models.Model):
     }
     attrs['stats'] = stats
     attrs['type'] = self.building_type.name
+    attrs["event_options"] = EventType.options_for_location(self)
     return attrs
 
 
