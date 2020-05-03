@@ -1,7 +1,7 @@
 from django.db import models
 
-# Create your models here.
 class City(models.Model):
+  game = models.ForeignKey(to='game.Game', null=True, blank=True, on_delete=models.SET_NULL, related_name="cities")
   name = models.CharField(max_length=127)
 
   class Meta:
@@ -10,7 +10,7 @@ class City(models.Model):
   def __str__(self):
     return "City of {}".format(self.name)
 
-  def initialize(self):
+  def initialize(self, initial_data):
     [district.initialize() for district in self.districts.all()]
 
     
@@ -43,6 +43,8 @@ class Location(models.Model):
   genre = models.ForeignKey('genres.Genre', on_delete=models.PROTECT)
   capacity = models.PositiveSmallIntegerField(null=True, blank=True)
   slots_available = models.PositiveSmallIntegerField(default=4)
+  prestige = models.PositiveSmallIntegerField(default=3) # Cleanliness, decor, damage etc
+  running_cost = models.PositiveSmallIntegerField(default=50) # Cleanliness, decor, damage etc
   building = models.CharField(max_length=27, choices=BUILDING_CHOICES)
   name = models.CharField(max_length=127)
 

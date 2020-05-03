@@ -2,9 +2,19 @@ from django.db import models
 
 # Create your models here.
 class Brand(models.Model):
+  game = models.ForeignKey(to='game.Game', null=True, blank=True, on_delete=models.SET_NULL, related_name="brands")
   name = models.CharField(max_length=127)
 
-class Band(models.Model):
+  def __str__(self):
+    return "{}{}".format(self.name, " (You)" if self.id == 1 else "")
+
+class BrandedModel(models.Model):
+  brand = models.ForeignKey(to='Brand', null=True, blank=True, on_delete=models.SET_NULL)
+
+  class Meta:
+    abstract = True
+
+class Band(BrandedModel):
   name = models.CharField(max_length=127)
   genre = models.ForeignKey('genres.Genre', null=True, blank=True, on_delete=models.PROTECT)
 
@@ -15,38 +25,42 @@ class Band(models.Model):
   def __str__(self):
     return self.name
 
-class RecordLabel(models.Model):
+class RecordLabel(BrandedModel):
   name = models.CharField(max_length=127)
 
   def __str__(self):
     return self.name
 
-# class EventType(models.Model):
+# class EventType(BrandedModel):
 #   slots_required = models.PositiveSmallIntegerField()
 #   starts_at = models.DateField()
 #   ends_at = models.DateField()
 #   slots = ....
 
   # event outcome - modifies influence, update attributes eg increase capacity, new objects, skill up
-class Event(models.Model):
-  EVENT_KINDS = [
-    ('gig', 'gig'),
-    ('tour', 'tour'),
-    ('party', 'party'),
-    ('training', 'training'),
-    ('recording', 'recording'),
+class Event(BrandedModel):
+  EVENT_KINDS = [(e,e) for e in [
+      'gig',
+      'tour',
+      'party',
+      'training',
+      'recording',
+    ]
   ]
 
-  name = models.CharField(max_length=127)
   location = models.ForeignKey('locations.Location', null=True, blank=True, on_delete=models.SET_NULL, related_name="events")
-  acts = models.ManyToManyField(Band)
   genre = models.ForeignKey('genres.Genre', null=True, blank=True, on_delete=models.PROTECT)
-  kind = models.CharField(max_length=27, choices=EVENT_KINDS, default='gig')
   people = models.ManyToManyField('people.Person')
+  acts = models.ManyToManyField(Band)
+  name = models.CharField(max_length=127)
+  kind = models.CharField(max_length=27, choices=EVENT_KINDS, default='gig')
 
   def __str__(self):
     return "{} at {} on {}-{}".format(self.name, self.location, self.starts_at, self.ends_at)
 
+  def validate_location(self, location):
+    # Check 
+    return (location.brand_id == 1 or location.building == 'park')
 
 class Gig(object):
   from people.models import Job, Person
@@ -58,7 +72,7 @@ class Gig(object):
         {"model": Location, "min": 1, "max": 1},
       ],
       "staff": [
-         {"role": "promoter", "min": 1, "max": 2},
+         {"role": "promoter", "min": 0, "max": 1},
          {"role": "techie", "min": 1, "max": 2},
         ]
       }

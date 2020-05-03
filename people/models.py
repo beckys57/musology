@@ -17,9 +17,6 @@ class Population(models.Model):
 
   # def respond_to(self, event):
 
-
-
-
   def initialize(self):
     if self.crowds:
       return self.crowds.all()
@@ -43,6 +40,7 @@ class Population(models.Model):
         crowds.append(Crowd.objects.create(population=self, genre=genre, proportion=proportion))
 
     self.crowds.set(crowds)
+    print(self.crowds.all())
     return self.crowds.all()
 
 class Crowd(models.Model):
