@@ -1,5 +1,2 @@
-<html>
-  <body>
-      {{data}}
-  </body>
-</html>
+{% load js %}
+var data = {{data | js}};
