@@ -12,12 +12,18 @@ class Game(models.Model):
     from tech.models import Tech
     return Tech.objects.filter(brand=self.player_brand)
 
+  def __str__(self):
+    from brand.models import Brand
+    return "{} vs {}".format(self.brands.first().name, " vs ".join([b.name for b in Brand.objects.all()]))
+
   def all_venues(self):
     return [[v for v in c.venues.all()] for c in self.cities.all()]
 
   def initialize(self):
+    from brand.models import Brand
     print("Initializing..")
     call_command('loaddata', 'fixtures/level1.json')
+    self.brands.set([Brand.objects.first()])
     print("Tech:", self.current_tech)
     [city.initialize() for city in self.cities.all()]
 

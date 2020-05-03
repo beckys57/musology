@@ -6,7 +6,7 @@ class Brand(models.Model):
   name = models.CharField(max_length=127)
 
   def __str__(self):
-    return "{}{}".format(self.name, " (You)" if self.id == 1 else "")
+    return self.name
 
 class BrandedModel(models.Model):
   brand = models.ForeignKey(to='Brand', null=True, blank=True, on_delete=models.SET_NULL)
