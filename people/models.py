@@ -39,7 +39,7 @@ class Job(models.Model):
     verbose_name_plural = 'People in the industry'
 
   def __str__(self):
-    return "{} ({})".format(self.role, self.person)
+    return "{} (job)".format(self.role)
 
 # class Employee(models.Model):
 #   class Meta:
@@ -124,8 +124,8 @@ class Person(models.Model):
   job = models.ForeignKey(Job, null=True, blank=True, on_delete=models.SET_NULL, related_name="employees")
 
   name = models.CharField(max_length=60)
-  happiness = models.CharField(max_length=1, null=True, blank=True)
-  influence = models.PositiveSmallIntegerField(null=True, blank=True)
+  happiness = models.CharField(max_length=1, default="6")
+  influence = models.PositiveSmallIntegerField(default=0)
   created_at = models.DateTimeField(auto_now_add=True)
 
   class Meta:

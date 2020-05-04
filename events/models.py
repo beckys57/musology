@@ -60,20 +60,31 @@ class EventType(models.Model):
 
   def filter_for_location(location):
     # Send locations to check for player
-    # Has enough slots in a turn
+    # Can happen in anyone's location? Yes but maybe the slots are sometimes filled, if you know the venue owner they can reserve slot
     # Venue assessment exists (suitability is 5+?)
     # TODO: Add some initialize functions eg add eventtype needs a venueassessment
     event_types = EventType.objects.filter(venueassessment__building_type_id=location.building_type_id, slots_required__lte=location.slots_available)
-    # Annotate which player has requirements for, so UI can grey out eg if don't have a band
     return event_types
 
-  def options_for_location(location):
+  def options_for_location(location, brand_id):
     # Return the event type name, slots_required and requirements
     event_types = EventType.filter_for_location(location)
     # build a dict with requirements from controller
     options = []
     for et in event_types:
       requirements = eval(et.controller).requirements
+      # Does brand meet requirements? Work out client-side
+      # {
+      # "objects": [
+      #   {"model": 'Band', "min": 1, "max": 5},
+      #   {"model": 'Location', "min": 1, "max": 1},
+      # ],
+      # "staff": [
+      #    {"role": "promoter", "min": 0, "max": 1},
+      #    {"role": "techie", "min": 1, "max": 2},
+      #   ]
+      # }
+
       options.append({"type": et.name, "slots_required": et.slots_required, "requirements": requirements})
     return options
 

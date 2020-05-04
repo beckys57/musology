@@ -1,6 +1,7 @@
 import random
 
 from django.db import models
+from django.db.models import Count
 
 class City(models.Model):
   game = models.ForeignKey(to='game.Game', null=True, blank=True, on_delete=models.SET_NULL, related_name="cities")
@@ -171,7 +172,17 @@ class Location(models.Model):
     attrs['stats'] = stats
     attrs['type'] = self.building_type.name
     attrs["event_options"] = EventType.options_for_location(self)
+    attrs["staff"] = self.staff_data
     return attrs
 
+  @property
+  def staff_data(self):
+    from people.models import Person
+    staff = Person.objects.filter(job__workplace=self)
+    staff_count = staff.values('job__role').annotate(total=Count('job__role'))
+    return {
+      "employees": list(staff.values('genre_id', 'location_id', 'job__role', 'name', 'happiness', 'influence')),
+      "role_counts": list(staff_count)
+    }
 
 
