@@ -1,16 +1,19 @@
+import json
+
 from django.shortcuts import render
+from django.http import HttpResponseRedirect, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
 from .models import Game
 from brand.models import Band, Brand
 from genres.models import Genre
 from locations.models import City, Location
-from django.http import JsonResponse
 
-
+@csrf_exempt
 def take_turn(request):
   print("Taking turn...")
   if request.method == "POST":
-    data = request.POST
-  print("data:", data)
+    data = json.loads(request.body.decode())
   
   payload_example = {
     "locations": [
@@ -88,15 +91,26 @@ def take_turn(request):
   }
 
   # Venue attributes - name, location, slots
-  for slot, event in data["locations"].items():
-    eg = {
-      "kind": "gig",  # EVENT_TYPE
-      "band_ids": [1],
-      "promoter_ids": [],
-      "people_ids": [], # Excludes band musicians, but add this in the backend for bonuses or whatever
-    }
+  """
+  # location is a dict with id, events, updates
+  eg = {
+        id: 1,
+        events: [{
+          "slot": 1,
+          "kind": "gig",  # EVENT_TYPE
+          "band_ids": [1],
+          "promoter_ids": [],
+          "people_ids": [], # Excludes band musicians, but add this in the backend for bonuses or whatever
+        }]
+        updates: {name: "New name"}
+      }
+  """
+  locations = data.get('locations')
 
-  # Then do ["locations"]["updates"]
+  for location in locations:
+    Location.objects.filter(id=location["id"]).update(**location.get("updates", {}))
+
+  return HttpResponseRedirect('/')
 
 
 

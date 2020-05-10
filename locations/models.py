@@ -169,6 +169,7 @@ class Location(models.Model):
   postcode = models.CharField(max_length=2, default='D4', choices=POSTCODE_CHOICES)
   latitude = models.CharField(max_length=12, null=True, blank=True)
   longitude = models.CharField(max_length=12, null=True, blank=True)
+  entry_price = models.PositiveSmallIntegerField(default=0)
 
   def __str__(self):
     return "{} ({})".format(self.name, self.building_type)
