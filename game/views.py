@@ -53,41 +53,41 @@ def take_turn(request):
       {
         "id": 2,
         "events": [
-                        {
-                          "slot": 1,
-                          "kind": "training",  # EVENT_TYPE
-                          "band_ids": [1],
-                          "promoter_ids": [],
-                          "people_ids": [15, 16, 17, 18], # Excludes band musicians, but add this in the backend for bonuses or whatever
-                        },
-                        {
-                          "slot": 2,
-                          "kind": "training", # Leave all fields empty for nothing to occur in this slot
-                          "band_ids": [],
-                          "promoter_ids": [],
-                          "people_ids": [15, 16, 17, 18],
-                        },
-                        {
-                          "slot": 3,
-                          "kind": "training",
-                          "band_ids": [2],
-                          "promoter_ids": [],
-                          "people_ids": [15, 16, 17, 18],
-                        },
-                        {
-                          "slot": 4,
-                          "kind": "deep clean upgrade",
-                          "band_ids": [],
-                          "promoter_ids": [],
-                          "people_ids": [15, 16, 17, 18], # Bar staff can do cleaning and upgrade work
-                    },
-                  ],
+              {
+                "slot": 1,
+                "kind": "training",  # EVENT_TYPE
+                "band_ids": [1],
+                "promoter_ids": [],
+                "people_ids": [15, 16, 17, 18], # Excludes band musicians, but add this in the backend for bonuses or whatever
+              },
+              {
+                "slot": 2,
+                "kind": "training", # Leave all fields empty for nothing to occur in this slot
+                "band_ids": [],
+                "promoter_ids": [],
+                "people_ids": [15, 16, 17, 18],
+              },
+              {
+                "slot": 3,
+                "kind": "training",
+                "band_ids": [2],
+                "promoter_ids": [],
+                "people_ids": [15, 16, 17, 18],
+              },
+              {
+                "slot": 4,
+                "kind": "deep clean upgrade",
+                "band_ids": [],
+                "promoter_ids": [],
+                "people_ids": [15, 16, 17, 18], # Bar staff can do cleaning and upgrade work
+          },
+        ],
       }
     ]
   }
 
   # Venue attributes - name, location, slots
-  for slot, event in data["locations"]["events"].items():
+  for slot, event in data["locations"].items():
     eg = {
       "kind": "gig",  # EVENT_TYPE
       "band_ids": [1],

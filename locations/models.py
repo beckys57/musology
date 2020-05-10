@@ -6,6 +6,8 @@ from django.db.models import Count
 class City(models.Model):
   game = models.ForeignKey(to='game.Game', null=True, blank=True, on_delete=models.SET_NULL, related_name="cities")
   name = models.CharField(max_length=127)
+  latitude = models.CharField(max_length=12, null=True, blank=True)
+  longitude = models.CharField(max_length=12, null=True, blank=True)
 
   class Meta:
     verbose_name_plural = "cities"
@@ -19,7 +21,9 @@ class City(models.Model):
   def build_display_attrs():
     city = City.objects.first()
     return {
-      "city": city.name,
+      "name": city.name,
+      "latitude": city.latitude,
+      "longitude": city.longitude,
       "districts": [d.display_attrs for d in city.districts.all()]
     }
     
@@ -27,6 +31,8 @@ class District(models.Model):
   city = models.ForeignKey(City, on_delete=models.PROTECT, related_name="districts")
   name = models.CharField(max_length=127)
   population = models.PositiveSmallIntegerField(default=100)
+  latitude = models.CharField(max_length=12, null=True, blank=True)
+  longitude = models.CharField(max_length=12, null=True, blank=True)
 
   class Meta:
     ordering = ['id']
@@ -36,7 +42,14 @@ class District(models.Model):
 
   @property
   def display_attrs(self):
-    return {"id": self.id, "name": self.name, "population": self.population, "crowds": [c.display_attrs for c in self.crowds.all()]}
+    return {
+      "id": self.id,
+      "latitude": self.latitude,
+      "longitude": self.longitude,
+      "name": self.name,
+      "population": self.population,
+      "crowds": [c.display_attrs for c in self.crowds.all()]
+      }
 
   # Generate some music-loving crowds
   def initialize(self):
@@ -154,6 +167,8 @@ class Location(models.Model):
   running_cost = models.PositiveSmallIntegerField(default=50) # Cleanliness, decor, damage etc
   name = models.CharField(max_length=127)
   postcode = models.CharField(max_length=2, default='D4', choices=POSTCODE_CHOICES)
+  latitude = models.CharField(max_length=12, null=True, blank=True)
+  longitude = models.CharField(max_length=12, null=True, blank=True)
 
   def __str__(self):
     return "{} ({})".format(self.name, self.building_type)
@@ -163,7 +178,7 @@ class Location(models.Model):
     from events.models import EventType
 
     attrs = {k: v for k, v in self.__dict__.items()
-              if k in ["id", "brand_id", "genre_id", "name", "postcode", "slots_available"]}
+              if k in ["id", "brand_id", "genre_id", "latitude", "longitude", "name", "postcode", "slots_available"]}
     stats = {
       "prestige": {"value": self.prestige, "label": "Prestige"},
       "running_cost": {"value": self.running_cost, "label": "Running cost"},
