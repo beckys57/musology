@@ -16,8 +16,8 @@ class Game(models.Model):
     from brand.models import Brand
     return " vs ".join([b.name for b in (Brand.objects.all())])
 
-  def all_venues(self):
-    return [[v for v in c.venues.all()] for c in self.cities.all()]
+  def all_locations(self):
+    return [[v for v in c.locations.all()] for c in self.cities.all()]
 
   def initialize(self):
     from brand.models import Brand
@@ -31,7 +31,7 @@ class Game(models.Model):
 
   def send_data(self):
     data_example = {
-      "venues": {},
+      "locations": {},
       "notifications": [
         {
           "title": "You've won worst venue of the year!",

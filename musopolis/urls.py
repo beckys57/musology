@@ -21,5 +21,6 @@ from game import views as game_views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', game_views.index, name='index'),
+    path('take_turn/', game_views.take_turn, name='take_turn'),
 
 ]

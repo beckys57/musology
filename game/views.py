@@ -6,9 +6,11 @@ from locations.models import City, Location
 from django.http import JsonResponse
 
 
-def take_turn(payload):
+def take_turn(request):
   print("Taking turn...")
-
+  if request.method == "POST":
+    data = request.POST
+  
   payload_example = {
     "locations": [
       {
