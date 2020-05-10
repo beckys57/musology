@@ -1,21 +1,39 @@
 import React, { useState, useEffect } from "react";
 import ReactMapGL, { Marker, Popup } from "react-map-gl";
-import * as parkDate from "./data/skateboard-parks.json";
+import axios from "axios"
 
 export default function App() {
   const [viewport, setViewport] = useState({
-    latitude: 45.4211,
-    longitude: -75.6903,
+    latitude: 0,
+    longitude: 0,
     width: "100vw",
     height: "100vh",
-    zoom: 10
+    zoom: 0,
   });
-  const [selectedPark, setSelectedPark] = useState(null);
+  const [selectedVenue, setSelectedVenue] = useState(null);
+  const [apiData, setApiData] = useState({})
+
+  useEffect(() => {
+    async function getData() {
+      let res = await axios.get('http://localhost:8000')
+      let data = res.data
+      setApiData(data)
+        setViewPort({
+          latitude: data.city.latitude,
+          longitude: city.longitude,
+          width: "100vw",
+          height: "100vh",
+          zoom: 13,
+        })
+      console.log("data set")
+    }
+    getData()
+  }, [])
 
   useEffect(() => {
     const listener = e => {
       if (e.key === "Escape") {
-        setSelectedPark(null);
+        setSelectedVenue(null);
       }
     };
     window.addEventListener("keydown", listener);
@@ -35,35 +53,34 @@ export default function App() {
           setViewport(viewport);
         }}
       >
-        {parkDate.features.map(park => (
+        {apiData.locations.map(venue => (
           <Marker
-            key={park.properties.PARK_ID}
-            latitude={park.geometry.coordinates[1]}
-            longitude={park.geometry.coordinates[0]}
+            key={venue.id}
+            latitude={venue.latitude}
+            longitude={venue.longitude}
           >
             <button
               className="marker-btn"
               onClick={e => {
                 e.preventDefault();
-                setSelectedPark(park);
+                setSelectedVenue(venue);
               }}
             >
-              <img src="/skateboarding.svg" alt="Skate Park Icon" />
+              <img src="/skateboarding.svg" alt="Skate Venue Icon" />
             </button>
           </Marker>
         ))}
 
-        {selectedPark ? (
+        {selectedVenue ? (
           <Popup
-            latitude={selectedPark.geometry.coordinates[1]}
-            longitude={selectedPark.geometry.coordinates[0]}
+            latitude={selectedVenue.latitude}
+            longitude={selectedVenue.longitude}
             onClose={() => {
-              setSelectedPark(null);
+              setSelectedVenue(null);
             }}
           >
             <div>
-              <h2>{selectedPark.properties.NAME}</h2>
-              <p>{selectedPark.properties.DESCRIPTIO}</p>
+              <h2>{selectedVenue.name}</h2>
             </div>
           </Popup>
         ) : null}
