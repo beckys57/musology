@@ -1,6 +1,7 @@
 # Nearby locations /w/api.php?action=query&format=json&prop=coordinates%7Cpageimages%7Ccategories&generator=geosearch&pilicense=free&ggscoord=51.4520822%7C-2.5970355
 import mwclient
 import random
+import requests
 
 config = {
   "genre_count": 3,
@@ -8,21 +9,41 @@ config = {
 }
 
 class Controller(object):
+  def glr(lon, lat):
+    # x = "51.4520822"
+    # y = "-2.5970355"
+    url="https://en.wikipedia.org/w/api.php?action=query&format=json&prop=coordinates%7Cpageimages%7Ccategories&generator=geosearch&pilicense=free&ggscoord={}%7C{}".format(lon, lat)
+
+    response = requests.get(url)
+
+    return [p["title"] for pid, p in response.json()['query']["pages"].items() if p.get('categories', False) and ["music" in t for t in [c["title"] for c in p['categories']]]]
+
+  def get_locations_with_requests(x, y):
+    url="https://en.wikipedia.org/w/api.php?action=query&format=json&prop=coordinates%7Cpageimages%7Ccategories&generator=geosearch&pilicense=free&ggscoord={}%7C{}".format(x, y)
+
+    response = requests.get(url)
+
+    return {p["title"]: [c["title"] for c in p['categories']] for pid, p in response.json()['query']["pages"].items() if p.get('categories', False) and ["music" in t for t in [c["title"] for c in p['categories']]]}
+    # return [p["title"] for pid, p in response.json()['query']["pages"].items() if p.get('categories', False) and ["music" in t for t in [c["title"] for c in p['categories']]]]
+    # return {p["title"]: p[] for pid, p in response.json()['query']["pages"].items() if p.get('categories', False) and ["music" in t for t in [c["title"] for c in p['categories']]]}
+
+
   def delist_category_title(category_title):
     return category_title.replace('List of ', '').replace(' musicians', '')
 
   def create_musicians(genres):
     for g, ms in genres.items():
-      genres[g] = [m.name for m in Controller.iter_sample_fast(ms, config["musicians_per_genre"])]
+      genres[g] = [m for m in Controller.iter_sample_fast(ms, config["musicians_per_genre"])]
     return genres
+
+  def get_random_genres():
+    return Controller.iter_sample_fast(site.categories[u'Lists_of_musicians_by_genre'].members(), config["genre_count"])
 
   def create_genres():
     site = mwclient.Site('en.wikipedia.org')
     # A list of links to categories
-    genres = site.categories[u'Lists_of_musicians_by_genre']
-    # return genres.categories()
-    # category_list = [c for c in genres.members()]
-    genres = {Controller.delist_category_title(g.name): g.links() for g in Controller.iter_sample_fast(genres.members(), config["genre_count"])}
+    genres = {Controller.delist_category_title(g.name): g.links() for g in Controller.get_random_genres()}
+
     return Controller.create_musicians(genres)
     
   def iter_sample_fast(iterable, samplesize):
