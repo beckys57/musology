@@ -173,6 +173,13 @@ class Location(models.Model):
     attrs['type'] = self.building_type.name
     attrs["event_options"] = EventType.options_for_location(self)
     attrs["staff"] = self.staff_data
+    attrs["events"] = [{
+            "slot": i,
+            "kind": "",
+            "band_ids": [],
+            "promoter_ids": [],
+            "people_ids": [],
+          } for i in range(1, self.slots_available+1)]
     return attrs
 
   @property

@@ -66,7 +66,7 @@ class EventType(models.Model):
     event_types = EventType.objects.filter(venueassessment__building_type_id=location.building_type_id, slots_required__lte=location.slots_available)
     return event_types
 
-  def options_for_location(location, brand_id):
+  def options_for_location(location, brand_id=None):
     # Return the event type name, slots_required and requirements
     event_types = EventType.filter_for_location(location)
     # build a dict with requirements from controller
