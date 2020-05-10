@@ -61,33 +61,122 @@ export default function App() {
     };
   }, []);
 
+  // NB: This is just some example data in the correct format, please replace :)
+  const [postData, setPostData] = useState({"locations": [
+            {
+            "id": 1,
+            "events": [
+            {
+            "slot": 1,
+            "kind": "gig",  
+            "band_ids": [1],
+            "promoter_ids": [],
+            "people_ids": [], 
+            },
+            {
+            "slot": 2,
+            "kind": "", 
+            "band_ids": [],
+            "promoter_ids": [],
+            "people_ids": [],
+            },
+            {
+            "slot": 3,
+            "kind": "gig",
+            "band_ids": [2],
+            "promoter_ids": [],
+            "people_ids": [],
+            },
+            {
+            "slot": 4,
+            "kind": "deep clean upgrade",
+            "band_ids": [],
+            "promoter_ids": [],
+            "people_ids": [5], 
+            },
+            ],
+            "updates": {
+            "entry_price": 12, 
+            "name": "Bojo's"
+            }
+            },
+            {
+            "id": 2,
+            "events": [
+            {
+            "slot": 1,
+            "kind": "training",  
+            "band_ids": [1],
+            "promoter_ids": [],
+            "people_ids": [15, 16, 17, 18], 
+            },
+            {
+            "slot": 2,
+            "kind": "training", 
+            "band_ids": [],
+            "promoter_ids": [],
+            "people_ids": [15, 16, 17, 18],
+            },
+            {
+            "slot": 3,
+            "kind": "training",
+            "band_ids": [2],
+            "promoter_ids": [],
+            "people_ids": [15, 16, 17, 18],
+            },
+            {
+            "slot": 4,
+            "kind": "deep clean upgrade",
+            "band_ids": [],
+            "promoter_ids": [],
+            "people_ids": [15, 16, 17, 18], 
+            },
+            ],
+            }
+            ]})
+
+  async function takeTurn() {
+    console.log('Taking turn...', postData)
+    let resp = await axios.post('http://localhost:8000/take_turn/', postData)
+    console.log('Turn taken', resp)
+  }
+
   return (
     <div>
-      <ReactMapGL
-        {...viewport}
-        mapboxApiAccessToken={process.env.REACT_APP_MAPBOX_TOKEN}
-        mapStyle="mapbox://styles/martinalcock/cka03ij0a21e31is0xeki0epq"
-        onViewportChange={viewport => {
-          setViewport(viewport);
-        }}
-      >
-
-      {markers}
-
-        {selectedVenue ? (
-          <Popup
-            latitude={selectedVenue.latitude}
-            longitude={selectedVenue.longitude}
-            onClose={() => {
-              setSelectedVenue(null);
-            }}
-          >
-            <div>
-              <h2>{selectedVenue.name}</h2>
-            </div>
-          </Popup>
-        ) : null}
-      </ReactMapGL>
+      <a onClick={takeTurn}>Take turn</a>
     </div>
   );
+
+  // NB: Commented the map out, as it was complaining about me not having API access to your Mapbox account.
+  // Can just put this straight back in and remove the Take turn button above
+  // return (
+  //   <div>
+  //     <a onClick={takeTurn}>Click me</a>
+  //     <ReactMapGL
+  //       {...viewport}
+  //       mapboxApiAccessToken={process.env.REACT_APP_MAPBOX_TOKEN}
+  //       mapStyle="mapbox://styles/martinalcock/cka03ij0a21e31is0xeki0epq"
+  //       onViewportChange={viewport => {
+  //         setViewport(viewport);
+  //       }}
+  //     >
+
+  //     {markers}
+
+  //       {selectedVenue ? (
+  //         <Popup
+  //           latitude={selectedVenue.latitude}
+  //           longitude={selectedVenue.longitude}
+  //           onClose={() => {
+  //             setSelectedVenue(null);
+  //           }}
+  //         >
+  //           <div>
+  //             <h2>{selectedVenue.name}</h2>
+  //           </div>
+  //         </Popup>
+  //       ) : null}
+  //     </ReactMapGL>
+  //   </div>
+  // );
 }
