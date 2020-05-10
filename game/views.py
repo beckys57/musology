@@ -10,6 +10,7 @@ def take_turn(request):
   print("Taking turn...")
   if request.method == "POST":
     data = request.POST
+  print("data:", data)
   
   payload_example = {
     "locations": [
@@ -106,7 +107,7 @@ def index(request):
     game = Game.objects.create()
     game.initialize()
 
-  map_data = [City.build_display_attrs()]
+  city_data = City.build_display_attrs()
   genre_data = {g.id: g.display_attrs for g in Genre.objects.all()}
   brand_data = {b.id: b.display_attrs for b in Brand.objects.all()}
   location_data = [l.display_attrs for l in Location.objects.all()]
@@ -114,7 +115,7 @@ def index(request):
   return JsonResponse({
                 "genres": genre_data,
                 "locations": location_data,
-                "map_data": map_data,
+                "city": city_data,
                 "bands": band_data,
                 "brands": brand_data,
       })
