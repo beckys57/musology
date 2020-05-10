@@ -11,6 +11,7 @@ export default function App() {
     zoom: 0,
   });
   const [selectedVenue, setSelectedVenue] = useState(null);
+  const [markers, setMarkers] = useState(null);
   const [apiData, setApiData] = useState({})
 
   useEffect(() => {
@@ -18,13 +19,30 @@ export default function App() {
       let res = await axios.get('http://localhost:8000')
       let data = res.data
       setApiData(data)
-        setViewPort({
-          latitude: data.city.latitude,
-          longitude: city.longitude,
-          width: "100vw",
-          height: "100vh",
-          zoom: 13,
-        })
+      setViewport({
+        ...viewport,
+        latitude: parseFloat(data.city.latitude),
+        longitude: parseFloat(data.city.longitude),
+        zoom: 13,
+      })
+    console.log(data.locations)
+    setMarkers(data.locations.map(venue => (
+          <Marker
+            key={venue.id}
+            latitude={parseFloat(venue.latitude)}
+            longitude={parseFloat(venue.longitude)}
+          >
+            <button
+              className="marker-btn"
+              onClick={e => {
+                e.preventDefault();
+                setSelectedVenue(venue);
+              }}
+            >
+              <img src="/skateboarding.svg" alt="Skate Venue Icon" />
+            </button>
+          </Marker>
+        )))
       console.log("data set")
     }
     getData()
@@ -53,23 +71,8 @@ export default function App() {
           setViewport(viewport);
         }}
       >
-        {apiData.locations.map(venue => (
-          <Marker
-            key={venue.id}
-            latitude={venue.latitude}
-            longitude={venue.longitude}
-          >
-            <button
-              className="marker-btn"
-              onClick={e => {
-                e.preventDefault();
-                setSelectedVenue(venue);
-              }}
-            >
-              <img src="/skateboarding.svg" alt="Skate Venue Icon" />
-            </button>
-          </Marker>
-        ))}
+
+      {markers}
 
         {selectedVenue ? (
           <Popup
