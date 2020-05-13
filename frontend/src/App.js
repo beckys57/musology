@@ -2,11 +2,37 @@ import React, { useState, useEffect } from "react";
 import ReactMapGL, { Marker, Popup } from "react-map-gl";
 import axios from "axios"
 
+export function Sidebar() {
+  return (
+    <div>I am a sidebar</div>
+  )
+}
+
+export function VenuePopup ({selectedVenue, setSelectedVenue}) {
+  console.log("Poppin up!", selectedVenue)
+  let lat = parseFloat(selectedVenue.latitude) 
+  let long = parseFloat(selectedVenue.longitude) 
+ return (
+    <Popup
+      latitude={lat}
+      longitude={long}
+      onClose={() => {
+        setSelectedVenue(null);
+      }}
+    >
+      <div>
+        <h2>{selectedVenue.name}</h2>
+        <div>{selectedVenue.stats.prestige.value} {selectedVenue.stats.prestige.label}</div>
+      </div>
+    </Popup>
+  )
+}
+
 export default function App() {
   const [viewport, setViewport] = useState({
     latitude: 0,
     longitude: 0,
-    width: "100vw",
+    width: "75vw",
     height: "100vh",
     zoom: 0,
   });
@@ -68,14 +94,14 @@ export default function App() {
             "events": [
             {
             "slot": 1,
-            "kind": "gig",  
+            "kind": "gig",
             "band_ids": [1],
             "promoter_ids": [],
-            "people_ids": [], 
+            "people_ids": [],
             },
             {
             "slot": 2,
-            "kind": "", 
+            "kind": "",
             "band_ids": [],
             "promoter_ids": [],
             "people_ids": [],
@@ -92,12 +118,12 @@ export default function App() {
             "kind": "deep clean upgrade",
             "band_ids": [],
             "promoter_ids": [],
-            "people_ids": [5], 
+            "people_ids": [5],
             },
             ],
             "updates": {
-            "entry_price": 12, 
-            "name": "Bojo's"
+            "entry_price": 12,
+            "name": "Badger"
             }
             },
             {
@@ -105,14 +131,14 @@ export default function App() {
             "events": [
             {
             "slot": 1,
-            "kind": "training",  
+            "kind": "training",
             "band_ids": [1],
             "promoter_ids": [],
-            "people_ids": [15, 16, 17, 18], 
+            "people_ids": [15, 16, 17, 18],
             },
             {
             "slot": 2,
-            "kind": "training", 
+            "kind": "training",
             "band_ids": [],
             "promoter_ids": [],
             "people_ids": [15, 16, 17, 18],
@@ -129,7 +155,7 @@ export default function App() {
             "kind": "deep clean upgrade",
             "band_ids": [],
             "promoter_ids": [],
-            "people_ids": [15, 16, 17, 18], 
+            "people_ids": [15, 16, 17, 18],
             },
             ],
             }
@@ -141,42 +167,30 @@ export default function App() {
     console.log('Turn taken', resp)
   }
 
-  return (
-    <div>
-      <a onClick={takeTurn}>Take turn</a>
-    </div>
-  );
-
   // NB: Commented the map out, as it was complaining about me not having API access to your Mapbox account.
   // Can just put this straight back in and remove the Take turn button above
-  // return (
-  //   <div>
-  //     <a onClick={takeTurn}>Click me</a>
-  //     <ReactMapGL
-  //       {...viewport}
-  //       mapboxApiAccessToken={process.env.REACT_APP_MAPBOX_TOKEN}
-  //       mapStyle="mapbox://styles/martinalcock/cka03ij0a21e31is0xeki0epq"
-  //       onViewportChange={viewport => {
-  //         setViewport(viewport);
-  //       }}
-  //     >
+ return (
+   <>
+   
+   <div>
+     <button onClick={takeTurn}>Click me</button>
+     <ReactMapGL
+       {...viewport}
+       mapboxApiAccessToken={process.env.REACT_APP_MAPBOX_TOKEN}
+       mapStyle="mapbox://styles/martinalcock/cka03ij0a21e31is0xeki0epq"
+       onViewportChange={viewportConfig => {
+         setViewport(viewportConfig);
+       }}
+     >
 
-  //     {markers}
+     {markers}
 
-  //       {selectedVenue ? (
-  //         <Popup
-  //           latitude={selectedVenue.latitude}
-  //           longitude={selectedVenue.longitude}
-  //           onClose={() => {
-  //             setSelectedVenue(null);
-  //           }}
-  //         >
-  //           <div>
-  //             <h2>{selectedVenue.name}</h2>
-  //           </div>
-  //         </Popup>
-  //       ) : null}
-  //     </ReactMapGL>
-  //   </div>
-  // );
+       {selectedVenue ? (
+         <VenuePopup selectedVenue={selectedVenue} setSelectedVenue={setSelectedVenue} />
+       ) : null}
+     </ReactMapGL>
+   </div>
+
+   </>
+ );
 }
