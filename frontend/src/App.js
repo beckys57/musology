@@ -2,9 +2,15 @@ import React, { useState, useEffect } from "react";
 import ReactMapGL, { Marker, Popup } from "react-map-gl";
 import axios from "axios"
 
+
+
 export function Sidebar() {
   return (
-    <div>I am a sidebar</div>
+    <>
+    <h5 className="card-title">Card title</h5>
+    <p className="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+    <a href="#" className="btn btn-primary" onClick={takeTurn}>Go somewhere</a>
+    </>
   )
 }
 
@@ -28,11 +34,13 @@ export function VenuePopup ({selectedVenue, setSelectedVenue}) {
   )
 }
 
-export default function App() {
+
+
+export function Map() {
   const [viewport, setViewport] = useState({
     latitude: 0,
     longitude: 0,
-    width: "75vw",
+    width: "74vw",
     height: "100vh",
     zoom: 0,
   });
@@ -161,19 +169,12 @@ export default function App() {
             }
             ]})
 
-  async function takeTurn() {
-    console.log('Taking turn...', postData)
-    let resp = await axios.post('http://localhost:8000/take_turn/', postData)
-    console.log('Turn taken', resp)
-  }
-
   // NB: Commented the map out, as it was complaining about me not having API access to your Mapbox account.
   // Can just put this straight back in and remove the Take turn button above
  return (
    <>
    
    <div>
-     <button onClick={takeTurn}>Click me</button>
      <ReactMapGL
        {...viewport}
        mapboxApiAccessToken={process.env.REACT_APP_MAPBOX_TOKEN}
@@ -194,3 +195,30 @@ export default function App() {
    </>
  );
 }
+
+export default function App() {
+  return (
+    <>
+    <div id="map" className="col-lg-9"><Map></Map></div>
+    <div className="col-lg-3">
+
+    <div className="card">
+      <img className="card-img-top" src="..." alt="Card image cap"/>
+      <div className="card-body"><Sidebar></Sidebar>
+      </div>
+    </div>
+    
+  </div>
+  </>
+  )
+}
+
+
+
+
+
+async function takeTurn() {
+    // console.log('Taking turn...', postData)
+    // let resp = await axios.post('http://localhost:8000/take_turn/', postData)
+    // console.log('Turn taken', resp)
+  }
