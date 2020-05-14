@@ -6,6 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from .models import Game
 from brand.models import Band, Brand
+from events.models import EventType
 from genres.models import Genre
 from locations.models import City, Location
 
@@ -108,7 +109,16 @@ def take_turn(request):
   locations = data.get('locations')
 
   for location in locations:
-    Location.objects.filter(id=location["id"]).update(**location.get("updates", {}))
+    # Run all updates
+    l = Location.objects.filter(id=location["id"])
+    l.update(**location.get("updates", {}))
+    # Sort and group events so they can be logically run. Should this be location at a time or all events? Maybe re-structure if find a reason to
+    for event in location.get('events', []):
+      # Pass off to EventType to get the controller
+      print("event", event["kind"])
+      if event["kind"]:
+        event["location"] = l.first()
+        event_controller = EventType.objects.get(name=event["kind"]).calculate_outcome(event)
 
   return HttpResponseRedirect('/')
 
@@ -125,14 +135,18 @@ def index(request):
   genre_data = {g.id: g.display_attrs for g in Genre.objects.all()}
   brand_data = {b.id: b.display_attrs for b in Brand.objects.all()}
   location_data = [l.display_attrs for l in Location.objects.all()]
-  band_data = [b.display_attrs for b in Band.objects.all()]
-  return JsonResponse({
+  band_data = [b.display_attrs for b in Band.load_all_with_influence()]
+  response_data = {
                 "genres": genre_data,
                 "locations": location_data,
                 "city": city_data,
                 "bands": band_data,
-                "brands": brand_data,
-      })
+                "brands": brand_data
+      }
+
+  return JsonResponse(
+                response_data
+            )
 
 # Endpoints to add
   #  VENUE

@@ -41,10 +41,6 @@ class Job(models.Model):
   def __str__(self):
     return "{} (job)".format(self.role)
 
-# class Employee(models.Model):
-#   class Meta:
-#     abstract = True
-
 class Musician(models.Model):
   band = models.ForeignKey('brand.Band', null=True, blank=True, on_delete=models.SET_NULL, related_name="musicians")
   person = models.ForeignKey('people.Person', on_delete=models.CASCADE, related_name="music_career")

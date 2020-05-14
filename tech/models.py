@@ -38,7 +38,7 @@ class Tech(models.Model):
   progress = models.CharField(max_length=27, default=0, choices=TECH_CATEGORIES)
 
   def __str__(self):
-    return self.name
+    return "{} ({})".format(self.name, self.category or 'uncategorised')
 
   def apply(self):
     affects = eval(self.affects)

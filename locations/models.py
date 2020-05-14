@@ -157,18 +157,22 @@ class Location(models.Model):
                                         'D1', 'D2', 'D3', 'D4', 
                                       ]]
 
-  slots = models.ForeignKey('events.EventSlot', null=True, blank=True, on_delete=models.SET_NULL)
   brand = models.ForeignKey('brand.Brand', null=True, blank=True, on_delete=models.SET_NULL)
-  genre = models.ForeignKey('genres.Genre', on_delete=models.PROTECT)
   building_type = models.ForeignKey(BuildingType, on_delete=models.PROTECT)
-  capacity = models.PositiveSmallIntegerField(null=True, blank=True, default=100)
-  slots_available = models.PositiveSmallIntegerField(default=4)
-  prestige = models.PositiveSmallIntegerField(default=3) # Cleanliness, decor, damage etc
-  running_cost = models.PositiveSmallIntegerField(default=50) # Cleanliness, decor, damage etc
   name = models.CharField(max_length=127)
-  postcode = models.CharField(max_length=2, default='D4', choices=POSTCODE_CHOICES)
+  # postcode = models.CharField(max_length=2, default='D4', choices=POSTCODE_CHOICES)
   latitude = models.CharField(max_length=12, null=True, blank=True)
   longitude = models.CharField(max_length=12, null=True, blank=True)
+  genre = models.ForeignKey('genres.Genre', on_delete=models.PROTECT)
+
+  # slots = models.ForeignKey('events.EventSlot', null=True, blank=True, on_delete=models.SET_NULL)
+  
+  slots_available = models.PositiveSmallIntegerField(default=4)
+  capacity = models.PositiveSmallIntegerField(null=True, blank=True, default=100)
+  influence = models.PositiveSmallIntegerField(default=0)
+  
+  prestige = models.PositiveSmallIntegerField(default=3) # Cleanliness, decor, damage etc
+  running_cost = models.PositiveSmallIntegerField(default=50) # Cleanliness, decor, damage etc
   entry_price = models.PositiveSmallIntegerField(default=0)
 
   def __str__(self):
@@ -179,23 +183,25 @@ class Location(models.Model):
     from events.models import EventType
 
     attrs = {k: v for k, v in self.__dict__.items()
-              if k in ["id", "brand_id", "genre_id", "latitude", "longitude", "name", "postcode", "slots_available"]}
-    stats = {
-      "prestige": {"value": self.prestige, "label": "Prestige"},
-      "running_cost": {"value": self.running_cost, "label": "Running cost"},
-      "capacity": {"value": self.capacity, "label": "Capacity"},
-    }
-    attrs['stats'] = stats
-    attrs['type'] = self.building_type.name
-    attrs["event_options"] = EventType.options_for_location(self)
-    attrs["staff"] = self.staff_data
-    attrs["events"] = [{
+              if k in ["id", "brand_id", "genre_id", "latitude", "longitude", "name", "slots_available"]}
+
+    attrs.update({
+        "stats": {
+                    "prestige": {"value": self.prestige, "label": "Prestige"},
+                    "running_cost": {"value": self.running_cost, "label": "Running cost"},
+                    "capacity": {"value": self.capacity, "label": "Capacity"},
+                  },
+        "type": self.building_type.name,
+        "event_options": EventType.options_for_location(self),
+        "staff": self.staff_data,
+        "events": [{
             "slot": i,
             "kind": "",
             "band_ids": [],
             "promoter_ids": [],
             "people_ids": [],
           } for i in range(1, self.slots_available+1)]
+      })
     return attrs
 
   @property

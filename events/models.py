@@ -1,4 +1,7 @@
+import math
+
 from django.db import models
+from django.db.models import Max
 
 class Gig(object):
   requirements = {
@@ -12,8 +15,40 @@ class Gig(object):
         ]
       }
 
-  def calculate_outcome(self, params):
-    venue = params["location"]
+  def calculate_outcome(params):
+    from brand.models import Band
+    # {'slot': 3, 'kind': 'gig', 'band_ids': [2], 'promoter_ids': [], 'people_ids': [], 'location': <Location: Bojo's (music bar (building type))>}
+    location = params["location"]
+    print("Calculating outcome of gig at {}..".format(location), params)
+
+    bands = Band.load_all_with_influence({"id__in": params["band_ids"]})
+
+    updates = {
+      location: {"influence": location.influence}
+    }
+    
+    # Inherit influence from bands if any who played have more influence
+    highest_influence = bands.aggregate(max_influence=Max("band_influence"))['max_influence']
+    influence_diff = highest_influence - location.influence
+    if influence_diff > 0:
+      # 25% of the difference, minimum 1
+      updates[location]["influence"] = updates[location]["influence"] + math.ceil(influence_diff/4)
+
+    # How many people came? District analysis
+    # Currently location's don't belong to a district. Rectify this.
+    # turnout =
+
+    # TODO: this is a wip
+    # influence
+    # brand
+    # genre
+    # capacity
+    # prestige
+    # entry_price
+
+    print("Band 1", bands.first().band_influence)
+    print("Updates", updates)
+    print("Done", location)
     # Reward: influence & money
     # Factors: capacity full, overall capacity
     # Stuff to do with all slots combined should be done at the end, so this should update a growing dict of modifiers
@@ -53,6 +88,9 @@ class EventType(models.Model):
 
   def __str__(self):
     return "{} (event type)".format(self.name)
+
+  def calculate_outcome(self, event_data):
+    eval(self.controller).calculate_outcome(event_data)
 
   def unlocked_for_brand(brand_id):
     from tech.models import Tech

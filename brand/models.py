@@ -1,12 +1,14 @@
 from django.db import models
+from django.db.models import Sum
 
 # Create your models here.
 class Brand(models.Model):
   game = models.ForeignKey(to='game.Game', null=True, blank=True, on_delete=models.SET_NULL, related_name="brands")
   name = models.CharField(max_length=127)
   colour = models.CharField(max_length=15, default='blue')
-  events_unlocked = models.ManyToManyField('events.EventType')
+  influence = models.PositiveSmallIntegerField(default=0)
   money = models.SmallIntegerField(default=100)
+  events_unlocked = models.ManyToManyField('events.EventType')
 
   def __str__(self):
     return self.name
@@ -17,6 +19,7 @@ class Brand(models.Model):
 
 class BrandedModel(models.Model):
   brand = models.ForeignKey(to='Brand', null=True, blank=True, on_delete=models.SET_NULL)
+  influence = models.PositiveSmallIntegerField(default=0)
 
   class Meta:
     abstract = True
@@ -26,16 +29,21 @@ class Band(BrandedModel):
   genre = models.ForeignKey('genres.Genre', null=True, blank=True, on_delete=models.PROTECT)
   location = models.ForeignKey('locations.location', null=True, blank=True, on_delete=models.SET_NULL)
 
-  def influence(self):
+  @property
+  def total_influence(self):
     # influence as sum of band influence (later, could go up with awesome events)
-    sum([m.influence for m in self.members.all()])
+    sum([m.person.influence for m in self.musicians.all()]) # TODO: + self.influence can't find that field
 
   def __str__(self):
     return self.name
 
+  def load_all_with_influence(filter_params={}):
+    return Band.objects.annotate(band_influence=Sum('musicians__person__influence')).filter(**filter_params)
+
   @property
   def display_attrs(self):
-    return {"id": self.id, "name": self.name, "genre_id": self.genre_id, "location_id": self.location_id}
+    return {"id": self.id, "name": self.name, "genre_id": self.genre_id, "location_id": self.location_id, "influence": self.total_influence}
+  
 
 class RecordLabel(BrandedModel):
   name = models.CharField(max_length=127)
