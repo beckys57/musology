@@ -128,18 +128,32 @@ export default function App() {
   const [postData, setPostData] = useState()
 
   useEffect(() => {
-    // Write a function here to initialise blank postData template
+    function  buildLocationEvents(data) {
+      let key;
+      let events = {"locations": []}
+
+      for (let i=0; i<data.locations.length; i++) {
+	let e = {
+	  "id": data.locations[i].id, 
+	  "events": data.locations[i].events,
+	}
+	console.log("Adding ", data.locations[i].name, " events")
+	events.locations.push(e)
+      };
+      return events
+    }
 
     async function getData() {
       let res = await axios.get('http://localhost:8000')
       let data = res.data
       setApiData(data)
       setMap(<Map></Map>)
-      // Call the function here, then:
-      // setPostData(results_from_function)
-    
+      setPostData(buildLocationEvents(data))
+      console.log(postData)
     }
-    getData()
+
+    getData();
+
   }, []);
 
 
