@@ -3,7 +3,9 @@ import ReactMapGL, { Marker, Popup } from "react-map-gl";
 import { ApiDataContext, FnContext } from './Contexts';
 import axios from "axios"
 
-export function SidebarContent({venue}) {
+export function SidebarContent({venue, postData}) {
+  const gameFns = useContext(FnContext)
+
   return (
     <div className="card">
       <img className="card-img-top" src="/pub.svg" />
@@ -22,7 +24,6 @@ export function SidebarContent({venue}) {
       }
             </tbody>
     </table>
-        <a href="s#" className="btn btn-primary" onClick={takeTurn}>Do something</a>
       </div>
     </div>
   )
@@ -50,7 +51,8 @@ export function VenuePopup({selectedVenue}) {
   )
 }
 
-export function Map({selectedVenue}) {
+export function Map({children}) {
+  console.log("Loading map")
   const apiData = useContext(ApiDataContext)
   const gameFns = useContext(FnContext)
   let setSelectedVenue = gameFns.setSelectedVenue;
@@ -102,7 +104,6 @@ export function Map({selectedVenue}) {
     };
   }, []);
 
-  console.log("Rendering map", selectedVenue)
 
   // NB: Commented the map out, as it was complaining about me not having API access to your Mapbox account.
   // Can just put this straight back in and remove the Take turn button above
@@ -118,9 +119,7 @@ export function Map({selectedVenue}) {
 
    {markers}
 
-     {selectedVenue ? (
-       <VenuePopup selectedVenue={selectedVenue} />
-     ) : null}
+     {children}
    </ReactMapGL>
  );
 }
@@ -129,9 +128,10 @@ export default function App() {
   const gameContext = useContext(ApiDataContext);
   const [selectedVenue, setSelectedVenue] = useState();
   const [apiData, setApiData] = useState({})
-  const [map, setMap] = useState()
+  const [loaded, setLoaded] = useState(false)
   const [sidebarContent, setSidebarContent] = useState();
   const [postData, setPostData] = useState()
+  const gameFns = {setApiData: setApiData, setSelectedVenue: setSelectedVenue}
 
   useEffect(() => {
     function  buildLocationEvents(data) {
@@ -153,33 +153,30 @@ export default function App() {
       let res = await axios.get('http://localhost:8000')
       let data = res.data
       setApiData(data)
-      setMap(<Map selectedVenue={selectedVenue}></Map>)
+      setLoaded(true)
       setPostData(buildLocationEvents(data))
     }
     getData()
-  }, [selectedVenue]);
-
-  useEffect(() => {
-    if (selectedVenue != null) {
-      setMap(<Map selectedVenue={selectedVenue}></Map>)
-      setSidebarContent(<SidebarContent venue={selectedVenue}></SidebarContent>);
-    }
-  }, [selectedVenue]);
-
-  const gameFns = {setSelectedVenue: setSelectedVenue}
+  }, []);
 
   return (
     <ApiDataContext.Provider value={apiData}>
     <FnContext.Provider value={gameFns}>
-      <div id="map" className="col-lg-9">{apiData && map}</div>
-      <div className="col-lg-3">{sidebarContent}</div>
+      <div id="map" className="col-lg-9">{loaded && <Map>
+          {selectedVenue ? ( <VenuePopup selectedVenue={selectedVenue} /> ) : null}
+        </Map>}</div>
+      <div className="col-lg-3">
+        {loaded && selectedVenue ? ( <SidebarContent venue={selectedVenue} postData={postData}></SidebarContent> ) : null}
+        <a href="s#" className="btn btn-primary" onClick={function() { takeTurn(gameFns.setApiData, postData) } }>Take turn</a>
+      </div>
     </FnContext.Provider>
     </ApiDataContext.Provider>
   )
 }
 
-async function takeTurn() {
-  // console.log('Taking turn...', postData)
-  // let resp = await axios.post('http://localhost:8000/take_turn/', postData)
-  // console.log('Turn taken', resp)
+async function takeTurn(setApiData, postData) {
+  console.log('Taking turn...', postData)
+  let resp = await axios.post('http://localhost:8000/take_turn/', postData)
+  console.log('Turn taken', resp.data)
+  setApiData(resp.data)
 }
