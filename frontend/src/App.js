@@ -3,8 +3,6 @@ import ReactMapGL, { Marker, Popup } from "react-map-gl";
 import { GameContext } from './Contexts';
 import axios from "axios"
 
-
-
 export function SidebarContent({venue}) {
   return (
     <div className="card">
@@ -18,11 +16,16 @@ export function SidebarContent({venue}) {
   )
 }
 
-export function VenuePopup ({selectedVenue, setSelectedVenue}) {
-  console.log("Poppin up!", selectedVenue)
+export function VenuePopup() {
+  console.log('VenuePopup')
+  const contextData = useContext(GameContext)
+  console.log('contextData', contextData)
+  let selectedVenue = contextData.gameState.selectedVenue;
+  let setSelectedVenue = contextData.gameState.setSelectedVenue;
+
   let lat = parseFloat(selectedVenue.latitude) 
   let long = parseFloat(selectedVenue.longitude) 
- return (
+  return (
     <Popup
       latitude={lat}
       longitude={long}
@@ -38,25 +41,22 @@ export function VenuePopup ({selectedVenue, setSelectedVenue}) {
   )
 }
 
-
-
-export function Map({selectedVenue, setSelectedVenue, clickOnVenue}) {
-  const apiData = useContext(GameContext)
-
-  const [viewport, setViewport] = useState({
-    latitude: 0,
-    longitude: 0,
-    width: "74vw",
-    height: "100vh",
-    zoom: 0,
-  });
-
+export function Map() {
+  const contextData = useContext(GameContext)
+  let apiData = contextData.apiData;
+  let gameState = contextData.gameState;
+  let selectedVenue = gameState.selectedVenue;
+  let setSelectedVenue = gameState.setSelectedVenue;
+  let clickOnVenue = gameState.clickOnVenue;
+  const [viewport, setViewport] = useState();
   const [markers, setMarkers] = useState(null);
+
   useEffect(() => {
     async function setupMap() {
       console.log(apiData)
       setViewport({
-        ...viewport,
+        width: "74vw",
+        height: "100vh",
         latitude: parseFloat(apiData.city.latitude),
         longitude: parseFloat(apiData.city.longitude),
         zoom: 13,
@@ -83,7 +83,7 @@ export function Map({selectedVenue, setSelectedVenue, clickOnVenue}) {
       console.log("data set")
     }
     setupMap();
-  }, [apiData])
+  }, [])
 
   useEffect(() => {
     const listener = e => {
@@ -101,27 +101,21 @@ export function Map({selectedVenue, setSelectedVenue, clickOnVenue}) {
   // NB: Commented the map out, as it was complaining about me not having API access to your Mapbox account.
   // Can just put this straight back in and remove the Take turn button above
  return (
-   <>
-   
-   <div>
-     <ReactMapGL
-       {...viewport}
-       mapboxApiAccessToken={process.env.REACT_APP_MAPBOX_TOKEN}
-       mapStyle="mapbox://styles/martinalcock/cka03ij0a21e31is0xeki0epq"
-       onViewportChange={viewportConfig => {
-         setViewport(viewportConfig);
-       }}
-     >
+   <ReactMapGL
+     {...viewport}
+     mapboxApiAccessToken={process.env.REACT_APP_MAPBOX_TOKEN}
+     mapStyle="mapbox://styles/martinalcock/cka03ij0a21e31is0xeki0epq"
+     onViewportChange={viewportConfig => {
+       setViewport(viewportConfig);
+     }}
+   >
 
-     {markers}
+   {markers}
 
-       {selectedVenue ? (
-         <VenuePopup selectedVenue={selectedVenue} setSelectedVenue={setSelectedVenue} />
-       ) : null}
-     </ReactMapGL>
-   </div>
-
-   </>
+     {selectedVenue ? (
+       <VenuePopup />
+     ) : null}
+   </ReactMapGL>
  );
 }
 
@@ -130,117 +124,39 @@ export default function App() {
   const [selectedVenue, setSelectedVenue] = useState(null);
   const [apiData, setApiData] = useState({})
   const [map, setMap] = useState()
-
+  const [sidebarContent, setSidebarContent] = useState();
+  const [postData, setPostData] = useState()
 
   useEffect(() => {
+    // Write a function here to initialise blank postData template
+
     async function getData() {
       let res = await axios.get('http://localhost:8000')
       let data = res.data
       setApiData(data)
-      setMap(<Map selectedVenue={selectedVenue} setSelectedVenue={setSelectedVenue} clickOnVenue={clickOnVenue}></Map>)
+      setMap(<Map></Map>)
+      // Call the function here, then:
+      // setPostData(results_from_function)
+    
     }
     getData()
-  }, [apiData]);
+  }, []);
 
-
-  // NB: This is just some example data in the correct format, please replace :)
-  const [postData, setPostData] = useState({"locations": [
-    {
-    "id": 1,
-    "events": [
-    {
-    "slot": 1,
-    "kind": "gig",
-    "band_ids": [1],
-    "promoter_ids": [],
-    "people_ids": [],
-    },
-    {
-    "slot": 2,
-    "kind": "",
-    "band_ids": [],
-    "promoter_ids": [],
-    "people_ids": [],
-    },
-    {
-    "slot": 3,
-    "kind": "gig",
-    "band_ids": [2],
-    "promoter_ids": [],
-    "people_ids": [],
-    },
-    {
-    "slot": 4,
-    "kind": "deep clean upgrade",
-    "band_ids": [],
-    "promoter_ids": [],
-    "people_ids": [5],
-    },
-    ],
-    "updates": {
-    "entry_price": 12,
-    "name": "Badger"
-    }
-    },
-    {
-    "id": 2,
-    "events": [
-    {
-    "slot": 1,
-    "kind": "training",
-    "band_ids": [1],
-    "promoter_ids": [],
-    "people_ids": [15, 16, 17, 18],
-    },
-    {
-    "slot": 2,
-    "kind": "training",
-    "band_ids": [],
-    "promoter_ids": [],
-    "people_ids": [15, 16, 17, 18],
-    },
-    {
-    "slot": 3,
-    "kind": "training",
-    "band_ids": [2],
-    "promoter_ids": [],
-    "people_ids": [15, 16, 17, 18],
-    },
-    {
-    "slot": 4,
-    "kind": "deep clean upgrade",
-    "band_ids": [],
-    "promoter_ids": [],
-    "people_ids": [15, 16, 17, 18],
-    },
-    ],
-    }
-    ]})
-
-  const [sidebarContent, setSidebarContent] = useState();
 
   function clickOnVenue(venue) {
     setSelectedVenue(venue)
     setSidebarContent(<SidebarContent venue={venue}></SidebarContent>)
   }
+
+  const [gameState, setGameState] = useState({selectedVenue: selectedVenue, setSelectedVenue: setSelectedVenue, clickOnVenue: clickOnVenue})
+
   return (
-    <GameContext.Provider value={apiData}>
-    <div id="map" className="col-lg-9">
-      {apiData && 
-	map
-      }</div>
-    <div className="col-lg-3">
-
-
-    {sidebarContent}    
-  </div>
-  </GameContext.Provider>
+    <GameContext.Provider value={{apiData: apiData, gameState: gameState}}>
+      <div id="map" className="col-lg-9">{apiData && map}</div>
+      <div className="col-lg-3">{sidebarContent}</div>
+    </GameContext.Provider>
   )
 }
-
-
-
-
 
 async function takeTurn() {
   // console.log('Taking turn...', postData)
