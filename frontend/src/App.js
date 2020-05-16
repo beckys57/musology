@@ -10,18 +10,18 @@ export function SidebarContent({venue}) {
       <div className="card-body">
         <h5 className="card-title">{venue.name}</h5>
         <p className="card-text"></p>
-	  <table key={"venue"+venue.id} className="table card-text">
+    <table key={"venue"+venue.id} className="table card-text">
             <tbody>
-	    {Object.keys(venue.stats).map((stat, i) =>
-	      (
-		<tr key={"venue"+venue.id+stat}>
-		  <th>{venue.stats[stat].label}</th>
-		  <td>{venue.stats[stat].value}</td>
-		</tr>
-	      ))
-	    }
+      {Object.keys(venue.stats).map((stat, i) =>
+        (
+    <tr key={"venue"+venue.id+stat}>
+      <th>{venue.stats[stat].label}</th>
+      <td>{venue.stats[stat].value}</td>
+    </tr>
+        ))
+      }
             </tbody>
-	  </table>
+    </table>
         <a href="s#" className="btn btn-primary" onClick={takeTurn}>Do something</a>
       </div>
     </div>
@@ -139,12 +139,12 @@ export default function App() {
       let events = {"locations": []}
 
       for (let i=0; i<data.locations.length; i++) {
-	let e = {
-	  "id": data.locations[i].id, 
-	  "events": data.locations[i].events,
-	}
-	console.log("Adding ", data.locations[i].name, " events")
-	events.locations.push(e)
+        let e = {
+          "id": data.locations[i].id, 
+          "events": data.locations[i].events,
+        }
+        console.log("Adding ", data.locations[i].name, " events")
+        events.locations.push(e)
       };
       return events
     }
