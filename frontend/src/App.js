@@ -10,11 +10,11 @@ export function SidebarContent({venue}) {
       <div className="card-body">
         <h5 className="card-title">{venue.name}</h5>
         <p className="card-text"></p>
-	  <table key={"venue"+venue.id} className="table card-text">
-	    <thead>
-	      <th>Stats</th>
-	    </thead>
-            <tbody>
+	<table key={"venue"+venue.id} className="table card-text">
+	  <thead>
+	    <th>Stats</th>
+	  </thead>
+	  <tbody>
 	    {Object.keys(venue.stats).map((stat, i) =>
 	      (
 		<tr key={"venue"+venue.id+stat}>
@@ -23,24 +23,24 @@ export function SidebarContent({venue}) {
 		</tr>
 	      ))
 	    }
-            </tbody>
-	  </table>
-	  <table key={"events"+venue.id} className="table card-text">
-	    <thead>
-	      <th>Events</th>
-	    </thead>
-            <tbody>
-	    {venue.events.map(evt =>
-	      (
-		<tr key={"venue"+venue.id+evt.slot}>
-		  <th>{evt.slot}</th>
-		  <td>{evt.kind}</td>
-		  <td><button type="button" className="btn btn-primary">Edit</button></td>
-		</tr>
-	      ))
-	    }
-            </tbody>
-	  </table>
+	  </tbody>
+	</table>
+	<table key={"events"+venue.id} className="table card-text">
+	  <thead>
+	    <th>Events</th>
+	  </thead>
+	  <tbody>
+	  {venue.events.map(evt =>
+	    (
+	      <tr key={"venue"+venue.id+evt.slot}>
+		<th>{evt.slot}</th>
+		<td>{evt.kind}</td>
+		<td><button type="button" className="btn btn-primary">Edit</button></td>
+	      </tr>
+	    ))
+	  }
+	  </tbody>
+	</table>
         <a href="s#" className="btn btn-primary" onClick={takeTurn}>Do something</a>
       </div>
     </div>
@@ -158,12 +158,12 @@ export default function App() {
       let events = {"locations": []}
 
       for (let i=0; i<data.locations.length; i++) {
-	let e = {
-	  "id": data.locations[i].id, 
-	  "events": data.locations[i].events,
-	}
-	console.log("Adding ", data.locations[i].name, " events")
-	events.locations.push(e)
+        let e = {
+          "id": data.locations[i].id, 
+          "events": data.locations[i].events,
+        }
+        console.log("Adding ", data.locations[i].name, " events")
+        events.locations.push(e)
       };
       return events
     }
