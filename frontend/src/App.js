@@ -12,7 +12,7 @@ const GeoJsonLayer = ({data}) => {
       "fill-color": '#007cbf',
       "fill-opacity": 0,
     },
-    filter: ['match', ['get', 'cmwd11nm'], ["Ashley", "Avonmouth", "Horfield"], true, false]
+    filter: ['match', ['get', 'cmwd11nm'], ["Ashley", "Clifton", "Southville"], true, false]
   };
 
   const lineLayer = {
@@ -23,54 +23,66 @@ const GeoJsonLayer = ({data}) => {
       "line-opacity": 1,
       "line-width": 2,
     },
-    filter: ['match', ['get', 'cmwd11nm'], ["Ashley", "Avonmouth", "Horfield"], true, false]
+    filter: ['match', ['get', 'cmwd11nm'], ["Ashley", "Clifton", "Southville"], true, false]
   };
 
   return (
     <Source type="geojson" data={geodata}>
-      <Layer {...fillLayer} />
-      <Layer {...lineLayer} />
+      <Layer {...fillLayer} onClick={function() {alert("123")}} />
+      <Layer {...lineLayer} onClick={function() {alert("123")}} />
     </Source>
   );
 };
 
-export function SidebarContent({venue}) {
+export function DistrictSidebarContent({district}) {
+  return (
+    <div className="card">
+      <img className="card-img-top" src="/pub.svg" />
+      <div className="card-body">
+        <h5 className="card-title">{district.name}</h5>
+        <div>{district}</div>
+      </div>
+    </div>
+  )
+}
+
+export function VenueSidebarContent({venue}) {
   return (
     <div className="card">
       <img className="card-img-top" src="/pub.svg" />
       <div className="card-body">
         <h5 className="card-title">{venue.name}</h5>
-      	<table key={"venue"+venue.id} className="table card-text">
-      	  <thead>
-      	    <th>Stats</th>
-      	  </thead>
-      	  <tbody>
-      	    {Object.keys(venue.stats).map((stat, i) =>
-      	      (
-      		<tr key={"venue"+venue.id+stat}>
-      		  <th>{venue.stats[stat].label}</th>
-      		  <td>{venue.stats[stat].value}</td>
-      		</tr>
-      	      ))
-      	    }
-      	  </tbody>
-      	</table>
-      	<table key={"events"+venue.id} className="table card-text">
-      	  <thead>
-      	    <th>Events</th>
-      	  </thead>
-      	  <tbody>
-      	  {venue.events.map(evt =>
-      	    (
-      	      <tr key={"venue"+venue.id+evt.slot}>
-      		<th>{evt.slot}</th>
-      		<td>{evt.kind}</td>
-      		<td><button type="button" className="btn btn-primary">Edit</button></td>
-      	      </tr>
-      	    ))
-      	  }
-      	  </tbody>
-      	</table>
+        <table key={"venue"+venue.id} className="table card-text">
+          <thead>
+            <th>Stats</th>
+          </thead>
+          <tbody>
+            {Object.keys(venue.stats).map((stat, i) =>
+              (
+          <tr key={"venue"+venue.id+stat}>
+            <th>{venue.stats[stat].label}</th>
+            <td>{venue.stats[stat].value}</td>
+          </tr>
+              ))
+            }
+          </tbody>
+        </table>
+        <table key={"events"+venue.id} className="table card-text">
+          <thead>
+            <th>Events</th>
+          </thead>
+          <tbody>
+          {venue.events.map(evt =>
+            (
+              <tr key={"venue"+venue.id+evt.slot}>
+          <th>{evt.slot}</th>
+          <td>{evt.kind}</td>
+          <td><button type="button" className="btn btn-primary">Edit</button></td>
+              </tr>
+            ))
+          }
+          </tbody>
+        </table>
       </div>
     </div>
   )
@@ -103,6 +115,7 @@ export function Map({children}) {
   const apiData = useContext(ApiDataContext)
   const gameFns = useContext(FnContext)
   let setSelectedVenue = gameFns.setSelectedVenue;
+  let setSelectedDistrict = gameFns.setSelectedDistrict;
   const [viewport, setViewport] = useState();
   const [markers, setMarkers] = useState(null);
 
@@ -162,6 +175,15 @@ export function Map({children}) {
      onViewportChange={viewportConfig => {
        setViewport(viewportConfig);
      }}
+     onClick={function(e) {
+                e.preventDefault();
+                if (e.features.length > 0) {
+                  console.log(e.features[0].properties["cmwd11nm"])
+                  setSelectedDistrict(e.features[0].properties["cmwd11nm"])
+                  // console.log("lngLat", e.lngLat)
+                  //  Then use the name to look up from apiData.districts, where the population and crods info will be!
+                }
+              }}
    >
      {markers}
      {children}
@@ -178,10 +200,10 @@ export default function App() {
 
   const [loaded, setLoaded] = useState(false)
   const [selectedVenue, setSelectedVenue] = useState();
-  const [sidebarContent, setSidebarContent] = useState();
+  const [selectedDistrict, setSelectedDistrict] = useState();
   const [apiData, setApiData] = useState({})
   const [postData, setPostData] = useState()
-  const gameFns = {setApiData: setApiData, setSelectedVenue: setSelectedVenue}
+  const gameFns = {setApiData: setApiData, setSelectedDistrict: setSelectedDistrict, setSelectedVenue: setSelectedVenue}
 
   useEffect(() => {
     function  buildLocationEvents(data) {
@@ -204,6 +226,7 @@ export default function App() {
       let res = await axios.get('http://localhost:8000')
       let data = res.data
       setApiData(data)
+      console.log("data", data)
       setLoaded(true)
       setPostData(buildLocationEvents(data))
     }
@@ -217,7 +240,8 @@ export default function App() {
         {loaded && <Map>{selectedVenue ? ( <VenuePopup selectedVenue={selectedVenue} /> ) : null} {<GeoJsonLayer data={geodata}/>}</Map>}
       </div>
       <div className="col-lg-3">
-        {loaded && selectedVenue ? ( <SidebarContent venue={selectedVenue}></SidebarContent> ) : null}
+        {loaded && selectedVenue ? ( <VenueSidebarContent venue={selectedVenue}></VenueSidebarContent> ) : null}
+        {loaded && selectedDistrict ? ( <DistrictSidebarContent district={selectedDistrict}></DistrictSidebarContent> ) : null}
         <a href="s#" className="btn btn-primary" onClick={function() { takeTurn(setApiData, postData) } }>Take turn</a>
       </div>
     </FnContext.Provider>

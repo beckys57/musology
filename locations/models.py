@@ -147,7 +147,7 @@ class BuildingType(models.Model):
   available_event_types = models.ManyToManyField('events.EventType', through='VenueAssessment')
 
   def __str__(self):
-    return "{} (building type)".format(self.name)
+    return self.name
 
 class Location(models.Model):
   POSTCODE_CHOICES = [(p, p) for p in [

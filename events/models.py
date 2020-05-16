@@ -3,6 +3,18 @@ import math
 from django.db import models
 from django.db.models import Max
 
+class MusicLesson(object):
+  requirements = {
+      "objects": [
+        {"model": 'Musician', "min": 1, "max": 1},
+        {"model": 'Location', "min": 1, "max": 1},
+      ],
+      "staff": []
+      }
+
+  def calculate_outcome(params):
+    return
+
 class Gig(object):
   requirements = {
       "objects": [
