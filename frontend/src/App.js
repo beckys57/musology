@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import ReactMapGL, { Marker, Popup } from "react-map-gl";
-import { GameContext } from './Contexts';
+import { ApiDataContext, FnContext } from './Contexts';
 import axios from "axios"
 
 export function SidebarContent({venue}) {
@@ -16,12 +16,9 @@ export function SidebarContent({venue}) {
   )
 }
 
-export function VenuePopup() {
-  console.log('VenuePopup')
-  const contextData = useContext(GameContext)
-  console.log('contextData', contextData)
-  let selectedVenue = contextData.gameState.selectedVenue;
-  let setSelectedVenue = contextData.gameState.setSelectedVenue;
+export function VenuePopup({selectedVenue}) {
+  const apiData = useContext(ApiDataContext)
+  const gameFns = useContext(FnContext)
 
   let lat = parseFloat(selectedVenue.latitude) 
   let long = parseFloat(selectedVenue.longitude) 
@@ -30,7 +27,7 @@ export function VenuePopup() {
       latitude={lat}
       longitude={long}
       onClose={() => {
-        setSelectedVenue(null);
+        gameFns.setSelectedVenue(null);
       }}
     >
       <div>
@@ -41,19 +38,15 @@ export function VenuePopup() {
   )
 }
 
-export function Map() {
-  const contextData = useContext(GameContext)
-  let apiData = contextData.apiData;
-  let gameState = contextData.gameState;
-  let selectedVenue = gameState.selectedVenue;
-  let setSelectedVenue = gameState.setSelectedVenue;
-  let clickOnVenue = gameState.clickOnVenue;
+export function Map({selectedVenue}) {
+  const apiData = useContext(ApiDataContext)
+  const gameFns = useContext(FnContext)
+  let setSelectedVenue = gameFns.setSelectedVenue;
   const [viewport, setViewport] = useState();
   const [markers, setMarkers] = useState(null);
 
   useEffect(() => {
     async function setupMap() {
-      console.log(apiData)
       setViewport({
         width: "74vw",
         height: "100vh",
@@ -72,8 +65,7 @@ export function Map() {
               className="marker-btn"
               onClick={e => {
                 e.preventDefault();
-                clickOnVenue(venue);
-
+                setSelectedVenue(venue);
               }}
             >
               <img src="/skateboarding.svg" alt="Skate Venue Icon" />
@@ -98,6 +90,8 @@ export function Map() {
     };
   }, []);
 
+  console.log("Rendering map", selectedVenue)
+
   // NB: Commented the map out, as it was complaining about me not having API access to your Mapbox account.
   // Can just put this straight back in and remove the Take turn button above
  return (
@@ -113,48 +107,46 @@ export function Map() {
    {markers}
 
      {selectedVenue ? (
-       <VenuePopup />
+       <VenuePopup selectedVenue={selectedVenue} />
      ) : null}
    </ReactMapGL>
  );
 }
 
 export default function App() {
-  const gameContext = useContext(GameContext);
-  const [selectedVenue, setSelectedVenue] = useState(null);
+  const gameContext = useContext(ApiDataContext);
+  const [selectedVenue, setSelectedVenue] = useState();
   const [apiData, setApiData] = useState({})
   const [map, setMap] = useState()
   const [sidebarContent, setSidebarContent] = useState();
   const [postData, setPostData] = useState()
 
   useEffect(() => {
-    // Write a function here to initialise blank postData template
-
     async function getData() {
       let res = await axios.get('http://localhost:8000')
       let data = res.data
       setApiData(data)
-      setMap(<Map></Map>)
-      // Call the function here, then:
-      // setPostData(results_from_function)
-    
+      setMap(<Map selectedVenue={selectedVenue}></Map>)
     }
     getData()
-  }, []);
+  }, [selectedVenue]);
 
+  useEffect(() => {
+    if (selectedVenue != null) {
+      setMap(<Map selectedVenue={selectedVenue}></Map>)
+      setSidebarContent(<SidebarContent venue={selectedVenue}></SidebarContent>);
+    }
+  }, [selectedVenue]);
 
-  function clickOnVenue(venue) {
-    setSelectedVenue(venue)
-    setSidebarContent(<SidebarContent venue={venue}></SidebarContent>)
-  }
-
-  const [gameState, setGameState] = useState({selectedVenue: selectedVenue, setSelectedVenue: setSelectedVenue, clickOnVenue: clickOnVenue})
+  const gameFns = {setSelectedVenue: setSelectedVenue}
 
   return (
-    <GameContext.Provider value={{apiData: apiData, gameState: gameState}}>
+    <ApiDataContext.Provider value={apiData}>
+    <FnContext.Provider value={gameFns}>
       <div id="map" className="col-lg-9">{apiData && map}</div>
       <div className="col-lg-3">{sidebarContent}</div>
-    </GameContext.Provider>
+    </FnContext.Provider>
+    </ApiDataContext.Provider>
   )
 }
 
