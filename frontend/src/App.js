@@ -137,12 +137,9 @@ export default function App() {
       let res = await axios.get('http://localhost:8000')
       let data = res.data
       setApiData(data)
-    }
-    function  setupMap() {
       setMap(<Map selectedVenue={selectedVenue} setSelectedVenue={setSelectedVenue} clickOnVenue={clickOnVenue}></Map>)
     }
     getData()
-    setupMap()
   }, [apiData]);
 
 
