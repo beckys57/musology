@@ -3,9 +3,7 @@ import ReactMapGL, { Marker, Popup } from "react-map-gl";
 import { ApiDataContext, FnContext } from './Contexts';
 import axios from "axios"
 
-export function SidebarContent({venue, postData}) {
-  const gameFns = useContext(FnContext)
-
+export function SidebarContent({venue}) {
   return (
     <div className="card">
       <img className="card-img-top" src="/pub.svg" />
@@ -137,17 +135,16 @@ export function Map({children}) {
 
    {markers}
 
-     {children}
+    {children}
    </ReactMapGL>
  );
 }
 
 export default function App() {
-  const gameContext = useContext(ApiDataContext);
-  const [selectedVenue, setSelectedVenue] = useState();
-  const [apiData, setApiData] = useState({})
   const [loaded, setLoaded] = useState(false)
+  const [selectedVenue, setSelectedVenue] = useState();
   const [sidebarContent, setSidebarContent] = useState();
+  const [apiData, setApiData] = useState({})
   const [postData, setPostData] = useState()
   const gameFns = {setApiData: setApiData, setSelectedVenue: setSelectedVenue}
 
@@ -160,6 +157,7 @@ export default function App() {
         let e = {
           "id": data.locations[i].id, 
           "events": data.locations[i].events,
+          "updates": {}
         }
         console.log("Adding ", data.locations[i].name, " events")
         events.locations.push(e)
@@ -180,12 +178,12 @@ export default function App() {
   return (
     <ApiDataContext.Provider value={apiData}>
     <FnContext.Provider value={gameFns}>
-      <div id="map" className="col-lg-9">{loaded && <Map>
-          {selectedVenue ? ( <VenuePopup selectedVenue={selectedVenue} /> ) : null}
-        </Map>}</div>
+      <div id="map" className="col-lg-9">
+        {loaded && <Map>{selectedVenue ? ( <VenuePopup selectedVenue={selectedVenue} /> ) : null}</Map>}
+      </div>
       <div className="col-lg-3">
-        {loaded && selectedVenue ? ( <SidebarContent venue={selectedVenue} postData={postData}></SidebarContent> ) : null}
-        <a href="s#" className="btn btn-primary" onClick={function() { takeTurn(gameFns.setApiData, postData) } }>Take turn</a>
+        {loaded && selectedVenue ? ( <SidebarContent venue={selectedVenue}></SidebarContent> ) : null}
+        <a href="s#" className="btn btn-primary" onClick={function() { takeTurn(setApiData, postData) } }>Take turn</a>
       </div>
     </FnContext.Provider>
     </ApiDataContext.Provider>
