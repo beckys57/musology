@@ -12,6 +12,7 @@ const GeoJsonLayer = ({data}) => {
       "fill-color": '#007cbf',
       "fill-opacity": 0,
     },
+    filter: ['match', ['get', 'cmwd11nm'], ["Ashley", "Avonmouth", "Horfield"], true, false]
   };
 
   const lineLayer = {
@@ -22,8 +23,8 @@ const GeoJsonLayer = ({data}) => {
       "line-opacity": 1,
       "line-width": 2,
     },
+    filter: ['match', ['get', 'cmwd11nm'], ["Ashley", "Avonmouth", "Horfield"], true, false]
   };
-  console.log("Layer", <Layer {...fillLayer} />)
 
   return (
     <Source type="geojson" data={geodata}>
