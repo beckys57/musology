@@ -1,16 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import ReactMapGL, { Marker, Popup } from "react-map-gl";
+import { GameContext } from './Contexts';
 import axios from "axios"
 
 
 
-export function SidebarContent(venue) {
+export function SidebarContent({venue}) {
   return (
     <div className="card">
       <img className="card-img-top" src="..." alt="Card image cap"/>
       <div className="card-body">
         <h5 className="card-title">Venue: {venue.name}</h5>
-        <p className="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+        <p className="card-text">Prestige: {venue.stats.prestige.value}</p>
         <a href="s#" className="btn btn-primary" onClick={takeTurn}>Go somewhere</a>
       </div>
     </div>
@@ -40,6 +41,8 @@ export function VenuePopup ({selectedVenue, setSelectedVenue}) {
 
 
 export function Map({selectedVenue, setSelectedVenue, clickOnVenue}) {
+  const apiData = useContext(GameContext)
+
   const [viewport, setViewport] = useState({
     latitude: 0,
     longitude: 0,
@@ -47,22 +50,19 @@ export function Map({selectedVenue, setSelectedVenue, clickOnVenue}) {
     height: "100vh",
     zoom: 0,
   });
-  const [markers, setMarkers] = useState(null);
-  const [apiData, setApiData] = useState({})
 
+  const [markers, setMarkers] = useState(null);
   useEffect(() => {
-    async function getData() {
-      let res = await axios.get('http://localhost:8000')
-      let data = res.data
-      setApiData(data)
+    async function setupMap() {
+      console.log(apiData)
       setViewport({
         ...viewport,
-        latitude: parseFloat(data.city.latitude),
-        longitude: parseFloat(data.city.longitude),
+        latitude: parseFloat(apiData.city.latitude),
+        longitude: parseFloat(apiData.city.longitude),
         zoom: 13,
       })
-    console.log(data.locations)
-    setMarkers(data.locations.map(venue => (
+
+    setMarkers(apiData.locations.map(venue => (
           <Marker
             key={venue.id}
             latitude={parseFloat(venue.latitude)}
@@ -82,8 +82,8 @@ export function Map({selectedVenue, setSelectedVenue, clickOnVenue}) {
         )))
       console.log("data set")
     }
-    getData()
-  }, [])
+    setupMap();
+  }, [apiData])
 
   useEffect(() => {
     const listener = e => {
@@ -126,7 +126,25 @@ export function Map({selectedVenue, setSelectedVenue, clickOnVenue}) {
 }
 
 export default function App() {
+  const gameContext = useContext(GameContext);
   const [selectedVenue, setSelectedVenue] = useState(null);
+  const [apiData, setApiData] = useState({})
+  const [map, setMap] = useState()
+
+
+  useEffect(() => {
+    async function getData() {
+      let res = await axios.get('http://localhost:8000')
+      let data = res.data
+      setApiData(data)
+    }
+    function  setupMap() {
+      setMap(<Map selectedVenue={selectedVenue} setSelectedVenue={setSelectedVenue} clickOnVenue={clickOnVenue}></Map>)
+    }
+    getData()
+    setupMap()
+  }, [apiData]);
+
 
   // NB: This is just some example data in the correct format, please replace :)
   const [postData, setPostData] = useState({"locations": [
@@ -209,17 +227,17 @@ export default function App() {
     setSidebarContent(<SidebarContent venue={venue}></SidebarContent>)
   }
   return (
-    <>
+    <GameContext.Provider value={apiData}>
     <div id="map" className="col-lg-9">
-      <Map selectedVenue={selectedVenue} setSelectedVenue={setSelectedVenue} clickOnVenue={clickOnVenue}></Map>
-      </div>
+      {apiData && 
+	map
+      }</div>
     <div className="col-lg-3">
 
 
-    {sidebarContent}
-    
+    {sidebarContent}    
   </div>
-  </>
+  </GameContext.Provider>
   )
 }
 
