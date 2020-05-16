@@ -11,19 +11,37 @@ export function SidebarContent({venue, postData}) {
       <img className="card-img-top" src="/pub.svg" />
       <div className="card-body">
         <h5 className="card-title">{venue.name}</h5>
-        <p className="card-text"></p>
-    <table key={"venue"+venue.id} className="table card-text">
-            <tbody>
-      {Object.keys(venue.stats).map((stat, i) =>
-        (
-    <tr key={"venue"+venue.id+stat}>
-      <th>{venue.stats[stat].label}</th>
-      <td>{venue.stats[stat].value}</td>
-    </tr>
-        ))
-      }
-            </tbody>
-    </table>
+      	<table key={"venue"+venue.id} className="table card-text">
+      	  <thead>
+      	    <th>Stats</th>
+      	  </thead>
+      	  <tbody>
+      	    {Object.keys(venue.stats).map((stat, i) =>
+      	      (
+      		<tr key={"venue"+venue.id+stat}>
+      		  <th>{venue.stats[stat].label}</th>
+      		  <td>{venue.stats[stat].value}</td>
+      		</tr>
+      	      ))
+      	    }
+      	  </tbody>
+      	</table>
+      	<table key={"events"+venue.id} className="table card-text">
+      	  <thead>
+      	    <th>Events</th>
+      	  </thead>
+      	  <tbody>
+      	  {venue.events.map(evt =>
+      	    (
+      	      <tr key={"venue"+venue.id+evt.slot}>
+      		<th>{evt.slot}</th>
+      		<td>{evt.kind}</td>
+      		<td><button type="button" className="btn btn-primary">Edit</button></td>
+      	      </tr>
+      	    ))
+      	  }
+      	  </tbody>
+      	</table>
       </div>
     </div>
   )
