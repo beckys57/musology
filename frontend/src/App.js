@@ -6,11 +6,23 @@ import axios from "axios"
 export function SidebarContent({venue}) {
   return (
     <div className="card">
-      <img className="card-img-top" src="..." alt="Card image cap"/>
+      <img className="card-img-top" src="/pub.svg" />
       <div className="card-body">
-        <h5 className="card-title">Venue: {venue.name}</h5>
-        <p className="card-text">Prestige: {venue.stats.prestige.value}</p>
-        <a href="s#" className="btn btn-primary" onClick={takeTurn}>Go somewhere</a>
+        <h5 className="card-title">{venue.name}</h5>
+        <p className="card-text"></p>
+	  <table key={"venue"+venue.id} className="table card-text">
+            <tbody>
+	    {Object.keys(venue.stats).map((stat, i) =>
+	      (
+		<tr key={"venue"+venue.id+stat}>
+		  <th>{venue.stats[stat].label}</th>
+		  <td>{venue.stats[stat].value}</td>
+		</tr>
+	      ))
+	    }
+            </tbody>
+	  </table>
+        <a href="s#" className="btn btn-primary" onClick={takeTurn}>Do something</a>
       </div>
     </div>
   )
@@ -76,7 +88,7 @@ export function Map() {
 
               }}
             >
-              <img src="/skateboarding.svg" alt="Skate Venue Icon" />
+              <img src="/pub.svg" alt="Skate Venue Icon" />
             </button>
           </Marker>
         )))
