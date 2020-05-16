@@ -26,7 +26,7 @@ class City(models.Model):
       "longitude": city.longitude,
       "districts": [d.display_attrs for d in city.districts.all()]
     }
-    
+
 class District(models.Model):
   city = models.ForeignKey(City, on_delete=models.PROTECT, related_name="districts")
   name = models.CharField(max_length=127)
@@ -160,7 +160,6 @@ class Location(models.Model):
   brand = models.ForeignKey('brand.Brand', null=True, blank=True, on_delete=models.SET_NULL)
   building_type = models.ForeignKey(BuildingType, on_delete=models.PROTECT)
   name = models.CharField(max_length=127)
-  # postcode = models.CharField(max_length=2, default='D4', choices=POSTCODE_CHOICES)
   latitude = models.CharField(max_length=12, null=True, blank=True)
   longitude = models.CharField(max_length=12, null=True, blank=True)
   genre = models.ForeignKey('genres.Genre', on_delete=models.PROTECT)
@@ -192,6 +191,7 @@ class Location(models.Model):
                     "capacity": {"value": self.capacity, "label": "Capacity"},
                   },
         "type": self.building_type.name,
+        "update_attrs": self.update_attrs,
         "event_options": EventType.options_for_location(self),
         "staff": self.staff_data,
         "events": [{
@@ -213,5 +213,10 @@ class Location(models.Model):
       "employees": list(staff.values('genre_id', 'location_id', 'job__role', 'name', 'happiness', 'influence')),
       "role_counts": list(staff_count)
     }
+
+  @property
+  def update_attrs(self):
+    return [["name", "string"], ["entry_price", "integer"]]
+    
 
 

@@ -9,39 +9,37 @@ export function SidebarContent({venue}) {
       <img className="card-img-top" src="/pub.svg" />
       <div className="card-body">
         <h5 className="card-title">{venue.name}</h5>
-        <p className="card-text"></p>
-	<table key={"venue"+venue.id} className="table card-text">
-	  <thead>
-	    <th>Stats</th>
-	  </thead>
-	  <tbody>
-	    {Object.keys(venue.stats).map((stat, i) =>
-	      (
-		<tr key={"venue"+venue.id+stat}>
-		  <th>{venue.stats[stat].label}</th>
-		  <td>{venue.stats[stat].value}</td>
-		</tr>
-	      ))
-	    }
-	  </tbody>
-	</table>
-	<table key={"events"+venue.id} className="table card-text">
-	  <thead>
-	    <th>Events</th>
-	  </thead>
-	  <tbody>
-	  {venue.events.map(evt =>
-	    (
-	      <tr key={"venue"+venue.id+evt.slot}>
-		<th>{evt.slot}</th>
-		<td>{evt.kind}</td>
-		<td><button type="button" className="btn btn-primary">Edit</button></td>
-	      </tr>
-	    ))
-	  }
-	  </tbody>
-	</table>
-        <a href="s#" className="btn btn-primary" onClick={takeTurn}>Do something</a>
+      	<table key={"venue"+venue.id} className="table card-text">
+      	  <thead>
+      	    <th>Stats</th>
+      	  </thead>
+      	  <tbody>
+      	    {Object.keys(venue.stats).map((stat, i) =>
+      	      (
+      		<tr key={"venue"+venue.id+stat}>
+      		  <th>{venue.stats[stat].label}</th>
+      		  <td>{venue.stats[stat].value}</td>
+      		</tr>
+      	      ))
+      	    }
+      	  </tbody>
+      	</table>
+      	<table key={"events"+venue.id} className="table card-text">
+      	  <thead>
+      	    <th>Events</th>
+      	  </thead>
+      	  <tbody>
+      	  {venue.events.map(evt =>
+      	    (
+      	      <tr key={"venue"+venue.id+evt.slot}>
+      		<th>{evt.slot}</th>
+      		<td>{evt.kind}</td>
+      		<td><button type="button" className="btn btn-primary">Edit</button></td>
+      	      </tr>
+      	    ))
+      	  }
+      	  </tbody>
+      	</table>
       </div>
     </div>
   )
@@ -69,7 +67,8 @@ export function VenuePopup({selectedVenue}) {
   )
 }
 
-export function Map({selectedVenue}) {
+export function Map({children}) {
+  console.log("Loading map")
   const apiData = useContext(ApiDataContext)
   const gameFns = useContext(FnContext)
   let setSelectedVenue = gameFns.setSelectedVenue;
@@ -121,7 +120,6 @@ export function Map({selectedVenue}) {
     };
   }, []);
 
-  console.log("Rendering map", selectedVenue)
 
   // NB: Commented the map out, as it was complaining about me not having API access to your Mapbox account.
   // Can just put this straight back in and remove the Take turn button above
@@ -137,20 +135,18 @@ export function Map({selectedVenue}) {
 
    {markers}
 
-     {selectedVenue ? (
-       <VenuePopup selectedVenue={selectedVenue} />
-     ) : null}
+    {children}
    </ReactMapGL>
  );
 }
 
 export default function App() {
-  const gameContext = useContext(ApiDataContext);
+  const [loaded, setLoaded] = useState(false)
   const [selectedVenue, setSelectedVenue] = useState();
-  const [apiData, setApiData] = useState({})
-  const [map, setMap] = useState()
   const [sidebarContent, setSidebarContent] = useState();
+  const [apiData, setApiData] = useState({})
   const [postData, setPostData] = useState()
+  const gameFns = {setApiData: setApiData, setSelectedVenue: setSelectedVenue}
 
   useEffect(() => {
     function  buildLocationEvents(data) {
@@ -161,6 +157,7 @@ export default function App() {
         let e = {
           "id": data.locations[i].id, 
           "events": data.locations[i].events,
+          "updates": {}
         }
         console.log("Adding ", data.locations[i].name, " events")
         events.locations.push(e)
@@ -172,33 +169,30 @@ export default function App() {
       let res = await axios.get('http://localhost:8000')
       let data = res.data
       setApiData(data)
-      setMap(<Map selectedVenue={selectedVenue}></Map>)
+      setLoaded(true)
       setPostData(buildLocationEvents(data))
     }
     getData()
-  }, [selectedVenue]);
-
-  useEffect(() => {
-    if (selectedVenue != null) {
-      setMap(<Map selectedVenue={selectedVenue}></Map>)
-      setSidebarContent(<SidebarContent venue={selectedVenue}></SidebarContent>);
-    }
-  }, [selectedVenue]);
-
-  const gameFns = {setSelectedVenue: setSelectedVenue}
+  }, []);
 
   return (
     <ApiDataContext.Provider value={apiData}>
     <FnContext.Provider value={gameFns}>
-      <div id="map" className="col-lg-9">{apiData && map}</div>
-      <div className="col-lg-3">{sidebarContent}</div>
+      <div id="map" className="col-lg-9">
+        {loaded && <Map>{selectedVenue ? ( <VenuePopup selectedVenue={selectedVenue} /> ) : null}</Map>}
+      </div>
+      <div className="col-lg-3">
+        {loaded && selectedVenue ? ( <SidebarContent venue={selectedVenue}></SidebarContent> ) : null}
+        <a href="s#" className="btn btn-primary" onClick={function() { takeTurn(setApiData, postData) } }>Take turn</a>
+      </div>
     </FnContext.Provider>
     </ApiDataContext.Provider>
   )
 }
 
-async function takeTurn() {
-  // console.log('Taking turn...', postData)
-  // let resp = await axios.post('http://localhost:8000/take_turn/', postData)
-  // console.log('Turn taken', resp)
+async function takeTurn(setApiData, postData) {
+  console.log('Taking turn...', postData)
+  let resp = await axios.post('http://localhost:8000/take_turn/', postData)
+  console.log('Turn taken', resp.data)
+  setApiData(resp.data)
 }
