@@ -1,7 +1,38 @@
 import React, { useState, useEffect, useContext } from "react";
-import ReactMapGL, { Marker, Popup } from "react-map-gl";
+import ReactMapGL, { Source, Layer, Marker, Popup } from "react-map-gl";
 import { ApiDataContext, FnContext } from './Contexts';
 import axios from "axios"
+import geodata from "./bristol.geojson";
+
+const GeoJsonLayer = ({data}) => {
+  const fillLayer = {
+  id: "fill",
+    type: "fill",
+    "paint": {
+      "fill-color": '#007cbf',
+      "fill-opacity": 0,
+    },
+    filter: ['match', ['get', 'cmwd11nm'], ["Ashley", "Avonmouth", "Horfield"], true, false]
+  };
+
+  const lineLayer = {
+    id: "line",
+    type: "line",
+    "paint": {
+      "line-color": "#007cbf",
+      "line-opacity": 1,
+      "line-width": 2,
+    },
+    filter: ['match', ['get', 'cmwd11nm'], ["Ashley", "Avonmouth", "Horfield"], true, false]
+  };
+
+  return (
+    <Source type="geojson" data={geodata}>
+      <Layer {...fillLayer} />
+      <Layer {...lineLayer} />
+    </Source>
+  );
+};
 
 export function SidebarContent({venue}) {
   return (
@@ -132,15 +163,19 @@ export function Map({children}) {
        setViewport(viewportConfig);
      }}
    >
-
-   {markers}
-
-    {children}
+     {markers}
+     {children}
    </ReactMapGL>
  );
 }
 
 export default function App() {
+
+  let polygonPaint = ReactMapGL.FillPaint = {
+      'fill-color': "#ff0000",
+      'fill-opacity': 0.3
+  }
+
   const [loaded, setLoaded] = useState(false)
   const [selectedVenue, setSelectedVenue] = useState();
   const [sidebarContent, setSidebarContent] = useState();
@@ -179,7 +214,7 @@ export default function App() {
     <ApiDataContext.Provider value={apiData}>
     <FnContext.Provider value={gameFns}>
       <div id="map" className="col-lg-9">
-        {loaded && <Map>{selectedVenue ? ( <VenuePopup selectedVenue={selectedVenue} /> ) : null}</Map>}
+        {loaded && <Map>{selectedVenue ? ( <VenuePopup selectedVenue={selectedVenue} /> ) : null} {<GeoJsonLayer data={geodata}/>}</Map>}
       </div>
       <div className="col-lg-3">
         {loaded && selectedVenue ? ( <SidebarContent venue={selectedVenue}></SidebarContent> ) : null}
