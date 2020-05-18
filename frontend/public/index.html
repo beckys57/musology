@@ -28,6 +28,14 @@
       body {
         margin: none;
         padding: none;
+        box-sizing: border-box;
+      }
+     *,
+      *:before,
+      *:after {
+        -webkit-box-sizing: border-box;
+           -moz-box-sizing: border-box;
+                box-sizing: border-box;
       }
       #map {
         border: 3px solid brown;
@@ -41,9 +49,10 @@
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
-      <div id="game" class="row">
-        
+    <div class="container-fluid">
+      <div id="game" class="row ">
       </div>
+    </div>
     <!--
       This HTML file is a template.
       If you open it directly in the browser, you will see an empty page.

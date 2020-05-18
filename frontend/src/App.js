@@ -38,7 +38,7 @@ export function SidebarTabs({selectedTab}) {
   const gameFns = useContext(FnContext)
   const setSelectedTab = gameFns.setSelectedTab
 
-  let labels = ["left", "middle", "right"].map(label =>
+  let labels = ["♫", "$", "iCal"].map(label =>
       <li class="nav-item">
         <a class="nav-link btn btn-secondary" href="#">{label}</a>
       </li>
@@ -46,7 +46,7 @@ export function SidebarTabs({selectedTab}) {
 
   return (
 
-    <ul class="nav nav-tabs">
+    <ul class="nav">
       {labels}
     </ul>
   )
@@ -54,18 +54,24 @@ export function SidebarTabs({selectedTab}) {
 
 export function DistrictSidebarContent({district}) {
   return (
-    <div className="card">
-      <img className="card-img-top" src="/pub.svg" />
-      <div className="card-body">
-        <h5 className="card-title">{district.name}</h5>
-        <div>{district}</div>
+    <>
+    <div className="row">
+      <div className="col col-4 col-offset-6">
+        <img src="/pub.svg" />
+      </div>
+    </div>  
+    <div className="row">
+      <div className="col col-12">
+        <h5 className="card-title">{district}</h5>
       </div>
     </div>
+    </>
   )
 }
 
 export function VenueSidebarContent({venue}) {
   return (
+
     <div className="card">
       <img className="card-img-top" src="/pub.svg" />
       <div className="card-body">
@@ -258,10 +264,10 @@ export default function App() {
   return (
     <ApiDataContext.Provider value={apiData}>
     <FnContext.Provider value={gameFns}>
-      <div id="map" className="col-lg-9">
+      <div id="map" className="col col-9">
         {loaded && <Map>{selectedVenue ? ( <VenuePopup selectedVenue={selectedVenue} /> ) : null} {<GeoJsonLayer data={geodata}/>}</Map>}
       </div>
-      <div id="sidebar" className="col-lg-3" style={{background: "blue", padding: "0"}}>
+      <div id="sidebar" className="col col-3">
         <div class="card text-center">
           <div class="card-header">
             <SidebarTabs selectedTab={selectedTab} />
