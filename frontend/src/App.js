@@ -34,6 +34,24 @@ const GeoJsonLayer = ({data}) => {
   );
 };
 
+export function SidebarTabs({selectedTab}) {
+  const gameFns = useContext(FnContext)
+  const setSelectedTab = gameFns.setSelectedTab
+
+  let labels = ["left", "middle", "right"].map(label =>
+      <li class="nav-item">
+        <a class="nav-link btn btn-secondary" href="#">{label}</a>
+      </li>
+    )
+
+  return (
+
+    <ul class="nav nav-tabs">
+      {labels}
+    </ul>
+  )
+}
+
 export function DistrictSidebarContent({district}) {
   return (
     <div className="card">
@@ -140,6 +158,7 @@ export function Map({children}) {
               onClick={e => {
                 e.preventDefault();
                 setSelectedVenue(venue);
+                setSelectedDistrict(null);
               }}
             >
               <img src="/pub.svg" alt="Skate Venue Icon" />
@@ -180,6 +199,8 @@ export function Map({children}) {
                 if (e.features.length > 0) {
                   console.log(e.features[0].properties["cmwd11nm"])
                   setSelectedDistrict(e.features[0].properties["cmwd11nm"])
+                  setSelectedVenue(null);
+
                   // console.log("lngLat", e.lngLat)
                   //  Then use the name to look up from apiData.districts, where the population and crods info will be!
                 }
@@ -199,11 +220,12 @@ export default function App() {
   }
 
   const [loaded, setLoaded] = useState(false)
+  const [selectedTab, setSelectedTab] = useState("left")
   const [selectedVenue, setSelectedVenue] = useState();
   const [selectedDistrict, setSelectedDistrict] = useState();
   const [apiData, setApiData] = useState({})
   const [postData, setPostData] = useState()
-  const gameFns = {setApiData: setApiData, setSelectedDistrict: setSelectedDistrict, setSelectedVenue: setSelectedVenue}
+  const gameFns = {setSelectedTab: setSelectedTab, setApiData: setApiData, setSelectedDistrict: setSelectedDistrict, setSelectedVenue: setSelectedVenue}
 
   useEffect(() => {
     function  buildLocationEvents(data) {
@@ -239,10 +261,19 @@ export default function App() {
       <div id="map" className="col-lg-9">
         {loaded && <Map>{selectedVenue ? ( <VenuePopup selectedVenue={selectedVenue} /> ) : null} {<GeoJsonLayer data={geodata}/>}</Map>}
       </div>
-      <div className="col-lg-3">
-        {loaded && selectedVenue ? ( <VenueSidebarContent venue={selectedVenue}></VenueSidebarContent> ) : null}
-        {loaded && selectedDistrict ? ( <DistrictSidebarContent district={selectedDistrict}></DistrictSidebarContent> ) : null}
-        <a href="s#" className="btn btn-primary" onClick={function() { takeTurn(setApiData, postData) } }>Take turn</a>
+      <div id="sidebar" className="col-lg-3" style={{background: "blue", padding: "0"}}>
+        <div class="card text-center">
+          <div class="card-header">
+            <SidebarTabs selectedTab={selectedTab} />
+          </div>
+          <div class="card-body" style={{height: "80vh"}}>
+            {loaded && selectedVenue ? ( <VenueSidebarContent venue={selectedVenue}></VenueSidebarContent> ) : null}
+            {loaded && selectedDistrict ? ( <DistrictSidebarContent district={selectedDistrict}></DistrictSidebarContent> ) : null}
+          </div>
+          <div class="card-footer text-muted">
+            <a href="s#" className="btn btn-primary" onClick={function() { takeTurn(setApiData, postData) } }>Take turn</a>
+          </div>
+        </div>
       </div>
     </FnContext.Provider>
     </ApiDataContext.Provider>
