@@ -34,13 +34,28 @@ const GeoJsonLayer = ({data}) => {
   );
 };
 
+const tabMap = {
+  "♫": (<PeopleSidebarContent />),
+  "$": null,
+  "iCal": null
+}
+
 export function SidebarTabs({selectedTab}) {
   const gameFns = useContext(FnContext)
   const setSelectedTab = gameFns.setSelectedTab
+  const setSelectedVenue = gameFns.setSelectedVenue
+  const setSelectedDistrict = gameFns.setSelectedDistrict
 
-  let labels = ["♫", "$", "iCal"].map(label =>
+  let labels = ["♫", "$", "iCal"].map(label => 
       <li class="nav-item">
-        <a class="nav-link btn btn-secondary" href="#">{label}</a>
+        <a class="nav-link btn btn-secondary"
+            href="#"
+            onClick={e => {
+              e.preventDefault();
+              setSelectedTab(tabMap[label]);
+              setSelectedVenue(null);
+              setSelectedDistrict(null);
+            }}>{label}</a>
       </li>
     )
 
@@ -49,6 +64,36 @@ export function SidebarTabs({selectedTab}) {
     <ul class="nav">
       {labels}
     </ul>
+  )
+}
+
+export function PeopleSidebarContent() {
+  const apiData = useContext(ApiDataContext)
+  return (
+    <>
+    <div className="row">
+      <div className="col col-4 col-offset-6">
+        <img src="/pub.svg" />
+      </div>
+    </div>  
+    <div className="row">
+      <div className="col col-12">
+        <h5 className="card-title">People</h5>
+        <table className="table card-text">
+          <thead>
+            <th>Name</th>
+          </thead>
+          <tbody>
+          {apiData.people.map(person => (
+            <tr key={"person"+person.id}>
+              <th>{person.name}</th>
+            </tr>
+          ))}
+          </tbody>
+          </table>
+      </div>
+    </div>
+    </>
   )
 }
 
@@ -275,6 +320,7 @@ export default function App() {
           <div class="card-body" style={{height: "80vh"}}>
             {loaded && selectedVenue ? ( <VenueSidebarContent venue={selectedVenue}></VenueSidebarContent> ) : null}
             {loaded && selectedDistrict ? ( <DistrictSidebarContent district={selectedDistrict}></DistrictSidebarContent> ) : null}
+            {loaded && selectedTab ? selectedTab : null}
           </div>
           <div class="card-footer text-muted">
             <a href="s#" className="btn btn-primary" onClick={function() { takeTurn(setApiData, postData) } }>Take turn</a>
