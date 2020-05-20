@@ -42,9 +42,6 @@ const tabMap = {
 
 export function SidebarTabs({selectedTab}) {
   const gameFns = useContext(FnContext)
-  const setSelectedTab = gameFns.setSelectedTab
-  const setSelectedVenue = gameFns.setSelectedVenue
-  const setSelectedDistrict = gameFns.setSelectedDistrict
 
   let labels = ["♫", "$", "iCal"].map(label => 
       <li class="nav-item">
@@ -52,9 +49,8 @@ export function SidebarTabs({selectedTab}) {
             href="#"
             onClick={e => {
               e.preventDefault();
-              setSelectedTab(tabMap[label]);
-              setSelectedVenue(null);
-              setSelectedDistrict(null);
+              gameFns.nullSelections();
+              gameFns.setSelectedTab(tabMap[label]);
             }}>{label}</a>
       </li>
     )
@@ -67,8 +63,7 @@ export function SidebarTabs({selectedTab}) {
   )
 }
 
-export function PeopleSidebarContent() {
-  const apiData = useContext(ApiDataContext)
+export function PersonSidebarContent({person}) {
   return (
     <>
     <div className="row">
@@ -79,21 +74,58 @@ export function PeopleSidebarContent() {
     <div className="row">
       <div className="col col-12">
         <h5 className="card-title">People</h5>
-        <table className="table card-text">
-          <thead>
-            <th>Name</th>
-          </thead>
-          <tbody>
-          {apiData.people.map(person => (
-            <tr key={"person"+person.id}>
-              <th>{person.name}</th>
-            </tr>
-          ))}
-          </tbody>
+        <div className="card-text">
+          <table className="table">
+            <thead>
+              <th>Name</th>
+            </thead>
+            <tbody>
+              <tr key={"person"+person.id}>
+                <td>{person.name}</td>
+              </tr>
+            </tbody>
           </table>
+        </div>
       </div>
     </div>
     </>
+  )
+}
+
+export function PeopleSidebarContent() {
+  const apiData = useContext(ApiDataContext)
+  const gameFns = useContext(FnContext)
+  return (
+    <>
+    <div className="row">
+      <div className="col col-4 col-offset-6">
+        <img src="/pub.svg" />
+      </div>
+    </div>  
+    <div className="row">
+      <div className="col col-12">
+        <h5 className="card-title">People</h5>
+        <div className="card-text">
+          <table className="table">
+            <thead>
+              <th>Name</th>
+            </thead>
+            <tbody>
+            {apiData.people.map(person => (
+              <tr key={"person"+person.id}>
+                <td><a onClick={e => {
+                  e.preventDefault();
+                  gameFns.nullSelections();
+                  gameFns.setSelectedPerson(person);
+                }}>{person.name}</a></td>
+              </tr>
+            ))}
+            </tbody>
+          </table>
+        </div>  
+      </div>
+    </div>
+  </>
   )
 }
 
@@ -185,6 +217,8 @@ export function Map({children}) {
   const gameFns = useContext(FnContext)
   let setSelectedVenue = gameFns.setSelectedVenue;
   let setSelectedDistrict = gameFns.setSelectedDistrict;
+  let setSelectedPerson = gameFns.setSelectedPerson;
+  let setSelectedTab = gameFns.setSelectedTab;
   const [viewport, setViewport] = useState();
   const [markers, setMarkers] = useState(null);
 
@@ -208,8 +242,8 @@ export function Map({children}) {
               className="marker-btn"
               onClick={e => {
                 e.preventDefault();
+                gameFns.nullSelections();
                 setSelectedVenue(venue);
-                setSelectedDistrict(null);
               }}
             >
               <img src="/pub.svg" alt="Skate Venue Icon" />
@@ -224,7 +258,7 @@ export function Map({children}) {
   useEffect(() => {
     const listener = e => {
       if (e.key === "Escape") {
-        setSelectedVenue(null);
+        gameFns.nullSelections();
       }
     };
     window.addEventListener("keydown", listener);
@@ -249,8 +283,8 @@ export function Map({children}) {
                 e.preventDefault();
                 if (e.features.length > 0) {
                   console.log(e.features[0].properties["cmwd11nm"])
+                  gameFns.nullSelections();
                   setSelectedDistrict(e.features[0].properties["cmwd11nm"])
-                  setSelectedVenue(null);
 
                   // console.log("lngLat", e.lngLat)
                   //  Then use the name to look up from apiData.districts, where the population and crods info will be!
@@ -269,15 +303,31 @@ export default function App() {
       'fill-color': "#ff0000",
       'fill-opacity': 0.3
   }
+  
 
   const [loaded, setLoaded] = useState(false)
-  const [selectedTab, setSelectedTab] = useState("left")
+  const [selectedTab, setSelectedTab] = useState()
+  const [selectedPerson, setSelectedPerson] = useState()
   const [selectedVenue, setSelectedVenue] = useState();
   const [selectedDistrict, setSelectedDistrict] = useState();
   const [apiData, setApiData] = useState({})
   const [postData, setPostData] = useState()
-  const gameFns = {setSelectedTab: setSelectedTab, setApiData: setApiData, setSelectedDistrict: setSelectedDistrict, setSelectedVenue: setSelectedVenue}
 
+  function nullSelections() {
+    setSelectedTab(null);
+    setSelectedPerson(null);
+    setSelectedVenue(null);
+    setSelectedDistrict(null);
+  }
+
+  const gameFns = {
+    setSelectedPerson: setSelectedPerson,
+    setSelectedTab: setSelectedTab,
+    setSelectedDistrict: setSelectedDistrict,
+    setSelectedVenue: setSelectedVenue,
+    nullSelections: nullSelections
+  }
+  
   useEffect(() => {
     function  buildLocationEvents(data) {
       let key;
@@ -321,6 +371,7 @@ export default function App() {
             {loaded && selectedVenue ? ( <VenueSidebarContent venue={selectedVenue}></VenueSidebarContent> ) : null}
             {loaded && selectedDistrict ? ( <DistrictSidebarContent district={selectedDistrict}></DistrictSidebarContent> ) : null}
             {loaded && selectedTab ? selectedTab : null}
+            {loaded && selectedPerson ? (<PersonSidebarContent person={selectedPerson} />): null}
           </div>
           <div class="card-footer text-muted">
             <a href="s#" className="btn btn-primary" onClick={function() { takeTurn(setApiData, postData) } }>Take turn</a>
