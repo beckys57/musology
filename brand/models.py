@@ -32,7 +32,7 @@ class Band(BrandedModel):
   @property
   def total_influence(self):
     # influence as sum of band influence (later, could go up with awesome events)
-    sum([m.person.influence for m in self.musicians.all()]) # TODO: + self.influence can't find that field
+    return sum([m.person.influence for m in self.musicians.all()]) # TODO: + self.influence can't find that field
 
   def __str__(self):
     return self.name

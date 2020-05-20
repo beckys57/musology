@@ -9,6 +9,7 @@ from brand.models import Band, Brand
 from events.models import EventType
 from genres.models import Genre
 from locations.models import City, Location
+from people.models import Person
 
 @csrf_exempt
 def take_turn(request):
@@ -136,12 +137,14 @@ def index(request):
   brand_data = {b.id: b.display_attrs for b in Brand.objects.all()}
   location_data = [l.display_attrs for l in Location.objects.all()]
   band_data = [b.display_attrs for b in Band.load_all_with_influence()]
+  people_data = [p.display_attrs for p in Person.objects.all()]
   response_data = {
                 "genres": genre_data,
                 "locations": location_data,
                 "city": city_data,
                 "bands": band_data,
-                "brands": brand_data
+                "brands": brand_data,
+                "people": people_data
       }
 
   return JsonResponse(

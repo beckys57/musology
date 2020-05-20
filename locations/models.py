@@ -205,6 +205,10 @@ class Location(models.Model):
     return attrs
 
   @property
+  def total_influence(self):
+    return self.influence + sum([p.influence for p in Person.objects.filter(job__workplace=self)])
+
+  @property
   def staff_data(self):
     from people.models import Person
     staff = Person.objects.filter(job__workplace=self)

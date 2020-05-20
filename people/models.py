@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericRelation
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 class Crowd(models.Model):
   district = models.ForeignKey('locations.District', null=True, on_delete=models.CASCADE, related_name="crowds")
@@ -120,8 +121,13 @@ class Person(models.Model):
   job = models.ForeignKey(Job, null=True, blank=True, on_delete=models.SET_NULL, related_name="employees")
 
   name = models.CharField(max_length=60)
-  happiness = models.CharField(max_length=1, default="6")
+  stamina = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(9)])
+  charisma = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(9)])
+  musical_talent = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(9)])
+  tech_talent = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(9)])
+  happiness = models.CharField(max_length=1, default="6", choices=HAPPINESS_LEVELS)
   influence = models.PositiveSmallIntegerField(default=0)
+  
   created_at = models.DateTimeField(auto_now_add=True)
 
   class Meta:
@@ -130,3 +136,23 @@ class Person(models.Model):
 
   def __str__(self):
     return self.name
+
+  @property
+  def display_attrs(self):
+    job = {"title": self.job.role, "workplace": self.job.workplace.name if self.job.workplace else "", "brand_id": self.job.brand_id} if self.job else None
+    music_career = self.music_career.first()
+    if music_career:
+      job.update({"band_id": music_career.band_id, "band_name": music_career.band.name if music_career.band else None})
+
+    return {
+            "genre_id": self.genre.id,
+            "location": self.location,
+            "job": job,
+            "name": self.name,
+            "stamina": self.stamina,
+            "charisma": self.charisma,
+            "musical_talent": self.musical_talent,
+            "tech_talent": self.tech_talent,
+            "happiness": {"text": self.get_happiness_display(), "value": int(self.happiness)},
+            "influence": self.influence
+            }
