@@ -86,7 +86,7 @@ export function PersonSidebarContent({person}) {
 
   return (
     <>
-    <CardHeader title={person.name}  caption={person.happiness.text} img={img} />
+    <CardHeader title={person.name} caption={person.happiness.text} img={img} />
     <div className="row">
       <div className="col col-12">
         <div className="card-text">
@@ -178,16 +178,7 @@ export function PeopleSidebarContent() {
 export function DistrictSidebarContent({district}) {
   return (
     <>
-    <div className="row">
-      <div className="col col-4 col-offset-6">
-        <img src="/pub.svg" />
-      </div>
-    </div>  
-    <div className="row">
-      <div className="col col-12">
-        <h5 className="card-title">{district}</h5>
-      </div>
-    </div>
+    <CardHeader title={district} caption={null} img="/map.jpg" />
     </>
   )
 }
@@ -195,43 +186,41 @@ export function DistrictSidebarContent({district}) {
 export function VenueSidebarContent({venue}) {
   return (
 
-    <div className="card">
-      <img className="card-img-top" src="/pub.svg" />
-      <div className="card-body">
-        <h5 className="card-title">{venue.name}</h5>
-        <table key={"venue"+venue.id} className="table card-text">
-          <thead>
-            <th>Stats</th>
-          </thead>
-          <tbody>
-            {Object.keys(venue.stats).map((stat, i) =>
-              (
-          <tr key={"venue"+venue.id+stat}>
-            <th>{venue.stats[stat].label}</th>
-            <td>{venue.stats[stat].value}</td>
-          </tr>
-              ))
-            }
-          </tbody>
-        </table>
-        <table key={"events"+venue.id} className="table card-text">
-          <thead>
-            <th>Events</th>
-          </thead>
-          <tbody>
-          {venue.events.map(evt =>
+    <>
+      <CardHeader title={venue.name} caption={null} img={venue.type + ".svg"} />
+
+      <table key={"venue"+venue.id} className="table card-text">
+        <thead>
+          <th>Stats</th>
+        </thead>
+        <tbody>
+          {Object.keys(venue.stats).map((stat, i) =>
             (
-              <tr key={"venue"+venue.id+evt.slot}>
-          <th>{evt.slot}</th>
-          <td>{evt.kind}</td>
-          <td><button type="button" className="btn btn-primary">Edit</button></td>
-              </tr>
+        <tr key={"venue"+venue.id+stat}>
+          <th>{venue.stats[stat].label}</th>
+          <td>{venue.stats[stat].value}</td>
+        </tr>
             ))
           }
-          </tbody>
-        </table>
-      </div>
-    </div>
+        </tbody>
+      </table>
+      <table key={"events"+venue.id} className="table card-text">
+        <thead>
+          <th>Events</th>
+        </thead>
+        <tbody>
+        {venue.events.map(evt =>
+          (
+            <tr key={"venue"+venue.id+evt.slot}>
+        <th>{evt.slot}</th>
+        <td>{evt.kind}</td>
+        <td><button type="button" className="btn btn-primary">Edit</button></td>
+            </tr>
+          ))
+        }
+        </tbody>
+      </table>
+    </>
   )
 }
 
@@ -278,7 +267,15 @@ export function Map({children}) {
         zoom: 13,
       })
 
-    setMarkers(apiData.locations.map(venue => (
+    setMarkers(apiData.locations.map(function z(venue) {
+        console.log(venue.type, ["local pub", "music bar", "music school"].indexOf(venue.type))
+        let img = (
+          ["local pub", "music bar", "music school"].indexOf(venue.type) != -1 ?
+          "/" + venue.type + ".svg" :
+          "/pub.svg"
+        ) 
+
+        return(
           <Marker
             key={venue.id}
             latitude={parseFloat(venue.latitude)}
@@ -292,10 +289,11 @@ export function Map({children}) {
                 setSelectedVenue(venue);
               }}
             >
-              <img src="/pub.svg" alt="Skate Venue Icon" />
+              <img src={img} />
             </button>
           </Marker>
-        )))
+        )
+      }));
       console.log("data set")
     }
     setupMap();
