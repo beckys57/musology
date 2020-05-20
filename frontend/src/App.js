@@ -63,28 +63,79 @@ export function SidebarTabs({selectedTab}) {
   )
 }
 
+function CardHeader({title, caption, img}) {
+  return (
+      <div className="row">
+        <div className="col col-8">
+          <h2>{title}</h2>
+          {caption && <em>{caption}</em> }
+        </div>
+        <div className="col col-4">
+          <img className="card-img-top" src={img} />
+        </div>
+      </div> 
+    )
+}
+
 export function PersonSidebarContent({person}) {
+  let img = (
+      (person.job != null ) && (["bar staff", "musician", "person", "techie"].indexOf(person.job.title) != -1) ?
+      "/" + person.job.title + ".svg" :
+      "/person.svg"
+    ) 
+
   return (
     <>
-    <div className="row">
-      <div className="col col-4 col-offset-6">
-        <img src="/pub.svg" />
-      </div>
-    </div>  
+    <CardHeader title={person.name}  caption={person.happiness.text} img={img} />
     <div className="row">
       <div className="col col-12">
-        <h5 className="card-title">People</h5>
         <div className="card-text">
-          <table className="table">
+          <table key={"stats"+person.id} className="table">
             <thead>
-              <th>Name</th>
+              <th>Measures of Rad'ness</th>
             </thead>
             <tbody>
-              <tr key={"person"+person.id}>
-                <td>{person.name}</td>
+              <tr>
+                <td>Stamina</td>
+                <td>{person.stamina}</td>
+              </tr>              
+              <tr>
+                <td>Charisma</td>
+                <td>{person.charisma}</td>
+              </tr>              
+              <tr>
+                <td>Infuence</td>
+                <td>{person.influence}</td>
+              </tr>                        
+              <tr>
+                <td>Musical skillz</td>
+                <td>{person.musical_talent}</td>
+              </tr>                         
+              <tr>
+                <td>Tech wizardry</td>
+                <td>{person.tech_talent}</td>
               </tr>
             </tbody>
           </table>
+          {person.job && 
+            <table key={"job"+person.id} className="table">
+              <thead>
+                <th>Job</th>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Title</td>
+                  <td>{person.job.title}</td>
+                </tr>
+                {person.job.band_id &&
+                <tr>
+                  <td>Band</td>
+                  <td>{person.job.band_name}</td>
+                </tr>              
+                }           
+              </tbody>
+            </table>
+          }
         </div>
       </div>
     </div>
@@ -97,18 +148,13 @@ export function PeopleSidebarContent() {
   const gameFns = useContext(FnContext)
   return (
     <>
-    <div className="row">
-      <div className="col col-4 col-offset-6">
-        <img src="/pub.svg" />
-      </div>
-    </div>  
+    <CardHeader title="People" caption={null} img={"/pub.svg"} />
     <div className="row">
       <div className="col col-12">
-        <h5 className="card-title">People</h5>
         <div className="card-text">
           <table className="table">
             <thead>
-              <th>Name</th>
+              <tr><th>Name</th></tr>
             </thead>
             <tbody>
             {apiData.people.map(person => (
