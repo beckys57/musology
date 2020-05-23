@@ -35,7 +35,8 @@ const GeoJsonLayer = ({data}) => {
 };
 
 const tabMap = {
-  "♫": (<PeopleSidebarContent />),
+  "✆": (<PeopleSidebarContent />),
+  "♫": (<BandsSidebarContent />),
   "$": null,
   "iCal": null
 }
@@ -43,7 +44,7 @@ const tabMap = {
 export function SidebarTabs({selectedTab}) {
   const gameFns = useContext(FnContext)
 
-  let labels = ["♫", "$", "iCal"].map(label => 
+  let labels = ["✆", "♫", "$", "iCal"].map(label => 
       <li class="nav-item">
         <a class="nav-link btn btn-secondary"
             href="#"
@@ -56,7 +57,6 @@ export function SidebarTabs({selectedTab}) {
     )
 
   return (
-
     <ul class="nav">
       {labels}
     </ul>
@@ -77,13 +77,64 @@ function CardHeader({title, caption, img}) {
     )
 }
 
+function getBandMembers({band_id}) {
+  const apiData = useContext(ApiDataContext);
+  return apiData.people.filter(person => person.job && person.job.title === "musician" && person.band_id === band_id);
+}
+
+export function BandSidebarContent({band}) {
+  const apiData = useContext(ApiDataContext);
+  const gameFns = useContext(FnContext);
+  let genre = apiData.genres[band.genre_id.toString()];
+  let img = "/" + genre.name + ".svg";
+  let band_members = getBandMembers(band.id);
+
+  return (
+    <>
+    <CardHeader title={band.name} caption="" img={img} />
+    <div className="row">
+      <div className="col col-12">
+        <div className="card-text">
+          <table key={"stats"+band.id} className="table">
+            <thead>
+              <th>Rock credentials</th>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Influence</td>
+                <td>{band.influence}</td>
+              </tr>              
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <ListOfNamedObjects named_objects={band_members} selectorFn="setSelectedPerson" />
+    </>
+  )
+}
+
+export function BandsSidebarContent() {
+  const apiData = useContext(ApiDataContext)
+  const gameFns = useContext(FnContext)
+  return (
+    <>
+    <CardHeader title="Bands" caption={null} img={"/bands.svg"} />
+    <ListOfNamedObjects named_objects={apiData.bands} selectorFn="setSelectedBand" />
+    </>
+  )
+}
+
 export function PersonSidebarContent({person}) {
+  const apiData = useContext(ApiDataContext)
+  const gameFns = useContext(FnContext)
   let img = (
-      (person.job != null ) && (["bar staff", "musician", "person", "techie"].indexOf(person.job.title) != -1) ?
+      (person.job !== null ) && (["bar staff", "musician", "person", "techie"].indexOf(person.job.title) !== -1) ?
       "/" + person.job.title + ".svg" :
       "/person.svg"
     ) 
 
+  let band = (person.job.title === "musician" && person.job.band_id !== null ? apiData.bands.find(b => b.id == person.job.band_id) : null);
   return (
     <>
     <CardHeader title={person.name} caption={person.happiness.text} img={img} />
@@ -130,7 +181,13 @@ export function PersonSidebarContent({person}) {
                 {person.job.band_id &&
                 <tr>
                   <td>Band</td>
-                  <td>{person.job.band_name}</td>
+                  <td>
+                    <a onClick={e => {
+                      e.preventDefault();
+                      gameFns.nullSelections();
+                      gameFns.setSelectedBand(band);
+                    }}>{person.job.band_name}</a>
+                  </td>
                 </tr>              
                 }           
               </tbody>
@@ -143,35 +200,42 @@ export function PersonSidebarContent({person}) {
   )
 }
 
+function ListOfNamedObjects({named_objects, selectorFn}) {
+  const gameFns = useContext(FnContext)
+  return (
+      <div className="row">
+        <div className="col col-12">
+          <div className="card-text">
+            <table className="table">
+              <thead>
+                <tr><th>Name</th></tr>
+              </thead>
+              <tbody>
+              {named_objects.map(obj => (
+                <tr key={"obj"+obj.name}>
+                  <td><a onClick={e => {
+                    e.preventDefault();
+                    gameFns.nullSelections();
+                    gameFns[selectorFn](obj);
+                  }}>{obj.name}</a></td>
+                </tr>
+              ))}
+              </tbody>
+            </table>
+          </div>  
+        </div>
+      </div>
+    )
+}
+
 export function PeopleSidebarContent() {
   const apiData = useContext(ApiDataContext)
   const gameFns = useContext(FnContext)
   return (
     <>
     <CardHeader title="People" caption={null} img={"/pub.svg"} />
-    <div className="row">
-      <div className="col col-12">
-        <div className="card-text">
-          <table className="table">
-            <thead>
-              <tr><th>Name</th></tr>
-            </thead>
-            <tbody>
-            {apiData.people.map(person => (
-              <tr key={"person"+person.id}>
-                <td><a onClick={e => {
-                  e.preventDefault();
-                  gameFns.nullSelections();
-                  gameFns.setSelectedPerson(person);
-                }}>{person.name}</a></td>
-              </tr>
-            ))}
-            </tbody>
-          </table>
-        </div>  
-      </div>
-    </div>
-  </>
+    <ListOfNamedObjects named_objects={apiData.people} selectorFn="setSelectedPerson" />
+    </>
   )
 }
 
@@ -268,9 +332,8 @@ export function Map({children}) {
       })
 
     setMarkers(apiData.locations.map(function z(venue) {
-        console.log(venue.type, ["local pub", "music bar", "music school"].indexOf(venue.type))
         let img = (
-          ["local pub", "music bar", "music school"].indexOf(venue.type) != -1 ?
+          ["local pub", "music bar", "music school"].indexOf(venue.type) !== -1 ?
           "/" + venue.type + ".svg" :
           "/pub.svg"
         ) 
@@ -342,16 +405,15 @@ export function Map({children}) {
 }
 
 export default function App() {
-
   let polygonPaint = ReactMapGL.FillPaint = {
       'fill-color': "#ff0000",
       'fill-opacity': 0.3
   }
-  
 
   const [loaded, setLoaded] = useState(false)
   const [selectedTab, setSelectedTab] = useState()
   const [selectedPerson, setSelectedPerson] = useState()
+  const [selectedBand, setSelectedBand] = useState()
   const [selectedVenue, setSelectedVenue] = useState();
   const [selectedDistrict, setSelectedDistrict] = useState();
   const [apiData, setApiData] = useState({})
@@ -360,16 +422,18 @@ export default function App() {
   function nullSelections() {
     setSelectedTab(null);
     setSelectedPerson(null);
+    setSelectedBand(null);
     setSelectedVenue(null);
     setSelectedDistrict(null);
   }
 
   const gameFns = {
-    setSelectedPerson: setSelectedPerson,
-    setSelectedTab: setSelectedTab,
-    setSelectedDistrict: setSelectedDistrict,
-    setSelectedVenue: setSelectedVenue,
-    nullSelections: nullSelections
+    "setSelectedPerson": setSelectedPerson,
+    "setSelectedBand": setSelectedBand,
+    "setSelectedTab": setSelectedTab,
+    "setSelectedDistrict": setSelectedDistrict,
+    "setSelectedVenue": setSelectedVenue,
+    "nullSelections": nullSelections
   }
   
   useEffect(() => {
@@ -416,6 +480,7 @@ export default function App() {
             {loaded && selectedDistrict ? ( <DistrictSidebarContent district={selectedDistrict}></DistrictSidebarContent> ) : null}
             {loaded && selectedTab ? selectedTab : null}
             {loaded && selectedPerson ? (<PersonSidebarContent person={selectedPerson} />): null}
+            {loaded && selectedBand ? (<BandSidebarContent band={selectedBand} />): null}
           </div>
           <div class="card-footer text-muted">
             <a href="s#" className="btn btn-primary" onClick={function() { takeTurn(setApiData, postData) } }>Take turn</a>
