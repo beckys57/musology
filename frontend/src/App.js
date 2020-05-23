@@ -7,6 +7,41 @@ import { Pie } from "react-chartjs-2";
 
 const cl = console.log
 
+class TurnData {
+  constructor() {
+    this.slots = {1: [], 2: [], 3: [], 4: []}
+  }
+
+  newEvent() {
+    return {"venue_id": null,
+      "objects": [
+        {
+          "model": "",
+          "names": [],
+        }
+      ]
+    }
+  }
+
+  // isObjAvailable(slotNumber, model, objName) {
+  //   let busyObjects = 
+  //   this.slots[slotNumber].filter(slot => slot.objects.find(o => o.model === model))
+  // }
+
+  availableObjects(slotNumber, model, listToFilter) {
+    let busyObjs = this.slots[slotNumber.toString()].map(event => event.objects.filter(o => o.model === model).map(event => event.names)).flat().flat();
+    return listToFilter.filter(o => busyObjs.indexOf(o.name) === -1)
+  }
+
+  addEvent(id, event) {
+    this.slots[id].push(event)
+    console.log("Slots updated", this.slots)
+
+  }
+}
+
+const turnData = new TurnData();
+
 const GeoJsonLayer = ({data}) => {
   const apiData = useContext(ApiDataContext)
   let districtNames = apiData.city.districts.map(d => d.name);
@@ -92,6 +127,15 @@ export function CitySidebarContent() {
     <ListOfNamedObjects title="Brands" namedObjects={Object.values(apiData.brands)} selectorFn={null} />
     </>
   )
+}
+
+function getAvailableMusicians({slotNumber}) {
+  const apiData = useContext(ApiDataContext);
+  const gameFns = useContext(FnContext);
+  const musicians = apiData.people.filter(person => person.job && person.job.title === "musician");
+  let busyMusicians = [];//gameFns.slotData[slotNumber.toString()].objects.filter(o => o.model === "Musician")
+  let busyMusicianNames = [];//busyMusicians.map(m => m.names).flat();
+  return musicians.filter(m => busyMusicianNames.indexOf(m.name) === -1)
 }
 
 function getBandMembers({band_id}) {
@@ -297,9 +341,79 @@ export function DistrictSidebarContent({district}) {
   )
 }
 
-export function VenueSidebarContent({venue}) {
-  return (
+function SlotBar({venue, numOfSlots}) {
+  const gameFns = useContext(FnContext);
+  let labels = [...Array(numOfSlots+1).keys()].slice(1).map(function z(label) {
+      return (
+        <button 
+          onClick={e => {
+                    e.preventDefault();
+                    console.log("Clicked")
+                    gameFns.setSelectedEvent(label)
+                  }}
+          key={"slot"+label} type="button" class="btn btn-secondary">{label}</button>
+      )});
 
+  return (
+    <div class="btn-group" role="group" aria-label="Basic example" style={{width: "100%"}}>{labels}</div>
+  )
+}
+
+function DropDown({options}) {
+  return (
+      <select id={options[0]} class="dropdown">
+          {options.map(o => (
+            <option key={o} >{o}</option>
+          ))}
+      </select>
+    )
+}
+
+function EventPlannerForm({slotNumber, venue, eventTemplate}) {
+  const apiData = useContext(ApiDataContext)
+  let fields;
+  if (eventTemplate === null) {
+    fields = <DropDown options={venue.event_options.map(e => e.type)} />
+  } else {
+    // let availableMusicianNames = getAvailableMusicians({slotNumber: slotNumber}).map(m => m.name);
+    let availableMusicians = turnData.availableObjects(slotNumber, "Musician", apiData.people.filter(person => person.job && person.job.title === "musician"));
+    let availableMusicianNames = availableMusicians.map(m => m.name);
+    console.log('Avail', availableMusicianNames)
+    fields = <>
+          <div>Book a {eventTemplate.type}</div>
+          {eventTemplate.requirements.objects.map(function z(r) {
+            if (r.model !== "Location") {
+              return (
+                <>
+                <p>{r.model}</p>
+                <DropDown options={availableMusicianNames} />
+                <button className="btn btn-primary" onClick={e => {
+                    e.preventDefault();
+                    let event = turnData.newEvent()
+                    event.venue_id = venue.id
+                    event.objects.push({
+                       "model": "Musician",
+                       "names": [document.getElementById(availableMusicianNames[0]).value],
+                     })
+                    turnData.addEvent(slotNumber, event);
+                  }
+                }>Book</button>
+                </>
+                )
+            }
+            return null
+          })}
+          </>
+  }
+  return (
+      <form>
+        {fields}
+      </form>
+    )
+}
+
+export function VenueSidebarContent({venue, selectedEvent}) {
+  return (
     <>
       <CardHeader title={venue.name} caption={null} img={venue.type + ".svg"} />
 
@@ -310,30 +424,22 @@ export function VenueSidebarContent({venue}) {
         <tbody>
           {Object.keys(venue.stats).map((stat, i) =>
             (
-        <tr key={"venue"+venue.id+stat}>
-          <th>{venue.stats[stat].label}</th>
-          <td>{venue.stats[stat].value}</td>
-        </tr>
+              <tr key={"venue"+venue.id+stat}>
+                <th>{venue.stats[stat].label}</th>
+                <td>{venue.stats[stat].value}</td>
+              </tr>
             ))
           }
         </tbody>
       </table>
-      <table key={"events"+venue.id} className="table card-text">
-        <thead>
-          <th>Events</th>
-        </thead>
-        <tbody>
-        {venue.events.map(evt =>
-          (
-            <tr key={"venue"+venue.id+evt.slot}>
-        <th>{evt.slot}</th>
-        <td>{evt.kind}</td>
-        <td><button type="button" className="btn btn-primary">Edit</button></td>
-            </tr>
-          ))
-        }
-        </tbody>
-      </table>
+      <h5>Events</h5>
+
+      {selectedEvent
+        ?
+        <EventPlannerForm slotNumber="1" venue={venue} eventTemplate={venue.event_options.length === 1 ? venue.event_options[0] : null} />
+        :
+        <SlotBar venue={venue} numOfSlots={venue.slots_available}/>
+      }
     </>
   )
 }
@@ -467,21 +573,23 @@ export default function App() {
       'fill-opacity': 0.3
   }
 
-  const [loaded, setLoaded] = useState(false)
-  const [selectedTab, setSelectedTab] = useState()
-  const [selectedCity, setSelectedCity] = useState(true)
-  const [selectedPerson, setSelectedPerson] = useState()
-  const [selectedBand, setSelectedBand] = useState()
+  const [loaded, setLoaded] = useState(false);
+  const [selectedTab, setSelectedTab] = useState();
+  const [selectedCity, setSelectedCity] = useState(true);
+  const [selectedPerson, setSelectedPerson] = useState();
+  const [selectedBand, setSelectedBand] = useState();
+  const [selectedEvent, setSelectedEvent] = useState();
   const [selectedVenue, setSelectedVenue] = useState();
   const [hoveredVenue, setHoveredVenue] = useState();
   const [selectedDistrict, setSelectedDistrict] = useState();
-  const [apiData, setApiData] = useState({})
-  const [postData, setPostData] = useState()
+  const [apiData, setApiData] = useState({});
+  const [postData, setPostData] = useState({});
 
   function selectSomething({selectFn, selectVal}) {
     setSelectedTab(null);
     setSelectedPerson(null);
     setSelectedBand(null);
+    setSelectedEvent(null);
     setSelectedVenue(null);
     setSelectedDistrict(null);
     setSelectedCity(false);
@@ -491,12 +599,13 @@ export default function App() {
   const gameFns = {
     "setSelectedPerson": setSelectedPerson,
     "setSelectedBand": setSelectedBand,
+    "setSelectedEvent": setSelectedEvent,
     "setSelectedTab": setSelectedTab,
     "setSelectedCity": setSelectedCity,
     "setSelectedDistrict": setSelectedDistrict,
     "setSelectedVenue": setSelectedVenue,
     "setHoveredVenue": setHoveredVenue,
-    "selectSomething": selectSomething
+    "selectSomething": selectSomething,
   }
   
   useEffect(() => {
@@ -569,7 +678,7 @@ export default function App() {
           </div>
           <div className="card-body overflow-auto" style={{height: "80vh"}}>
             {loaded && selectedCity ? <CitySidebarContent /> : null}
-            {loaded && selectedVenue ? ( <VenueSidebarContent venue={selectedVenue}></VenueSidebarContent> ) : null}
+            {loaded && selectedVenue ? ( <VenueSidebarContent venue={selectedVenue} selectedEvent={selectedEvent}></VenueSidebarContent> ) : null}
             {loaded && selectedDistrict ? ( <DistrictSidebarContent district={selectedDistrict}></DistrictSidebarContent> ) : null}
             {loaded && selectedTab ? selectedTab : null}
             {loaded && selectedPerson ? (<PersonSidebarContent person={selectedPerson} />): null}
