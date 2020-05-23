@@ -9,28 +9,52 @@ const cl = console.log
 
 class TurnData {
   constructor() {
-    this.slots = {1: [], 2: [], 3: [], 4: []}
+    this.slots = {"1": [], "2": [], "3": [], "4": []}
+    this.locationPostData = []
   }
 
   newEvent() {
-    return {"venue_id": null,
-      "objects": [
-        {
-          "model": "",
-          "names": [],
+    return {
+          "venue_id": null,
+          "kind": "",
+          "band_ids": [],
+          "promoter_ids": [],
+          "people_ids": [],
+          "musician_ids": [],
         }
-      ]
-    }
+  }
+
+  get slotData() {
+    return this.slots
+  }
+
+  set resetSlots(s) {
+    this.slots = s;
+    console.log("Reset", this.slots)
+  }
+
+  get locations() {
+    return this.locationPostData
+  }
+
+  set locations(postData) {
+    this.locationPostData = postData;
   }
 
   // isObjAvailable(slotNumber, model, objName) {
-  //   let busyObjects = 
+  //   let busyObjectNames = 
   //   this.slots[slotNumber].filter(slot => slot.objects.find(o => o.model === model))
   // }
 
-  availableObjects(slotNumber, model, listToFilter) {
-    let busyObjs = this.slots[slotNumber.toString()].map(event => event.objects.filter(o => o.model === model).map(event => event.names)).flat().flat();
-    return listToFilter.filter(o => busyObjs.indexOf(o.name) === -1)
+  busyObjectIds(slotNumber, model) {
+    console.log('Busying', this.slots[slotNumber.toString()].map(event => event.objects.filter(o => o.model === model).map(m => m.ids)).flat())
+    return this.slots[slotNumber.toString()].map(event => event.objects.filter(o => o.model === model).map(m => m.ids)).flat(2);
+  }
+
+  getAvailable(slotNumber, model, listToFilter) {
+    let busyObjs = turnData.busyObjectIds(slotNumber, model)
+    console.log("busyObjs", busyObjs)
+    return listToFilter.filter(o => busyObjs.indexOf(o.id) === -1)
   }
 
   addEvent(id, event) {
@@ -133,8 +157,8 @@ function getAvailableMusicians({slotNumber}) {
   const apiData = useContext(ApiDataContext);
   const gameFns = useContext(FnContext);
   const musicians = apiData.people.filter(person => person.job && person.job.title === "musician");
-  let busyMusicians = [];//gameFns.slotData[slotNumber.toString()].objects.filter(o => o.model === "Musician")
-  let busyMusicianNames = [];//busyMusicians.map(m => m.names).flat();
+  let busyMusicianIds = [];//gameFns.slotData[slotNumber.toString()].objects.filter(o => o.model === "Musician")
+  let busyMusicianNames = [];//busyMusicianIds.map(m => m.ids).flat();
   return musicians.filter(m => busyMusicianNames.indexOf(m.name) === -1)
 }
 
@@ -359,50 +383,74 @@ function SlotBar({venue, numOfSlots}) {
   )
 }
 
-function DropDown({options}) {
+function DropDown({modelName, options, disabledIds}) {
+  let fieldOptions = options.map(function z(o) { 
+      let option;
+      if (disabledIds.indexOf(o.id.toString()) !== -1) {
+        option = <option key={o.id} value={o.id} disabled>{o.name}</option>
+      } else {
+        option = <option key={o.id} value={o.id}>{o.name}</option>
+      }
+      return (
+        <>
+        {option}
+        </>
+      )
+  })
+
   return (
-      <select id={options[0]} class="dropdown">
-          {options.map(o => (
-            <option key={o} >{o}</option>
-          ))}
+      <select className={"dropdown "+modelName+"Field"}>
+        {fieldOptions}
       </select>
     )
 }
 
 function EventPlannerForm({slotNumber, venue, eventTemplate}) {
   const apiData = useContext(ApiDataContext)
+  const gameFns = useContext(FnContext)
   let fields;
   if (eventTemplate === null) {
-    fields = <DropDown options={venue.event_options.map(e => e.type)} />
+    fields = <DropDown modelName="generic" options={venue.event_options.map(e => e.type)} disabledIds={[]} />
   } else {
-    // let availableMusicianNames = getAvailableMusicians({slotNumber: slotNumber}).map(m => m.name);
-    let availableMusicians = turnData.availableObjects(slotNumber, "Musician", apiData.people.filter(person => person.job && person.job.title === "musician"));
-    let availableMusicianNames = availableMusicians.map(m => m.name);
-    console.log('Avail', availableMusicianNames)
+    let musicians = apiData.people.filter(person => person.job && person.job.title === "musician");
+    let busyMusicianIds = turnData.busyObjectIds(slotNumber, "Musician");
+    console.log("busyMusicianIds",busyMusicianIds)
+    console.log("musicians",musicians)
     fields = <>
           <div>Book a {eventTemplate.type}</div>
-          {eventTemplate.requirements.objects.map(function z(r) {
-            if (r.model !== "Location") {
-              return (
-                <>
-                <p>{r.model}</p>
-                <DropDown options={availableMusicianNames} />
-                <button className="btn btn-primary" onClick={e => {
-                    e.preventDefault();
-                    let event = turnData.newEvent()
-                    event.venue_id = venue.id
-                    event.objects.push({
+          {eventTemplate.requirements.objects.map(r => (
+              <>
+              <p>{r.model}</p>
+              <DropDown modelName="musician" options={musicians} disabledIds={busyMusicianIds} />
+              </>
+          ))}
+          <button className="btn btn-primary" onClick={e => {
+              e.preventDefault();
+              gameFns.selectSomething({selectFn: gameFns.setSelectedVenue, selectVal: venue})
+              let event = {
+                venue_id: venue.id,
+                kind: eventTemplate.type,
+                objects: [
+                    {
                        "model": "Musician",
-                       "names": [document.getElementById(availableMusicianNames[0]).value],
-                     })
-                    turnData.addEvent(slotNumber, event);
-                  }
-                }>Book</button>
-                </>
-                )
+                       "ids": Array.from(document.getElementsByClassName("musicianField")).map(m => m.value),
+                    }
+                  ],
+                "band_ids": [],
+                "promoter_ids": [],
+                "people_ids": [],
+                "musician_ids": [],
+              }
+
+              eventTemplate.requirements.objects.forEach(function x(r) {
+                let eventKey = r.model.toLowerCase() + "_ids";
+                event[eventKey].push(Array.from(document.getElementsByClassName(r.model.toLowerCase()+"Field")).map(m => m.value))
+                return
+              })
+
+              turnData.addEvent(slotNumber, event);
             }
-            return null
-          })}
+          }>Book</button>
           </>
   }
   return (
@@ -583,7 +631,6 @@ export default function App() {
   const [hoveredVenue, setHoveredVenue] = useState();
   const [selectedDistrict, setSelectedDistrict] = useState();
   const [apiData, setApiData] = useState({});
-  const [postData, setPostData] = useState({});
 
   function selectSomething({selectFn, selectVal}) {
     setSelectedTab(null);
@@ -606,6 +653,21 @@ export default function App() {
     "setSelectedVenue": setSelectedVenue,
     "setHoveredVenue": setHoveredVenue,
     "selectSomething": selectSomething,
+  }
+
+  function buildLocationEvents(data) {
+    let key;
+    let events = {"locations": []};
+
+    for (let i=0; i<data.locations.length; i++) {
+      let e = {
+        "id": data.locations[i].id, 
+        "updates": {}
+      }
+      console.log("Adding ", data.locations[i].name, " events")
+      events.locations.push(e)
+    };
+    return events
   }
   
   useEffect(() => {
@@ -637,31 +699,17 @@ export default function App() {
     // }
 
 
-    function  buildLocationEvents(data) {
-      let key;
-      let events = {"locations": []}
-
-      for (let i=0; i<data.locations.length; i++) {
-        let e = {
-          "id": data.locations[i].id, 
-          "events": data.locations[i].events,
-          "updates": {}
-        }
-        console.log("Adding ", data.locations[i].name, " events")
-        events.locations.push(e)
-      };
-      return events
-    }
+  
 
     async function getData() {
-      let res = await axios.get('http://localhost:8000')
-      let data = res.data
-      setApiData(data)
-      console.log("data", data)
-      setLoaded(true)
-      setPostData(buildLocationEvents(data))
+      let res = await axios.get('http://localhost:8000');
+      let data = res.data;
+      setApiData(data);
+      console.log("data", data);
+      setLoaded(true);
+      turnData.locations = buildLocationEvents(data);
     }
-    getData()
+    getData();
   }, []);
 
   return (
@@ -685,7 +733,7 @@ export default function App() {
             {loaded && selectedBand ? (<BandSidebarContent band={selectedBand} />): null}
           </div>
           <div className="card-footer text-muted">
-            <a href="s#" className="btn btn-primary" onClick={function() { takeTurn(setApiData, postData) } }>Take turn</a>
+            <a href="s#" className="btn btn-primary" onClick={function() { takeTurn(setApiData, buildLocationEvents) } }>Take turn</a>
           </div>
         </div>
       </div>
@@ -695,9 +743,12 @@ export default function App() {
   )
 }
 
-async function takeTurn(setApiData, postData) {
+async function takeTurn(setApiData, buildLocationEvents) {
+  let postData = {...turnData.locationPostData, ...{events: turnData.slots}};
   console.log('Taking turn...', postData)
   let resp = await axios.post('http://localhost:8000/take_turn/', postData)
   console.log('Turn taken', resp.data)
   setApiData(resp.data)
+  turnData.resetSlots = {"1": [], "2": [], "3": [], "4": []};
+  buildLocationEvents(resp.data)
 }

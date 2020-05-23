@@ -147,6 +147,7 @@ class Person(models.Model):
     return {
             "genre_id": self.genre.id,
             "location": self.location,
+            "id": self.id,
             "job": job,
             "name": self.name,
             "stamina": self.stamina,

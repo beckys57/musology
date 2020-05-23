@@ -7,19 +7,22 @@ class MusicLesson(object):
   requirements = {
       "objects": [
         {"model": 'Musician', "min": 1, "max": 1},
-        {"model": 'Location', "min": 1, "max": 1},
+        # {"model": 'Location', "min": 1, "max": 1},
       ],
       "staff": []
       }
 
   def calculate_outcome(params):
+    from people.models import Person
+    print("Taking a music lesson", params)
+    # Person.objects.filter(music_career__in=[int(i[0]) for i in list(params.get('musician_ids'))]).update(**{"musical_talent": 10})
     return
 
 class Gig(object):
   requirements = {
       "objects": [
         {"model": 'Band', "min": 1, "max": 5},
-        {"model": 'Location', "min": 1, "max": 1},
+        # {"model": 'Location', "min": 1, "max": 1},
       ],
       "staff": [
          {"role": "promoter", "min": 0, "max": 1},

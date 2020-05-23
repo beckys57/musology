@@ -92,6 +92,21 @@ def take_turn(request):
     ]
   }
 
+
+    # this.slots = {1: [], 2: [], 3: [], 4: []}
+    #       {
+    #         "venue_id": 1,
+    #         "kind": "music lesson",
+    #         "band_ids": [],
+    #         "promoter_ids": [],
+    #         "people_ids": [],
+    #         "musician_ids": [],
+    #       }
+
+
+
+
+
   # Venue attributes - name, location, slots
   """
   # location is a dict with id, events, updates
@@ -107,23 +122,22 @@ def take_turn(request):
         updates: {name: "New name"}
       }
   """
-  locations = data.get('locations')
-
-  for location in locations:
+  for location in data.get('locations'):
     # Run all updates
+    print("location",location["id"])
     l = Location.objects.filter(id=location["id"])
     l.update(**location.get("updates", {}))
     # Sort and group events so they can be logically run. Should this be location at a time or all events? Maybe re-structure if find a reason to
-    for event in location.get('events', []):
-      # Pass off to EventType to get the controller
-      print("event", event["kind"])
+ 
+  for slot, events in data.get('events', []).items():
+    # Pass off to EventType to get the controller
+    for event in events:
+      print("event", event)
       if event["kind"]:
-        event["location"] = l.first()
+        event["location"] = Location.objects.get(id=event["venue_id"])
         event_controller = EventType.objects.get(name=event["kind"]).calculate_outcome(event)
 
   return HttpResponseRedirect('/')
-
-
 
   
 def index(request):
