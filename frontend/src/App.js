@@ -10,7 +10,6 @@ const cl = console.log
 const GeoJsonLayer = ({data}) => {
   const apiData = useContext(ApiDataContext)
   let districtNames = apiData.city.districts.map(d => d.name);
-  cl("districtNames", districtNames)
   const fillLayer = {
   id: "fill",
     type: "fill",
@@ -56,8 +55,7 @@ export function SidebarTabs({selectedTab}) {
             href="#"
             onClick={e => {
               e.preventDefault();
-              gameFns.nullSelections();
-              gameFns.setSelectedTab(tabMap[label]);
+              gameFns.selectSomething({selectFn: gameFns.setSelectedTab, selectVal: tabMap[label]});
             }}>{label}</a>
       </li>
     )
@@ -81,6 +79,17 @@ function CardHeader({title, caption, img}) {
         </div>
       </div> 
     )
+}
+
+export function CitySidebarContent() {
+  const apiData = useContext(ApiDataContext)
+  const gameFns = useContext(FnContext)
+  return (
+    <>
+    <CardHeader title={apiData.city.name} caption={"Population " + apiData.city.population} img={"/band.svg"} />
+    <ListOfNamedObjects named_objects={apiData.city.districts} selectorFn="setSelectedDistrict" />
+    </>
+  )
 }
 
 function getBandMembers({band_id}) {
@@ -190,8 +199,7 @@ export function PersonSidebarContent({person}) {
                   <td>
                     <a onClick={e => {
                       e.preventDefault();
-                      gameFns.nullSelections();
-                      gameFns.setSelectedBand(band);
+                      gameFns.selectSomething({selectFn: gameFns.setSelectedBand, selectVal: band});
                     }}>{person.job.band_name}</a>
                   </td>
                 </tr>              
@@ -221,8 +229,7 @@ function ListOfNamedObjects({named_objects, selectorFn}) {
                 <tr key={"obj"+obj.name}>
                   <td><a onClick={e => {
                     e.preventDefault();
-                    gameFns.nullSelections();
-                    gameFns[selectorFn](obj);
+                    gameFns.selectSomething({selectFn: gameFns[selectorFn], selectVal: obj});
                   }}>{obj.name}</a></td>
                 </tr>
               ))}
@@ -245,11 +252,11 @@ export function PeopleSidebarContent() {
   )
 }
 
-function PieChart({percentages, colours}) {
+function PieChart({percentages, colours, labels}) {
 
   return (
     <Pie data={{
-              labels: ["Blues", "Jazz", "Classical"],
+              labels: labels,
               datasets: [{
                 data: percentages,
                 backgroundColor: colours, //["#F7464A", "#46BFBD", "#FDB45C", "#949FB1", "#4D5360"],
@@ -273,10 +280,12 @@ export function DistrictSidebarContent({district}) {
     return (crowd ? crowd.colour : "#EEEEEE")
   });
 
+  let labels = Object.values(apiData.genres).map(i => i.name)
+
   return (
     <>
     <CardHeader title={district.name} caption={null} img="/map.jpg" />
-    <PieChart percentages={percentages} colours={colours} />
+    <PieChart percentages={percentages} colours={colours} labels={labels} />
     </>
   )
 }
@@ -382,8 +391,7 @@ export function Map({children}) {
               className="marker-btn"
               onClick={e => {
                 e.preventDefault();
-                gameFns.nullSelections();
-                setSelectedVenue(venue);
+                gameFns.selectSomething({selectFn: setSelectedVenue, selectVal: venue});
               }}
             >
               <img src={img} />
@@ -399,7 +407,7 @@ export function Map({children}) {
   useEffect(() => {
     const listener = e => {
       if (e.key === "Escape") {
-        gameFns.nullSelections();
+        gameFns.selectSomething({selectFn: gameFns.setSelectedCity, selectVal: true});
       }
     };
     window.addEventListener("keydown", listener);
@@ -423,8 +431,8 @@ export function Map({children}) {
                 e.preventDefault();
                 if (e.features.length > 0) {
                   console.log(e.features[0].properties["cmwd11nm"])
-                  gameFns.nullSelections();
-                  setSelectedDistrict(apiData.city.districts.find(d => d.name == e.features[0].properties["cmwd11nm"]))
+                  gameFns.selectSomething({selectFn: setSelectedDistrict, selectVal: apiData.city.districts.find(d => d.name == e.features[0].properties["cmwd11nm"])});
+                  
 
                   // console.log("lngLat", e.lngLat)
                   //  Then use the name to look up from apiData.districts, where the population and crods info will be!
@@ -445,6 +453,7 @@ export default function App() {
 
   const [loaded, setLoaded] = useState(false)
   const [selectedTab, setSelectedTab] = useState()
+  const [selectedCity, setSelectedCity] = useState(true)
   const [selectedPerson, setSelectedPerson] = useState()
   const [selectedBand, setSelectedBand] = useState()
   const [selectedVenue, setSelectedVenue] = useState();
@@ -452,21 +461,25 @@ export default function App() {
   const [apiData, setApiData] = useState({})
   const [postData, setPostData] = useState()
 
-  function nullSelections() {
+  function selectSomething({selectFn, selectVal}) {
     setSelectedTab(null);
     setSelectedPerson(null);
     setSelectedBand(null);
     setSelectedVenue(null);
     setSelectedDistrict(null);
+    setSelectedCity(false);
+    console.log("Selectfn", selectFn)
+    selectFn(selectVal)
   }
 
   const gameFns = {
     "setSelectedPerson": setSelectedPerson,
     "setSelectedBand": setSelectedBand,
     "setSelectedTab": setSelectedTab,
+    "setSelectedCity": setSelectedCity,
     "setSelectedDistrict": setSelectedDistrict,
     "setSelectedVenue": setSelectedVenue,
-    "nullSelections": nullSelections
+    "selectSomething": selectSomething
   }
   
   useEffect(() => {
@@ -509,6 +522,7 @@ export default function App() {
             <SidebarTabs selectedTab={selectedTab} />
           </div>
           <div className="card-body overflow-auto" style={{height: "80vh"}}>
+            {loaded && selectedCity ? <CitySidebarContent /> : null}
             {loaded && selectedVenue ? ( <VenueSidebarContent venue={selectedVenue}></VenueSidebarContent> ) : null}
             {loaded && selectedDistrict ? ( <DistrictSidebarContent district={selectedDistrict}></DistrictSidebarContent> ) : null}
             {loaded && selectedTab ? selectedTab : null}

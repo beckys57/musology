@@ -20,11 +20,13 @@ class City(models.Model):
   
   def build_display_attrs():
     city = City.objects.first()
+    districts = city.districts.all()
     return {
       "name": city.name,
       "latitude": city.latitude,
       "longitude": city.longitude,
-      "districts": [d.display_attrs for d in city.districts.all()]
+      "population": sum([d.population for d in districts]),
+      "districts": [d.display_attrs for d in districts]
     }
 
 class District(models.Model):
