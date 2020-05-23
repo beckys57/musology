@@ -15,7 +15,12 @@ class MusicLesson(object):
   def calculate_outcome(params):
     from people.models import Person
     print("Taking a music lesson", params)
-    # Person.objects.filter(music_career__in=[int(i[0]) for i in list(params.get('musician_ids'))]).update(**{"musical_talent": 10})
+    # {'venue_id': 3, 'kind': 'music lesson', 'objects': [{'model': 'Musician', 'ids': ['18']}], 'band_ids': [], 'promoter_ids': [], 'people_ids': [], 'musician_ids': [['18']], 'location': <Location: Widow Twankey's Honk & Tonk School (music school)>}
+    person = Person.objects.get(id=int(params.get('musician_ids')[0][0]))
+    print("before", person.musical_talent)
+    person.musical_talent = person.musical_talent + 1
+    print("after", person.musical_talent)
+    person.save()
     return
 
 class Gig(object):

@@ -47,7 +47,7 @@ class TurnData {
   // }
 
   busyObjectIds(slotNumber, model) {
-    console.log('Busying', this.slots[slotNumber.toString()].map(event => event.objects.filter(o => o.model === model).map(m => m.ids)).flat())
+    console.log('Busying', this.slots[slotNumber.toString()].map(event => event.objects))
     return this.slots[slotNumber.toString()].map(event => event.objects.filter(o => o.model === model).map(m => m.ids)).flat(2);
   }
 
@@ -153,14 +153,14 @@ export function CitySidebarContent() {
   )
 }
 
-function getAvailableMusicians({slotNumber}) {
-  const apiData = useContext(ApiDataContext);
-  const gameFns = useContext(FnContext);
-  const musicians = apiData.people.filter(person => person.job && person.job.title === "musician");
-  let busyMusicianIds = [];//gameFns.slotData[slotNumber.toString()].objects.filter(o => o.model === "Musician")
-  let busyMusicianNames = [];//busyMusicianIds.map(m => m.ids).flat();
-  return musicians.filter(m => busyMusicianNames.indexOf(m.name) === -1)
-}
+// function getAvailableMusicians({slotNumber}) {
+//   const apiData = useContext(ApiDataContext);
+//   const gameFns = useContext(FnContext);
+//   const musicians = apiData.people.filter(person => person.job && person.job.title === "musician");
+//   let busyMusicianIds = [];//gameFns.slotData[slotNumber.toString()].objects.filter(o => o.model === "Musician")
+//   let busyMusicianNames = [];//busyMusicianIds.map(m => m.ids).flat();
+//   return musicians.filter(m => busyMusicianNames.indexOf(m.name) === -1)
+// }
 
 function getBandMembers({band_id}) {
   const apiData = useContext(ApiDataContext);
@@ -383,10 +383,10 @@ function SlotBar({venue, numOfSlots}) {
   )
 }
 
-function DropDown({modelName, options, disabledIds}) {
-  let fieldOptions = options.map(function z(o) { 
+function DropDown({modelName, options}) {
+  let fieldOptions = options.all.map(function z(o) { 
       let option;
-      if (disabledIds.indexOf(o.id.toString()) !== -1) {
+      if (options.disabledIds.indexOf(o.id.toString()) !== -1) {
         option = <option key={o.id} value={o.id} disabled>{o.name}</option>
       } else {
         option = <option key={o.id} value={o.id}>{o.name}</option>
@@ -399,7 +399,7 @@ function DropDown({modelName, options, disabledIds}) {
   })
 
   return (
-      <select className={"dropdown "+modelName+"Field"}>
+      <select className={"dropdown "+modelName.toLowerCase()+"Field"}>
         {fieldOptions}
       </select>
     )
@@ -410,18 +410,23 @@ function EventPlannerForm({slotNumber, venue, eventTemplate}) {
   const gameFns = useContext(FnContext)
   let fields;
   if (eventTemplate === null) {
-    fields = <DropDown modelName="generic" options={venue.event_options.map(e => e.type)} disabledIds={[]} />
+    fields = <DropDown modelName="generic" options={{all: venue.event_options.map(e => e.type), disabledIds: [] }} />
   } else {
-    let musicians = apiData.people.filter(person => person.job && person.job.title === "musician");
-    let busyMusicianIds = turnData.busyObjectIds(slotNumber, "Musician");
-    console.log("busyMusicianIds",busyMusicianIds)
-    console.log("musicians",musicians)
+    // let musicians = apiData.people.filter(person => person.job && person.job.title === "musician");
+    // let busyMusicianIds = turnData.busyObjectIds(slotNumber, "Musician");
+    // console.log("busyMusicianIds",busyMusicianIds)
+    // console.log("model",r.model)
+    let options = {
+      "musician": {all: apiData.people.filter(person => person.job && person.job.title === "musician"), disabledIds: turnData.busyObjectIds(slotNumber, "Musician")},
+      "band": {all: apiData.bands, disabledIds: turnData.busyObjectIds(slotNumber, "Band")},
+    }
+    console.log("Options",options)
     fields = <>
           <div>Book a {eventTemplate.type}</div>
           {eventTemplate.requirements.objects.map(r => (
               <>
               <p>{r.model}</p>
-              <DropDown modelName="musician" options={musicians} disabledIds={busyMusicianIds} />
+              <DropDown modelName={r.model} options={options[r.model.toLowerCase()]} />
               </>
           ))}
           <button className="btn btn-primary" onClick={e => {
@@ -430,12 +435,7 @@ function EventPlannerForm({slotNumber, venue, eventTemplate}) {
               let event = {
                 venue_id: venue.id,
                 kind: eventTemplate.type,
-                objects: [
-                    {
-                       "model": "Musician",
-                       "ids": Array.from(document.getElementsByClassName("musicianField")).map(m => m.value),
-                    }
-                  ],
+                objects: [],
                 "band_ids": [],
                 "promoter_ids": [],
                 "people_ids": [],
@@ -444,9 +444,18 @@ function EventPlannerForm({slotNumber, venue, eventTemplate}) {
 
               eventTemplate.requirements.objects.forEach(function x(r) {
                 let eventKey = r.model.toLowerCase() + "_ids";
-                event[eventKey].push(Array.from(document.getElementsByClassName(r.model.toLowerCase()+"Field")).map(m => m.value))
+                let ids = Array.from(document.getElementsByClassName(r.model.toLowerCase()+"Field")).map(m => m.value);
+                console.log("Saving", eventKey, ids, r.model.toLowerCase()+"Field")
+                event[eventKey].push(ids)
+                event.objects.push(
+                    { 
+                         "model": r.model,
+                         "ids": ids,
+                      }
+                  )
                 return
               })
+              console.log("Eevent",event)
 
               turnData.addEvent(slotNumber, event);
             }
@@ -465,28 +474,29 @@ export function VenueSidebarContent({venue, selectedEvent}) {
     <>
       <CardHeader title={venue.name} caption={null} img={venue.type + ".svg"} />
 
-      <table key={"venue"+venue.id} className="table card-text">
-        <thead>
-          <th>Stats</th>
-        </thead>
-        <tbody>
-          {Object.keys(venue.stats).map((stat, i) =>
-            (
-              <tr key={"venue"+venue.id+stat}>
-                <th>{venue.stats[stat].label}</th>
-                <td>{venue.stats[stat].value}</td>
-              </tr>
-            ))
-          }
-        </tbody>
-      </table>
-      <h5>Events</h5>
-
       {selectedEvent
         ?
         <EventPlannerForm slotNumber="1" venue={venue} eventTemplate={venue.event_options.length === 1 ? venue.event_options[0] : null} />
         :
+        <>
+        <table key={"venue"+venue.id} className="table">
+          <thead>
+            <th>Stats</th>
+          </thead>
+          <tbody>
+            {Object.keys(venue.stats).map((stat, i) =>
+              (
+                <tr key={"venue"+venue.id+stat}>
+                  <th>{venue.stats[stat].label}</th>
+                  <td>{venue.stats[stat].value}</td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+        <h5>Events</h5>
         <SlotBar venue={venue} numOfSlots={venue.slots_available}/>
+        </>
       }
     </>
   )
