@@ -14,7 +14,7 @@ class Crowd(models.Model):
 
   @property
   def display_attrs(self):
-    return {"genre_id": self.genre.id, "proportion": self.proportion}
+    return {"genre_id": self.genre.id, "colour": self.genre.colour, "proportion": self.proportion}
 
 class Job(models.Model):
   JOB_ROLES = [(r, r) for r in [

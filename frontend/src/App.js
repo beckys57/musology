@@ -245,14 +245,15 @@ export function PeopleSidebarContent() {
   )
 }
 
-function PieChart({percentages}) {
+function PieChart({percentages, colours}) {
+
   return (
     <Pie data={{
               labels: ["Blues", "Jazz", "Classical"],
               datasets: [{
                 data: percentages,
-                backgroundColor: ["#F7464A", "#46BFBD", "#FDB45C", "#949FB1", "#4D5360"],
-                hoverBackgroundColor: ["#FF5A5E", "#5AD3D1", "#FFC870", "#A8B3C5", "#616774"]
+                backgroundColor: colours, //["#F7464A", "#46BFBD", "#FDB45C", "#949FB1", "#4D5360"],
+                hoverBackgroundColor: colours, //["#FF5A5E", "#5AD3D1", "#FFC870", "#A8B3C5", "#616774"]
               }]
         }} />
   )
@@ -267,10 +268,15 @@ export function DistrictSidebarContent({district}) {
     return (crowd ? crowd.proportion : 0)
   });
 
+  let colours = genre_ids.map(function(i) {
+    let crowd = district.crowds.find(c => c.genre_id == i+1)
+    return (crowd ? crowd.colour : "#EEEEEE")
+  });
+
   return (
     <>
     <CardHeader title={district.name} caption={null} img="/map.jpg" />
-    <PieChart percentages={percentages} />
+    <PieChart percentages={percentages} colours={colours} />
     </>
   )
 }
