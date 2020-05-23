@@ -3,8 +3,14 @@ import ReactMapGL, { Source, Layer, Marker, Popup } from "react-map-gl";
 import { ApiDataContext, FnContext } from './Contexts';
 import axios from "axios"
 import geodata from "./bristol.geojson";
+import { Pie } from "react-chartjs-2";
+
+const cl = console.log
 
 const GeoJsonLayer = ({data}) => {
+  const apiData = useContext(ApiDataContext)
+  let districtNames = apiData.city.districts.map(d => d.name);
+  cl("districtNames", districtNames)
   const fillLayer = {
   id: "fill",
     type: "fill",
@@ -12,7 +18,7 @@ const GeoJsonLayer = ({data}) => {
       "fill-color": '#007cbf',
       "fill-opacity": 0,
     },
-    filter: ['match', ['get', 'cmwd11nm'], ["Ashley", "Clifton", "Southville"], true, false]
+    filter: ['match', ['get', 'cmwd11nm'], districtNames, true, false]
   };
 
   const lineLayer = {
@@ -23,7 +29,7 @@ const GeoJsonLayer = ({data}) => {
       "line-opacity": 1,
       "line-width": 2,
     },
-    filter: ['match', ['get', 'cmwd11nm'], ["Ashley", "Clifton", "Southville"], true, false]
+    filter: ['match', ['get', 'cmwd11nm'], districtNames, true, false]
   };
 
   return (
@@ -45,8 +51,8 @@ export function SidebarTabs({selectedTab}) {
   const gameFns = useContext(FnContext)
 
   let labels = ["✆", "♫", "$", "iCal"].map(label => 
-      <li class="nav-item">
-        <a class="nav-link btn btn-secondary"
+      <li className="nav-item">
+        <a className="nav-link btn btn-secondary"
             href="#"
             onClick={e => {
               e.preventDefault();
@@ -57,7 +63,7 @@ export function SidebarTabs({selectedTab}) {
     )
 
   return (
-    <ul class="nav">
+    <ul className="nav">
       {labels}
     </ul>
   )
@@ -86,7 +92,7 @@ export function BandSidebarContent({band}) {
   const apiData = useContext(ApiDataContext);
   const gameFns = useContext(FnContext);
   let genre = apiData.genres[band.genre_id.toString()];
-  let img = "/" + genre.name + ".svg";
+  let img = "/" + genre.name.toLowerCase() + ".svg";
   let band_members = getBandMembers(band.id);
 
   return (
@@ -119,7 +125,7 @@ export function BandsSidebarContent() {
   const gameFns = useContext(FnContext)
   return (
     <>
-    <CardHeader title="Bands" caption={null} img={"/bands.svg"} />
+    <CardHeader title="Bands" caption={null} img={"/band.svg"} />
     <ListOfNamedObjects named_objects={apiData.bands} selectorFn="setSelectedBand" />
     </>
   )
@@ -239,10 +245,32 @@ export function PeopleSidebarContent() {
   )
 }
 
+function PieChart({percentages}) {
+  return (
+    <Pie data={{
+              labels: ["Blues", "Jazz", "Classical"],
+              datasets: [{
+                data: percentages,
+                backgroundColor: ["#F7464A", "#46BFBD", "#FDB45C", "#949FB1", "#4D5360"],
+                hoverBackgroundColor: ["#FF5A5E", "#5AD3D1", "#FFC870", "#A8B3C5", "#616774"]
+              }]
+        }} />
+  )
+}
+
 export function DistrictSidebarContent({district}) {
+  const apiData = useContext(ApiDataContext)
+  const genre_ids = [...Array(Object.keys(apiData.genres).length).keys()]
+
+  let percentages = genre_ids.map(function(i) {
+    let crowd = district.crowds.find(c => c.genre_id == i+1)
+    return (crowd ? crowd.proportion : 0)
+  });
+
   return (
     <>
-    <CardHeader title={district} caption={null} img="/map.jpg" />
+    <CardHeader title={district.name} caption={null} img="/map.jpg" />
+    <PieChart percentages={percentages} />
     </>
   )
 }
@@ -375,7 +403,6 @@ export function Map({children}) {
     };
   }, []);
 
-
   // NB: Commented the map out, as it was complaining about me not having API access to your Mapbox account.
   // Can just put this straight back in and remove the Take turn button above
  return (
@@ -391,7 +418,7 @@ export function Map({children}) {
                 if (e.features.length > 0) {
                   console.log(e.features[0].properties["cmwd11nm"])
                   gameFns.nullSelections();
-                  setSelectedDistrict(e.features[0].properties["cmwd11nm"])
+                  setSelectedDistrict(apiData.city.districts.find(d => d.name == e.features[0].properties["cmwd11nm"]))
 
                   // console.log("lngLat", e.lngLat)
                   //  Then use the name to look up from apiData.districts, where the population and crods info will be!
@@ -471,18 +498,18 @@ export default function App() {
         {loaded && <Map>{selectedVenue ? ( <VenuePopup selectedVenue={selectedVenue} /> ) : null} {<GeoJsonLayer data={geodata}/>}</Map>}
       </div>
       <div id="sidebar" className="col col-3">
-        <div class="card text-center">
-          <div class="card-header">
+        <div className="card text-center">
+          <div className="card-header">
             <SidebarTabs selectedTab={selectedTab} />
           </div>
-          <div class="card-body" style={{height: "80vh"}}>
+          <div className="card-body overflow-auto" style={{height: "80vh"}}>
             {loaded && selectedVenue ? ( <VenueSidebarContent venue={selectedVenue}></VenueSidebarContent> ) : null}
             {loaded && selectedDistrict ? ( <DistrictSidebarContent district={selectedDistrict}></DistrictSidebarContent> ) : null}
             {loaded && selectedTab ? selectedTab : null}
             {loaded && selectedPerson ? (<PersonSidebarContent person={selectedPerson} />): null}
             {loaded && selectedBand ? (<BandSidebarContent band={selectedBand} />): null}
           </div>
-          <div class="card-footer text-muted">
+          <div className="card-footer text-muted">
             <a href="s#" className="btn btn-primary" onClick={function() { takeTurn(setApiData, postData) } }>Take turn</a>
           </div>
         </div>
