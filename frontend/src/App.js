@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import ReactMapGL, { Source, Layer, Marker, Popup } from "react-map-gl";
-import { ApiDataContext, FnContext } from './Contexts';
+import { ApiDataContext, FnContext, StatsContext } from './Contexts';
 import axios from "axios"
 import geodata from "./bristol.geojson";
 import { Pie } from "react-chartjs-2";
@@ -84,10 +84,12 @@ function CardHeader({title, caption, img}) {
 export function CitySidebarContent() {
   const apiData = useContext(ApiDataContext)
   const gameFns = useContext(FnContext)
+  const stats = useContext(StatsContext)
   return (
     <>
     <CardHeader title={apiData.city.name} caption={"Population " + apiData.city.population} img={"/band.svg"} />
-    <ListOfNamedObjects named_objects={apiData.city.districts} selectorFn="setSelectedDistrict" />
+    <ListOfNamedObjects title="Districts" namedObjects={apiData.city.districts} selectorFn="setSelectedDistrict" />
+    <ListOfNamedObjects title="Brands" namedObjects={Object.values(apiData.brands)} selectorFn={null} />
     </>
   )
 }
@@ -124,7 +126,7 @@ export function BandSidebarContent({band}) {
         </div>
       </div>
     </div>
-    <ListOfNamedObjects named_objects={band_members} selectorFn="setSelectedPerson" />
+    <ListOfNamedObjects title="Members" namedObjects={band_members} selectorFn="setSelectedPerson" />
     </>
   )
 }
@@ -135,7 +137,7 @@ export function BandsSidebarContent() {
   return (
     <>
     <CardHeader title="Bands" caption={null} img={"/band.svg"} />
-    <ListOfNamedObjects named_objects={apiData.bands} selectorFn="setSelectedBand" />
+    <ListOfNamedObjects title={null} namedObjects={apiData.bands} selectorFn="setSelectedBand" />
     </>
   )
 }
@@ -214,7 +216,7 @@ export function PersonSidebarContent({person}) {
   )
 }
 
-function ListOfNamedObjects({named_objects, selectorFn}) {
+function ListOfNamedObjects({title, namedObjects, selectorFn}) {
   const gameFns = useContext(FnContext)
   return (
       <div className="row">
@@ -222,15 +224,20 @@ function ListOfNamedObjects({named_objects, selectorFn}) {
           <div className="card-text">
             <table className="table">
               <thead>
-                <tr><th>Name</th></tr>
+                {title && <tr><th>{title}</th></tr>}
               </thead>
               <tbody>
-              {named_objects.map(obj => (
+              {namedObjects.map(obj => (
                 <tr key={"obj"+obj.name}>
-                  <td><a onClick={e => {
-                    e.preventDefault();
-                    gameFns.selectSomething({selectFn: gameFns[selectorFn], selectVal: obj});
-                  }}>{obj.name}</a></td>
+                  <td>
+                    {selectorFn ?
+                      <a onClick={e => {
+                        e.preventDefault();
+                        gameFns.selectSomething({selectFn: gameFns[selectorFn], selectVal: obj});
+                      }}>{obj.name}</a>
+                      : obj.name
+                    }
+                  </td>
                 </tr>
               ))}
               </tbody>
@@ -247,7 +254,7 @@ export function PeopleSidebarContent() {
   return (
     <>
     <CardHeader title="People" caption={null} img={"/pub.svg"} />
-    <ListOfNamedObjects named_objects={apiData.people} selectorFn="setSelectedPerson" />
+    <ListOfNamedObjects title="People" namedObjects={apiData.people} selectorFn="setSelectedPerson" />
     </>
   )
 }
@@ -271,12 +278,12 @@ export function DistrictSidebarContent({district}) {
   const genre_ids = [...Array(Object.keys(apiData.genres).length).keys()]
 
   let percentages = genre_ids.map(function(i) {
-    let crowd = district.crowds.find(c => c.genre_id == i+1)
+    let crowd = district.crowds.find(c => c.genre_id === i+1)
     return (crowd ? crowd.proportion : 0)
   });
 
   let colours = genre_ids.map(function(i) {
-    let crowd = district.crowds.find(c => c.genre_id == i+1)
+    let crowd = district.crowds.find(c => c.genre_id === i+1)
     return (crowd ? crowd.colour : "#EEEEEE")
   });
 
@@ -391,7 +398,16 @@ export function Map({children}) {
               className="marker-btn"
               onClick={e => {
                 e.preventDefault();
+                gameFns.setHoveredVenue(null);
                 gameFns.selectSomething({selectFn: setSelectedVenue, selectVal: venue});
+              }}
+              onMouseEnter={e => {
+                e.preventDefault();
+                gameFns.setHoveredVenue(venue);
+              }}
+              onMouseLeave={e => {
+                e.preventDefault();
+                gameFns.setHoveredVenue(null);
               }}
             >
               <img src={img} />
@@ -429,13 +445,13 @@ export function Map({children}) {
      }}
      onClick={function(e) {
                 e.preventDefault();
+
                 if (e.features.length > 0) {
                   console.log(e.features[0].properties["cmwd11nm"])
                   gameFns.selectSomething({selectFn: setSelectedDistrict, selectVal: apiData.city.districts.find(d => d.name == e.features[0].properties["cmwd11nm"])});
-                  
-
                   // console.log("lngLat", e.lngLat)
-                  //  Then use the name to look up from apiData.districts, where the population and crods info will be!
+                } else {
+                  gameFns.selectSomething({selectFn: gameFns.setSelectedCity, selectVal: true});
                 }
               }}
    >
@@ -457,6 +473,7 @@ export default function App() {
   const [selectedPerson, setSelectedPerson] = useState()
   const [selectedBand, setSelectedBand] = useState()
   const [selectedVenue, setSelectedVenue] = useState();
+  const [hoveredVenue, setHoveredVenue] = useState();
   const [selectedDistrict, setSelectedDistrict] = useState();
   const [apiData, setApiData] = useState({})
   const [postData, setPostData] = useState()
@@ -468,7 +485,6 @@ export default function App() {
     setSelectedVenue(null);
     setSelectedDistrict(null);
     setSelectedCity(false);
-    console.log("Selectfn", selectFn)
     selectFn(selectVal)
   }
 
@@ -479,10 +495,39 @@ export default function App() {
     "setSelectedCity": setSelectedCity,
     "setSelectedDistrict": setSelectedDistrict,
     "setSelectedVenue": setSelectedVenue,
+    "setHoveredVenue": setHoveredVenue,
     "selectSomething": selectSomething
   }
   
   useEffect(() => {
+    // WIP:
+    // function crowdData(apiData) {
+    //   apiData.city.districts.map(function z(district) {
+    //     const genre_ids = [...Array(Object.keys(apiData.genres).length).keys()] 
+   
+    //     let percentages = genre_ids.map(function(i) {
+    //       let crowd = district.crowds.find(c => c.genre_id == i+1)
+    //       return (crowd ? crowd.proportion : 0)
+    //     }); 
+   
+    //     let colours = genre_ids.map(function(i) {
+    //       let crowd = district.crowds.find(c => c.genre_id == i+1)
+    //       return (crowd ? crowd.colour : "#EEEEEE")
+    //     }); 
+   
+    //     let labels = Object.values(apiData.genres).map(i => i.name) 
+   
+    //     return {
+    //             district_id: district.id,
+    //             percentages: percentages,
+    //             colours: colours,
+    //             labels: labels,
+    //           }
+
+    //   });
+    // }
+
+
     function  buildLocationEvents(data) {
       let key;
       let events = {"locations": []}
@@ -513,8 +558,9 @@ export default function App() {
   return (
     <ApiDataContext.Provider value={apiData}>
     <FnContext.Provider value={gameFns}>
+    <StatsContext.Provider value={null}>
       <div id="map" className="col col-9">
-        {loaded && <Map>{selectedVenue ? ( <VenuePopup selectedVenue={selectedVenue} /> ) : null} {<GeoJsonLayer data={geodata}/>}</Map>}
+        {loaded && <Map>{hoveredVenue ? ( <VenuePopup selectedVenue={hoveredVenue} /> ) : null} {<GeoJsonLayer data={geodata}/>}</Map>}
       </div>
       <div id="sidebar" className="col col-3">
         <div className="card text-center">
@@ -534,6 +580,7 @@ export default function App() {
           </div>
         </div>
       </div>
+    </StatsContext.Provider>
     </FnContext.Provider>
     </ApiDataContext.Provider>
   )

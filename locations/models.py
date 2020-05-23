@@ -188,6 +188,7 @@ class Location(models.Model):
 
     attrs.update({
         "stats": {
+                    "influence": {"value": self.total_influence, "label": "Influence"},
                     "prestige": {"value": self.prestige, "label": "Prestige"},
                     "running_cost": {"value": self.running_cost, "label": "Running cost"},
                     "capacity": {"value": self.capacity, "label": "Capacity"},
@@ -208,6 +209,7 @@ class Location(models.Model):
 
   @property
   def total_influence(self):
+    from people.models import Person
     return self.influence + sum([p.influence for p in Person.objects.filter(job__workplace=self)])
 
   @property
