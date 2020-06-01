@@ -128,12 +128,12 @@ export function SidebarTabs({selectedTab}) {
 
 function CardHeader({title, caption, img}) {
   return (
-      <div className="row">
-        <div className="col col-8">
+      <div className="row sidebar-header">
+        <div className="col col-9">
           <h2>{title}</h2>
           {caption && <em>{caption}</em> }
         </div>
-        <div className="col col-4">
+        <div className="col col-3">
           <img className="card-img-top" src={img} />
         </div>
       </div> 
@@ -147,8 +147,10 @@ export function CitySidebarContent() {
   return (
     <>
     <CardHeader title={apiData.city.name} caption={"Population " + apiData.city.population} img={"/band.svg"} />
-    <ListOfNamedObjects title="Districts" namedObjects={apiData.city.districts} selectorFn="setSelectedDistrict" />
-    <ListOfNamedObjects title="Brands" namedObjects={Object.values(apiData.brands)} selectorFn={null} />
+    <div className="sidebar-scroll">
+      <ListOfNamedObjects title="Districts" namedObjects={apiData.city.districts} selectorFn="setSelectedDistrict" />
+      <ListOfNamedObjects title="Brands" namedObjects={Object.values(apiData.brands)} selectorFn={null} />
+    </div>
     </>
   )
 }
@@ -177,7 +179,7 @@ export function BandSidebarContent({band}) {
   return (
     <>
     <CardHeader title={band.name} caption="" img={img} />
-    <div className="row">
+    <div className="row sidebar-scroll">
       <div className="col col-12">
         <div className="card-text">
           <table key={"stats"+band.id} className="table">
@@ -205,7 +207,9 @@ export function BandsSidebarContent() {
   return (
     <>
     <CardHeader title="Bands" caption={null} img={"/band.svg"} />
+    <div className="sidebar-scroll">
     <ListOfNamedObjects title={null} namedObjects={apiData.bands} selectorFn="setSelectedBand" />
+    </div>
     </>
   )
 }
@@ -219,11 +223,11 @@ export function PersonSidebarContent({person}) {
       "/person.svg"
     ) 
 
-  let band = (person.job.title === "musician" && person.job.band_id !== null ? apiData.bands.find(b => b.id == person.job.band_id) : null);
+  let band = (person.job && person.job.title === "musician" && person.job.band_id !== null ? apiData.bands.find(b => b.id == person.job.band_id) : null);
   return (
     <>
     <CardHeader title={person.name} caption={person.happiness.text} img={img} />
-    <div className="row">
+    <div className="row sidebar-scroll">
       <div className="col col-12">
         <div className="card-text">
           <table key={"stats"+person.id} className="table">
@@ -287,7 +291,7 @@ export function PersonSidebarContent({person}) {
 function ListOfNamedObjects({title, namedObjects, selectorFn}) {
   const gameFns = useContext(FnContext)
   return (
-      <div className="row">
+      <div className="row"> 
         <div className="col col-12">
           <div className="card-text">
             <table className="table">
@@ -322,7 +326,9 @@ export function PeopleSidebarContent() {
   return (
     <>
     <CardHeader title="People" caption={null} img={"/pub.svg"} />
-    <ListOfNamedObjects title="People" namedObjects={apiData.people} selectorFn="setSelectedPerson" />
+    <div className="sidebar-scroll">
+	<ListOfNamedObjects title="People" namedObjects={apiData.people} selectorFn="setSelectedPerson" />
+    </div>
     </>
   )
 }
@@ -360,7 +366,9 @@ export function DistrictSidebarContent({district}) {
   return (
     <>
     <CardHeader title={district.name} caption={null} img="/map.jpg" />
-    <PieChart percentages={percentages} colours={colours} labels={labels} />
+    <div className="sidebar-scroll">
+      <PieChart percentages={percentages} colours={colours} labels={labels} />
+    </div>
     </>
   )
 }
@@ -473,7 +481,7 @@ export function VenueSidebarContent({venue, selectedEvent}) {
   return (
     <>
       <CardHeader title={venue.name} caption={null} img={venue.type + ".svg"} />
-
+      <div className="sidebar-scroll">
       {selectedEvent
         ?
         <EventPlannerForm slotNumber="1" venue={venue} eventTemplate={venue.event_options.length === 1 ? venue.event_options[0] : null} />
@@ -498,6 +506,7 @@ export function VenueSidebarContent({venue, selectedEvent}) {
         <SlotBar venue={venue} numOfSlots={venue.slots_available}/>
         </>
       }
+      </div>
     </>
   )
 }
@@ -734,7 +743,7 @@ export default function App() {
           <div className="card-header">
             <SidebarTabs selectedTab={selectedTab} />
           </div>
-          <div className="card-body overflow-auto" style={{height: "80vh"}}>
+          <div className="card-body">
             {loaded && selectedCity ? <CitySidebarContent /> : null}
             {loaded && selectedVenue ? ( <VenueSidebarContent venue={selectedVenue} selectedEvent={selectedEvent}></VenueSidebarContent> ) : null}
             {loaded && selectedDistrict ? ( <DistrictSidebarContent district={selectedDistrict}></DistrictSidebarContent> ) : null}
@@ -742,7 +751,7 @@ export default function App() {
             {loaded && selectedPerson ? (<PersonSidebarContent person={selectedPerson} />): null}
             {loaded && selectedBand ? (<BandSidebarContent band={selectedBand} />): null}
           </div>
-          <div className="card-footer text-muted">
+          <div className="card-footer sidebar-footer text-muted">
             <a href="s#" className="btn btn-primary" onClick={function() { takeTurn(setApiData, buildLocationEvents) } }>Take turn</a>
           </div>
         </div>

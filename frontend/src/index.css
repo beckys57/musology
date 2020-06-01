@@ -6,6 +6,7 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
 }
 
 code {
@@ -23,3 +24,22 @@ code {
   width: 50px;
   height: 50px;
 }
+
+.sidebar-scroll {
+    height: 70vh;
+    overflow-y: auto !important;
+    overflow-x: hidden;
+}
+
+.sidebar-header {
+    height: 10vh;
+    & img {
+	height: 8vh;
+    }
+}
+
+.sidebar-footer {
+    height: 7vh;
+}
+
+
