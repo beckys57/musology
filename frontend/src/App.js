@@ -376,6 +376,10 @@ export function DistrictSidebarContent({district}) {
 function SlotBar({venue, numOfSlots}) {
   const gameFns = useContext(FnContext);
   let labels = [...Array(numOfSlots+1).keys()].slice(1).map(function z(label) {
+      console.log('turndata', turnData)
+      console.log('things in slot', label, turnData.slots[label])
+      let thingsInSlot = turnData.slots[label].filter(event => event.venue_id === venue.id);
+      console.log('thinginslot?', thingsInSlot.length)
       return (
         <button 
           onClick={e => {
@@ -383,7 +387,7 @@ function SlotBar({venue, numOfSlots}) {
                     console.log("Clicked")
                     gameFns.setSelectedEvent(label)
                   }}
-          key={"slot"+label} type="button" class="btn btn-secondary">{label}</button>
+          key={"slot"+label} type="button" class="btn btn-secondary">{thingsInSlot.length ? thingsInSlot[0].kind : label}</button>
       )});
 
   return (
