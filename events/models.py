@@ -21,7 +21,15 @@ class MusicLesson(object):
     person.musical_talent = person.musical_talent + 1
     print("after", person.musical_talent)
     person.save()
-    return
+
+    return {
+            "model": "Person", 
+            "id": person.id,
+            "text": person.name + "'s shredding skillz have increased!",
+            "event_type": params.get('kind'),
+            "venue": params.get('location').name
+            }
+
 
 class Gig(object):
   requirements = {

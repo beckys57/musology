@@ -122,6 +122,7 @@ def take_turn(request):
         updates: {name: "New name"}
       }
   """
+  outcomes = []
   for location in data.get('locations'):
     # Run all updates
     print("location",location["id"])
@@ -135,7 +136,7 @@ def take_turn(request):
       print("event", event)
       if event["kind"]:
         event["location"] = Location.objects.get(id=event["venue_id"])
-        event_controller = EventType.objects.get(name=event["kind"]).calculate_outcome(event)
+        outcomes.append(EventType.objects.get(name=event["kind"]).calculate_outcome(event))
 
   return HttpResponseRedirect('/')
 
