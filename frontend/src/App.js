@@ -385,7 +385,6 @@ function SlotBar({venue, numOfSlots}) {
         <button 
           onClick={e => {
                     e.preventDefault();
-                    console.log("Clicked")
                     gameFns.setSelectedEvent(label)
                   }}
           key={"slot"+label} type="button" className="btn btn-secondary">{thingsInSlot.length ? thingsInSlot[0].kind : label}</button>
@@ -400,8 +399,8 @@ function DropDown({modelName, options}) {
   console.log(options)
   return (
     <Select options={options.all.map((o) => ({key: "o"+o.id, value: o.id, label: o.name }))} />
-    )
-}
+      )
+})
 
 function EventPlannerForm({slotNumber, venue, eventTemplate}) {
   const apiData = useContext(ApiDataContext)
@@ -546,7 +545,7 @@ export function Map({children}) {
 
     setMarkers(apiData.locations.map(function z(venue) {
         let img = (
-          ["local pub", "music bar", "music school"].indexOf(venue.type) !== -1 ?
+          ["guitar shop", "local pub", "music bar", "music school"].indexOf(venue.type) !== -1 ?
           "/" + venue.type + ".svg" :
           "/pub.svg"
         ) 

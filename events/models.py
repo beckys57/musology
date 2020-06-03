@@ -17,9 +17,7 @@ class MusicLesson(object):
     print("Taking a music lesson", params)
     # {'venue_id': 3, 'kind': 'music lesson', 'objects': [{'model': 'Musician', 'ids': ['18']}], 'band_ids': [], 'promoter_ids': [], 'people_ids': [], 'musician_ids': [['18']], 'location': <Location: Widow Twankey's Honk & Tonk School (music school)>}
     person = Person.objects.get(id=int(params.get('musician_ids')[0][0]))
-    print("before", person.musical_talent)
     person.musical_talent = person.musical_talent + 1
-    print("after", person.musical_talent)
     person.save()
 
     return {
@@ -49,14 +47,14 @@ class Gig(object):
     location = params["location"]
     print("Calculating outcome of gig at {}..".format(location), params)
 
-    bands = Band.load_all_with_influence({"id__in": params["band_ids"]})
+    bands = Band.load_all_with_influence({"id__in": [int(p[0]) for p in params["band_ids"]]})
 
     updates = {
       location: {"influence": location.influence}
     }
     
     # Inherit influence from bands if any who played have more influence
-    highest_influence = bands.aggregate(max_influence=Max("band_influence"))['max_influence']
+    highest_influence = bands.aggregate(max_influence=Max("band_influence"))['max_influence'] or 0
     influence_diff = highest_influence - location.influence
     if influence_diff > 0:
       # 25% of the difference, minimum 1
