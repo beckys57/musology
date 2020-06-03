@@ -400,7 +400,7 @@ function DropDown({modelName, options}) {
   return (
     <Select options={options.all.map((o) => ({key: "o"+o.id, value: o.id, label: o.name }))} />
       )
-})
+}
 
 function EventPlannerForm({slotNumber, venue, eventTemplate}) {
   const apiData = useContext(ApiDataContext)
