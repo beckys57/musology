@@ -62,14 +62,18 @@ def setup():
   music_bar, _ = BuildingType.objects.get_or_create(name='music bar', category='venue with stage')
   pub, _ = BuildingType.objects.get_or_create(name='local pub', category='pub or cafe')
   mschool, _ = BuildingType.objects.get_or_create(name='music school', category='pub or cafe')
-  venue, _ = Location.objects.get_or_create(building_type=music_bar, name="Bojo's", genre_id=1, brand_id=2, latitude="51.4686715", longitude="-2.6171386")
-  pubvenue, _ = Location.objects.get_or_create(building_type=pub, name="Ye Olde 'Ole", genre_id=2, latitude="51.4630824", longitude="-2.6056613")
+  guitarshop, _ = BuildingType.objects.get_or_create(name='guitar shop', category='shop')
+  venue, _ = Location.objects.get_or_create(building_type=music_bar, name="Bojo's", genre_id=1, brand_id=2, latitude="51.4686715", longitude="-2.6171386", capacity=120)
+  pubvenue, _ = Location.objects.get_or_create(building_type=pub, name="Ye Olde 'Ole", genre_id=2, latitude="51.4630824", longitude="-2.6056613", capacity=80)
+  bliss, _ = Location.objects.get_or_create(building_type=guitarshop, name="Total Bliss", genre_id=2, latitude="51.4572499", longitude="-2.596153", capacity=30, slots_available=0)
   school, _ = Location.objects.get_or_create(building_type=mschool, name="Widow Twankey's Honk & Tonk School", genre_id=1, brand_id=2, latitude="51.4568828", longitude="-2.6063455", capacity=1, slots_available=2)
   event_type, _ = EventType.objects.get_or_create(name='gig', controller="Gig") # Gig
   event_type_lesson, _ = EventType.objects.get_or_create(name='music lesson', controller="MusicLesson") # Gig
+  event_type_lesson2, _ = EventType.objects.get_or_create(name='scale practice', controller="MusicLesson") # Gig
   VenueAssessment.objects.get_or_create(suitability=9, building_type=music_bar, event_type=event_type)
   VenueAssessment.objects.get_or_create(suitability=6, building_type=pub, event_type=event_type)
   VenueAssessment.objects.get_or_create(suitability=9, building_type=mschool, event_type=event_type_lesson)
+  VenueAssessment.objects.get_or_create(suitability=9, building_type=mschool, event_type=event_type_lesson2)
 
 def main():
   game, _ = Game.objects.get_or_create(id=1)

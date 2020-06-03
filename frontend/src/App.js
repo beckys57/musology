@@ -384,7 +384,6 @@ function SlotBar({venue, numOfSlots}) {
         <button 
           onClick={e => {
                     e.preventDefault();
-                    console.log("Clicked")
                     gameFns.setSelectedEvent(label)
                   }}
           key={"slot"+label} type="button" class="btn btn-secondary">{thingsInSlot.length ? thingsInSlot[0].kind : label}</button>
@@ -398,6 +397,7 @@ function SlotBar({venue, numOfSlots}) {
 function DropDown({modelName, options}) {
   let fieldOptions = options.all.map(function z(o) { 
       let option;
+      console.log("O",o)
       if (options.disabledIds.indexOf(o.id.toString()) !== -1) {
         option = <option key={o.id} value={o.id} disabled>{o.name}</option>
       } else {
@@ -412,6 +412,7 @@ function DropDown({modelName, options}) {
 
   return (
       <select className={"dropdown "+modelName.toLowerCase()+"Field"}>
+        <option key="placeholder">Select a {modelName}</option>
         {fieldOptions}
       </select>
     )
@@ -560,7 +561,7 @@ export function Map({children}) {
 
     setMarkers(apiData.locations.map(function z(venue) {
         let img = (
-          ["local pub", "music bar", "music school"].indexOf(venue.type) !== -1 ?
+          ["guitar shop", "local pub", "music bar", "music school"].indexOf(venue.type) !== -1 ?
           "/" + venue.type + ".svg" :
           "/pub.svg"
         ) 
