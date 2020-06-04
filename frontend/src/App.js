@@ -10,6 +10,8 @@ import { Guitar } from "./components/guitars"
 class TurnData {
   constructor() {
     this.slots = {"1": [], "2": [], "3": [], "4": []}
+    this.busyPeopleMap = {"1": [], "2": [], "3": [], "4": []}
+    this.busyBandsMap = {"1": [], "2": [], "3": [], "4": []}
     this.locationPostData = []
   }
 
@@ -30,7 +32,6 @@ class TurnData {
 
   set resetSlots(s) {
     this.slots = s;
-    console.log("Reset", this.slots)
   }
 
   get locations() {
@@ -41,24 +42,25 @@ class TurnData {
     this.locationPostData = postData;
   }
 
-  // isObjAvailable(slotNumber, model, objName) {
-  //   let busyObjectNames = 
-  //   this.slots[slotNumber].filter(slot => slot.objects.find(o => o.model === model))
-  // }
-
-  busyObjectIds(slotNumber, model) {
-    return this.slots[slotNumber.toString()].map(event => event.objects.filter(o => o.model === model).map(m => m.ids)).flat(2);
+  busyPeopleIds(slotNumber) {
+    return this.busyPeopleMap[slotNumber.toString()].flat();
   }
 
-  getAvailable(slotNumber, model, listToFilter) {
-    let busyObjs = turnData.busyObjectIds(slotNumber, model)
-    console.log("busyObjs", busyObjs)
-    return listToFilter.filter(o => busyObjs.indexOf(o.id) === -1)
+  busyBandIds(slotNumber) {
+    return this.busyBandsMap[slotNumber.toString()].flat();
   }
 
-  addEvent(id, event) {
-    this.slots[id].push(event)
+  addEvent(slotNumber, event) {
+    this.slots[slotNumber].push(event)
     console.log("Slots updated", this.slots)
+  }
+
+  addBusyPeopleIds(slotNumber, ids) {
+    this.busyPeopleMap[slotNumber].push(ids)
+  }
+
+  addBusyBandsIds(slotNumber, ids) {
+    this.busyBandsMap[slotNumber].push(ids)
   }
 }
 
@@ -399,21 +401,23 @@ function DropDown({modelName, options, onChange, dropdownName}) {
             key: o.name,
             value: o.name,
             label: o.name,
-            disabled: (options.disabledNames.indexOf(o.name) !== -1 ? "disabled" : null)
+            isDisabled: (options.disabledNames.indexOf(o.name) !== -1 ? true : null)
           }))
   } else {
-    fieldOptions = options.all.map(o => (
+    fieldOptions = options.all.map(function z(o) {
+      console.log('Is'+o.id.toString()+' in '+options.disabledIds+'?', options.disabledIds.indexOf(o.id.toString()))
+      return (
           {
             key: "o"+o.id,
             value: o.id,
             label: o.name,
-            disabled: (options.disabledIds.indexOf(o.id.toString()) !== -1 ? "disabled" : null)
-          }))
+            isDisabled: (options.disabledIds.indexOf(o.id.toString()) !== -1 ? true : null)
+          })})
   }
 
   return (
     <Select
-      key={modelName}
+      key={dropdownName}
       classNamePrefix={modelName.toLowerCase()+"Field"}
       options={fieldOptions}
       onChange={onChange ? onChange : function z(e) {setHiddenVal(dropdownName, e.value)}}  />
@@ -435,57 +439,50 @@ function EventSelectorForm({slotNumber, venue, eventTypes, eventOptions, setSele
 function EventPlannerForm({slotNumber, venue, eventTemplate}) {
   const apiData = useContext(ApiDataContext)
   const gameFns = useContext(FnContext)
-  let fields;
-  // let musicians = apiData.people.filter(person => person.job && person.job.title === "musician");
-  // let busyMusicianIds = turnData.busyObjectIds(slotNumber, "Musician");
-  // console.log("busyMusicianIds",busyMusicianIds)
-  // console.log("model",r.model)
+
   let options = {
     "musician": {all: apiData.people.filter(person => person.job && person.job.title === "musician"),
-                  disabledIds: turnData.busyObjectIds(slotNumber, "Person")},
+                  disabledIds: turnData.busyPeopleIds(slotNumber)},
     "band": {all: apiData.bands,
-                  disabledIds: turnData.busyObjectIds(slotNumber, "Band")},
+                  disabledIds: turnData.busyBandIds(slotNumber)},
   }
-  console.log("eventTemplate objects",eventTemplate.requirements.objects)
 
   return (
       <form>
         <div>Book a {eventTemplate.type}</div>
         {eventTemplate.requirements.objects.map((r, i) => (
-            <>
-            <p>{r.model}</p>
-            <DropDown modelName={r.model} options={options[r.model.toLowerCase()]} dropdownName={r.model+"-"+i} />
-            <input id={r.model+"-"+i} type="hidden" className={r.model.toLowerCase()+"Field"} />
-            </>
+            <div key={r.model+"-"+i}>
+              <p>{r.model}</p>
+              <DropDown modelName={r.model} options={options[r.model.toLowerCase()]} dropdownName={r.model+"-"+i} />
+              <input id={r.model+"-"+i} type="hidden" className={r.model.toLowerCase()+"Field"} />
+            </div>
         ))}
         <button className="btn btn-primary" onClick={e => {
             e.preventDefault();
-            gameFns.selectSomething({selectFn: gameFns.setSelectedVenue, selectVal: venue})
+            gameFns.selectSomething({selectFn: gameFns.setSelectedVenue, selectVal: venue});
              
             let event = {
               venue_id: venue.id,
               kind: eventTemplate.type,
-              objects: [],
               "band_ids": [],
               "promoter_ids": [],
               "musician_ids": [],
             }
 
-            eventTemplate.requirements.objects.forEach(function x(r) {
-              let eventKey = r.model.toLowerCase() + "_ids";
+            let people_ids = [];
 
-              let ids = Array.from(document.getElementsByClassName(r.model.toLowerCase()+"Field")).map(m => m.value);
-              console.log("Saving", eventKey, ids, r.model.toLowerCase()+"Field")
+            eventTemplate.requirements.objects.forEach(function x(r, i) {
+              let modelNameLower = r.model.toLowerCase()
+              let eventKey = modelNameLower + "_ids";
+              let ids = Array.from(document.getElementsByClassName(modelNameLower+"Field")).map(m => m.value);
+              console.log("Saving", eventKey, ids, modelNameLower+"Field")
               event[eventKey].push(ids)
-              event.objects.push(
-                  { 
-                       "model": r.model,
-                       "ids": ids,
-                    }
-                )
+              if (modelNameLower === "band") {
+                turnData.addBusyBandsIds(slotNumber, ids);
+              } else {
+                turnData.addBusyPeopleIds(slotNumber, ids);
+              }
             })
-            console.log("Eevent",event)
-
             turnData.addEvent(slotNumber, event);
           }
         }>Book</button>

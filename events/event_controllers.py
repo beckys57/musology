@@ -2,7 +2,7 @@ class MusicLesson(object):
   requirements = {
       "money": 50,
       "objects": [
-        {"model": 'Musician', "min": 1, "max": 1},
+        {"model": 'Musician', "min": 2, "max": 1},
       ],
       "staff": []
       }
