@@ -130,7 +130,7 @@ function CardHeader({title, caption, img}) {
   return (
       <div className="row sidebar-header">
         <div className="col col-9">
-          <h2>{title}</h2>
+          <h5>{title}</h5>
           {caption && <em>{caption}</em> }
         </div>
         <div className="col col-3">
@@ -372,15 +372,18 @@ export function DistrictSidebarContent({district}) {
 function SlotBar({venue, numOfSlots, eventOptions}) {
   const gameFns = useContext(FnContext);
   let slotButtons = [...Array(numOfSlots+1).keys()].slice(1).map(function z(label) {
-      // console.log('things in slot', label, turnData.slots[label])
       let thingsInSlot = turnData.slots[label].filter(event => event.venue_id === venue.id);
-      // console.log('thinginslot?', thingsInSlot.length)
       return (
         <button 
           onClick={e => {
                     e.preventDefault();
-                    gameFns.setSelectedSlot(label)
-                    if (eventOptions.length === 1) { gameFns.setSelectedEvent(eventOptions[0]) }
+                    if (thingsInSlot.length === 0) {
+                      gameFns.setSelectedSlot(label)
+                      if (eventOptions.length === 1) { gameFns.setSelectedEvent(eventOptions[0]) }
+                    } else {
+                      let thingInSlot = thingsInSlot[0];
+                      // alert(`Booking: ${thingInSlot.kind}`)
+                    }
                   }}
           key={"slot"+label} type="button" className={"btn btn-secondary"}>{thingsInSlot.length ? thingsInSlot[0].kind : label}</button>
       )});
@@ -405,7 +408,6 @@ function DropDown({modelName, options, onChange, dropdownName}) {
           }))
   } else {
     fieldOptions = options.all.map(function z(o) {
-      console.log('Is'+o.id.toString()+' in '+options.disabledIds+'?', options.disabledIds.indexOf(o.id.toString()))
       return (
           {
             key: "o"+o.id,
@@ -464,24 +466,28 @@ function EventPlannerForm({slotNumber, venue, eventTemplate}) {
             let event = {
               venue_id: venue.id,
               kind: eventTemplate.type,
+              objects: {
+                "Band": [],
+                "Promoter": [],
+                "Musician": [],
+              },
               "band_ids": [],
               "promoter_ids": [],
               "musician_ids": [],
             }
 
-            let people_ids = [];
-
             eventTemplate.requirements.objects.forEach(function x(r, i) {
-              let modelNameLower = r.model.toLowerCase()
+              let modelName = r.model
+              let modelNameLower = modelName.toLowerCase()
               let eventKey = modelNameLower + "_ids";
               let ids = Array.from(document.getElementsByClassName(modelNameLower+"Field")).map(m => m.value);
-              console.log("Saving", eventKey, ids, modelNameLower+"Field")
               event[eventKey].push(ids)
               if (modelNameLower === "band") {
                 turnData.addBusyBandsIds(slotNumber, ids);
               } else {
                 turnData.addBusyPeopleIds(slotNumber, ids);
               }
+              event.objects[modelName] = ids
             })
             turnData.addEvent(slotNumber, event);
           }
@@ -637,7 +643,7 @@ export function Map({children}) {
                 e.preventDefault();
 
                 if (e.features.length > 0) {
-                  console.log(e.features[0].properties["cmwd11nm"])
+                  // console.log(e.features[0].properties["cmwd11nm"])
                   gameFns.selectSomething({selectFn: gameFns.setSelectedDistrict, selectVal: apiData.city.districts.find(d => d.name === e.features[0].properties["cmwd11nm"])});
                   // console.log("lngLat", e.lngLat)
                 } else {
@@ -663,6 +669,7 @@ export default function App() {
   const [hoveredVenue, setHoveredVenue] = useState();
   const [selectedDistrict, setSelectedDistrict] = useState();
   const [apiData, setApiData] = useState({});
+  const [currentMoney, setCurrentMoney] = useState();
 
   function selectSomething({selectFn, selectVal}) {
     setSelectedTab(null);
@@ -740,6 +747,7 @@ export default function App() {
       console.log("data", data);
       setLoaded(true);
       turnData.locations = buildLocationEvents(data);
+      setCurrentMoney(data.brands["1"].money)
     }
     getData();
   }, []);
@@ -770,7 +778,11 @@ export default function App() {
             {loaded && selectedBand ? (<BandSidebarContent band={selectedBand} />): null}
           </div>
           <div className="card-footer sidebar-footer text-muted">
-            <a href="s#" className="btn btn-primary" onClick={function() { takeTurn(setApiData, buildLocationEvents) } }>Take turn</a>
+            Money: {currentMoney}
+            <a href="s#" className="btn btn-primary" onClick={function() { 
+              takeTurn(setApiData, buildLocationEvents)
+              selectSomething({selectFn: setSelectedCity, selectVal: true})
+            }}>Take turn</a>
           </div>
         </div>
       </div>
@@ -788,4 +800,5 @@ async function takeTurn(setApiData, buildLocationEvents) {
   setApiData(resp.data)
   turnData.resetSlots = {"1": [], "2": [], "3": [], "4": []};
   buildLocationEvents(resp.data)
+  console.log("Finished")
 }

@@ -1,7 +1,4 @@
-import math
-
 from django.db import models
-from django.db.models import Max
 from .event_controllers import *
 
 class EventSlot(models.Model):

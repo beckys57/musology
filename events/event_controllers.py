@@ -1,3 +1,6 @@
+import math
+from django.db.models import Max
+
 class MusicLesson(object):
   requirements = {
       "money": 50,
@@ -9,11 +12,17 @@ class MusicLesson(object):
 
   def calculate_outcome(params):
     from people.models import Person
+    from brand.models import Brand
     print("Taking a music lesson", params)
-    # {'venue_id': 3, 'kind': 'music lesson', 'objects': [{'model': 'Musician', 'ids': ['18']}], 'band_ids': [], 'promoter_ids': [], 'people_ids': [], 'musician_ids': [['18']], 'location': <Location: Widow Twankey's Honk & Tonk School (music school)>}
-    person = Person.objects.get(id=int(params.get('musician_ids')[0][0]))
-    person.musical_talent = person.musical_talent + 5
-    person.save()
+    people = Person.objects.filter(id__in=[int(sid) for sid in params.get("objects")["Musician"]])
+    for person in people:
+      person.musical_talent = person.musical_talent + 5
+      person.save()
+      print("{} had fun in their lesson".format(person))
+
+    playerBrand = Brand.objects.get(id=1)
+    playerBrand.money -= 50
+    playerBrand.save()
 
     return {
             "model": "Person", 
@@ -35,15 +44,15 @@ class ScalePractice(object):
   def calculate_outcome(params):
     from people.models import Person
     print("Practising scales", params)
-    # {'venue_id': 3, 'kind': 'music lesson', 'objects': [{'model': 'Musician', 'ids': ['18']}], 'band_ids': [], 'promoter_ids': [], 'people_ids': [], 'musician_ids': [['18']], 'location': <Location: Widow Twankey's Honk & Tonk School (music school)>}
-    person = Person.objects.get(id=int(params.get('musician_ids')[0][0]))
-    person.musical_talent = person.musical_talent + 1
-    person.save()
+    people = Person.objects.filter(id__in=[int(sid) for sid in params.get("objects")["Musician"]])
+    for person in people:
+      person.musical_talent = person.musical_talent + 1
+      person.save()
 
     return {
             "model": "Person", 
             "id": person.id,
-            "text": person.name + "'s shredding skillz have increased!",
+            "text": person.name + "'s intonation has improved",
             "event_type": params.get('kind'),
             "venue": params.get('location').name
             }
