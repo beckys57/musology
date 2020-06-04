@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { Component, useState, useEffect, useContext } from "react";
 import ReactMapGL, { Source, Layer, Marker, Popup } from "react-map-gl";
 import { ApiDataContext, FnContext, StatsContext } from './Contexts';
+import Select from 'react-select'
 import axios from "axios"
 import geodata from "./bristol.geojson";
 import { Pie } from "react-chartjs-2";
@@ -381,36 +382,19 @@ function SlotBar({venue, numOfSlots}) {
                     e.preventDefault();
                     gameFns.setSelectedEvent(label)
                   }}
-          key={"slot"+label} type="button" class="btn btn-secondary">{thingsInSlot.length ? thingsInSlot[0].kind : label}</button>
+          key={"slot"+label} type="button" className="btn btn-secondary">{thingsInSlot.length ? thingsInSlot[0].kind : label}</button>
       )});
 
   return (
-    <div class="btn-group" role="group" aria-label="Basic example" style={{width: "100%"}}>{labels}</div>
+    <div className="btn-group" role="group" aria-label="Basic example" style={{width: "100%"}}>{labels}</div>
   )
 }
 
 function DropDown({modelName, options}) {
-  let fieldOptions = options.all.map(function z(o) { 
-      let option;
-      console.log("O",o)
-      if (options.disabledIds.indexOf(o.id.toString()) !== -1) {
-        option = <option key={o.id} value={o.id} disabled>{o.name}</option>
-      } else {
-        option = <option key={o.id} value={o.id}>{o.name}</option>
-      }
-      return (
-        <>
-        {option}
-        </>
-      )
-  })
-
+  console.log(options)
   return (
-      <select className={"dropdown "+modelName.toLowerCase()+"Field"}>
-        <option key="placeholder">Select a {modelName}</option>
-        {fieldOptions}
-      </select>
-    )
+    <Select options={options.all.map((o) => ({key: "o"+o.id, value: o.id, label: o.name }))} />
+      )
 }
 
 function EventPlannerForm({slotNumber, venue, eventTemplate}) {
