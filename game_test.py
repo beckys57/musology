@@ -18,7 +18,7 @@ def setup():
   brand, _ = Brand.objects.get_or_create(name="Badger Stripes")
   brand2, _ = Brand.objects.get_or_create(name="Rival Records")
   handwash, _ = Band.objects.get_or_create(**{"brand_id": brand.id, "name": "Handwash Experience", "genre_id": 1})
-  erbs, _ = Band.objects.get_or_create(**{"name": "'ERB GIRLS", "genre_id": 1})
+  erbs, _ = Band.objects.get_or_create(**{"name": "'ERB GIRLS", "genre_id": 1, "influence": 20})
   shit, _ = Band.objects.get_or_create(**{"brand_id": 2, "name": "HOLY SHIT", "genre_id": 2})
   City.objects.get_or_create(**{"name": "Bristol", "latitude": "51.454514", "longitude": "-2.587910"})
   bedminster, _ = District.objects.get_or_create(**{"city_id": 1, "name": "Bedminster"})
@@ -55,19 +55,16 @@ def setup():
   m1, _=Musician.objects.get_or_create(**{"person": p1, "band_id": handwash.id})
   m2, _=Musician.objects.get_or_create(**{"person": p2, "band_id": handwash.id})
   m3, _=Musician.objects.get_or_create(**{"person": p3, "band_id": handwash.id})
-  handwash.musicians.set([m1,m2,m3])
   e1, _=Musician.objects.get_or_create(**{"person": erb1, "band_id": erbs.id})
   e2, _=Musician.objects.get_or_create(**{"person": erb2, "band_id": erbs.id})
   e3, _=Musician.objects.get_or_create(**{"person": erb3, "band_id": erbs.id})
   e4, _=Musician.objects.get_or_create(**{"person": erb4, "band_id": erbs.id})
-  erbs.musicians.set([e1,e2,e3,e4])
 
   holy1,_=Person.objects.get_or_create(**{"name": "Dirty Sludge", "genre_id": 2, "job_id": musician_job.id})
   shit2,_=Person.objects.get_or_create(**{"name": "Eric Schweindriver", "genre_id": 2, "job_id": musician_job.id})
 
   holy2, _=Musician.objects.get_or_create(**{"person": holy1, "band_id": shit.id})
   shit1, _=Musician.objects.get_or_create(**{"person": shit2, "band_id": shit.id})
-  shit.musicians.set([holy2, shit1])
 
   t1, _ = Tech.objects.get_or_create(name="open mic", affects="[Venue]", effects="{'prestige': 1}")
   t1.brand.set([brand])

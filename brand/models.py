@@ -28,11 +28,12 @@ class Band(BrandedModel):
   name = models.CharField(max_length=127)
   genre = models.ForeignKey('genres.Genre', null=True, blank=True, on_delete=models.PROTECT)
   location = models.ForeignKey('locations.location', null=True, blank=True, on_delete=models.SET_NULL)
+  influence = models.PositiveSmallIntegerField(default=0)
 
   @property
   def total_influence(self):
     # influence as sum of band influence (later, could go up with awesome events)
-    return sum([m.person.influence for m in self.musicians.all()]) # TODO: + self.influence can't find that field
+    return sum([m.person.influence for m in self.musicians.all()]) + self.influence
 
   def __str__(self):
     return self.name
@@ -47,6 +48,7 @@ class Band(BrandedModel):
 
 class RecordLabel(BrandedModel):
   name = models.CharField(max_length=127)
+  influence = models.PositiveSmallIntegerField(default=0)
 
   def __str__(self):
     return self.name
