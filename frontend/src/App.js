@@ -19,8 +19,8 @@ class TurnData {
           "kind": "",
           "band_ids": [],
           "promoter_ids": [],
-          "people_ids": [],
           "musician_ids": [],
+          "person_ids": [],
         }
   }
 
@@ -388,8 +388,10 @@ function SlotBar({venue, numOfSlots, eventOptions}) {
   )
 }
 
-function DropDown({modelName, options, onChange}) {
-  console.log("modelName", modelName, "options", options)
+function DropDown({modelName, options, onChange, dropdownName}) {
+  function setHiddenVal(inputId, value) {
+    document.getElementById(inputId).value = value;
+  }
   let fieldOptions;
   if (modelName === "generic") {
     fieldOptions = options.all.map(o => (
@@ -411,9 +413,10 @@ function DropDown({modelName, options, onChange}) {
 
   return (
     <Select
-      className={"dropdown "+modelName.toLowerCase()+"Field"}
+      key={modelName}
+      classNamePrefix={modelName.toLowerCase()+"Field"}
       options={fieldOptions}
-      onChange={onChange}  />
+      onChange={onChange ? onChange : function z(e) {setHiddenVal(dropdownName, e.value)}}  />
     )
 }
 
@@ -438,18 +441,21 @@ function EventPlannerForm({slotNumber, venue, eventTemplate}) {
   // console.log("busyMusicianIds",busyMusicianIds)
   // console.log("model",r.model)
   let options = {
-    "musician": {all: apiData.people.filter(person => person.job && person.job.title === "musician"), disabledIds: turnData.busyObjectIds(slotNumber, "Musician")},
-    "band": {all: apiData.bands, disabledIds: turnData.busyObjectIds(slotNumber, "Band")},
+    "musician": {all: apiData.people.filter(person => person.job && person.job.title === "musician"),
+                  disabledIds: turnData.busyObjectIds(slotNumber, "Person")},
+    "band": {all: apiData.bands,
+                  disabledIds: turnData.busyObjectIds(slotNumber, "Band")},
   }
   console.log("eventTemplate objects",eventTemplate.requirements.objects)
-  
+
   return (
       <form>
         <div>Book a {eventTemplate.type}</div>
-        {eventTemplate.requirements.objects.map(r => (
+        {eventTemplate.requirements.objects.map((r, i) => (
             <>
             <p>{r.model}</p>
-            <DropDown key={r.model} modelName={r.model} options={options[r.model.toLowerCase()]} />
+            <DropDown modelName={r.model} options={options[r.model.toLowerCase()]} dropdownName={r.model+"-"+i} />
+            <input id={r.model+"-"+i} type="hidden" className={r.model.toLowerCase()+"Field"} />
             </>
         ))}
         <button className="btn btn-primary" onClick={e => {
@@ -462,12 +468,12 @@ function EventPlannerForm({slotNumber, venue, eventTemplate}) {
               objects: [],
               "band_ids": [],
               "promoter_ids": [],
-              "people_ids": [],
               "musician_ids": [],
             }
 
             eventTemplate.requirements.objects.forEach(function x(r) {
               let eventKey = r.model.toLowerCase() + "_ids";
+
               let ids = Array.from(document.getElementsByClassName(r.model.toLowerCase()+"Field")).map(m => m.value);
               console.log("Saving", eventKey, ids, r.model.toLowerCase()+"Field")
               event[eventKey].push(ids)
@@ -477,7 +483,6 @@ function EventPlannerForm({slotNumber, venue, eventTemplate}) {
                        "ids": ids,
                     }
                 )
-              return
             })
             console.log("Eevent",event)
 
