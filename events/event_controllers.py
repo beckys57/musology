@@ -76,9 +76,9 @@ class Gig(object):
     # {'slot': 3, 'kind': 'gig', 'band_ids': [2], 'promoter_ids': [], 'people_ids': [], 'location': <Location: Bojo's (music bar (building type))>}
     location = params["location"]
     print("Calculating outcome of gig at {}..".format(location), params)
-
-    bands = Band.load_all_with_influence({"id__in": [int(p[0]) for p in params["band_ids"]]})
-
+    print("Band ids", [int(sid) for sid in params.get("objects")["Band"]])
+    bands = Band.load_all_with_influence({"id__in": [int(sid) for sid in params.get("objects")["Band"]]})
+    print("Bands", bands)
     updates = {
       location: {"influence": location.influence}
     }
@@ -102,7 +102,7 @@ class Gig(object):
     # prestige
     # entry_price
 
-    print("Band 1", bands.first().band_influence)
+    print("Band 1", bands.first())
     print("Updates", updates)
     print("Done", location)
     # Reward: influence & money

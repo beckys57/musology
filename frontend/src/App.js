@@ -430,7 +430,7 @@ function EventSelectorForm({slotNumber, venue, eventTypes, eventOptions, setSele
   return (
       <DropDown
         modelName="generic"
-        options={{all: venue.event_options.map(e => ({name: e.type, cost: e.requirements.money})), disabledNames: ['scale practice'] }}
+        options={{all: venue.event_options.map(e => ({name: e.type, cost: e.requirements.money})), disabledNames: [] }}
         onChange={e => {
             setSelectedEvent(eventOptions.find(o => o.type === e.value))
             }}
@@ -438,7 +438,7 @@ function EventSelectorForm({slotNumber, venue, eventTypes, eventOptions, setSele
     )
 }
 
-function EventPlannerForm({slotNumber, venue, eventTemplate}) {
+function EventPlannerForm({slotNumber, venue, eventTemplate, currentMoney}) {
   const apiData = useContext(ApiDataContext)
   const gameFns = useContext(FnContext)
 
@@ -448,50 +448,66 @@ function EventPlannerForm({slotNumber, venue, eventTemplate}) {
     "band": {all: apiData.bands,
                   disabledIds: turnData.busyBandIds(slotNumber)},
   }
-
+  const shortfall = eventTemplate.requirements.money - currentMoney;
   return (
       <form>
         <div>Book a {eventTemplate.type}</div>
         {eventTemplate.requirements.objects.map((r, i) => (
-            <div key={r.model+"-"+i}>
-              <p>{r.model}</p>
+          <div key={r.model+"-"+i} className="card">
+            <div className="card-header">
+              {r.model+" selector"}
+            </div>
+            <div className="card-body">
               <DropDown modelName={r.model} options={options[r.model.toLowerCase()]} dropdownName={r.model+"-"+i} />
               <input id={r.model+"-"+i} type="hidden" className={r.model.toLowerCase()+"Field"} />
             </div>
+          </div>
         ))}
-        <button className="btn btn-primary" onClick={e => {
-            e.preventDefault();
-            gameFns.selectSomething({selectFn: gameFns.setSelectedVenue, selectVal: venue});
-             
-            let event = {
-              venue_id: venue.id,
-              kind: eventTemplate.type,
-              objects: {
-                "Band": [],
-                "Promoter": [],
-                "Musician": [],
-              }
-            }
+        {
+          shortFall > 0 ?
+            <>
+            <span>£{cost}</span> <em style={{color: "red"}}>(£{cost - currentMoney} short!)</em><br/>
+            <div className="btn btn-secondary">Book</div>
+            </>
+            :
+            <>
+            £{cost}<br/>
+            <button className="btn btn-primary" onClick={e => {
+                e.preventDefault();
+                gameFns.selectSomething({selectFn: gameFns.setSelectedVenue, selectVal: venue});
+                 
+                let event = {
+                  venue_id: venue.id,
+                  kind: eventTemplate.type,
+                  objects: {
+                    "Band": [],
+                    "Promoter": [],
+                    "Musician": [],
+                  }
+                }
 
-            eventTemplate.requirements.objects.forEach(function x(r, i) {
-              let modelName = r.model
-              let modelNameLower = modelName.toLowerCase()
-              let ids = Array.from(document.getElementsByClassName(modelNameLower+"Field")).map(m => m.value);
-              if (modelNameLower === "band") {
-                turnData.addBusyBandsIds(slotNumber, ids);
-                let musicianIds = apiData.people.filter(p => p.job && ids.indexOf(p.job.band_id.toString()) !== -1).map(p => p.id.toString());
-                turnData.addBusyPeopleIds(slotNumber, musicianIds);
-              } else {
-                turnData.addBusyPeopleIds(slotNumber, ids);
-                let bandIds = apiData.people.filter(p => ids.indexOf(p.id.toString()) !== -1 && p.job && p.job.band_id).map(p => p.job.band_id.toString())
-                console.log("bandIds", bandIds)
-                turnData.addBusyBandsIds(slotNumber, bandIds);
+                eventTemplate.requirements.objects.forEach(function x(r, i) {
+                  let modelName = r.model
+                  let modelNameLower = modelName.toLowerCase()
+                  let ids = Array.from(document.getElementsByClassName(modelNameLower+"Field")).map(m => m.value);
+                  if (modelNameLower === "band") {
+                    turnData.addBusyBandsIds(slotNumber, ids);
+                    let musicianIds = apiData.people.filter(p => p.job && ids.indexOf(p.job.band_id.toString()) !== -1).map(p => p.id.toString());
+                    turnData.addBusyPeopleIds(slotNumber, musicianIds);
+                  } else {
+                    turnData.addBusyPeopleIds(slotNumber, ids);
+                    let bandIds = apiData.people.filter(p => ids.indexOf(p.id.toString()) !== -1 && p.job && p.job.band_id).map(p => p.job.band_id.toString())
+                    console.log("bandIds", bandIds)
+                    turnData.addBusyBandsIds(slotNumber, bandIds);
+                  }
+                  event.objects[modelName] = ids
+                })
+                turnData.addEvent(slotNumber, event);
               }
-              event.objects[modelName] = ids
-            })
-            turnData.addEvent(slotNumber, event);
-          }
-        }>Book</button>
+            }>Book</button>
+            </>
+        }
+
       </form>
     )
 }
@@ -767,7 +783,7 @@ export default function App() {
           <div className="card-body">
             {loaded && selectedCity ? <CitySidebarContent /> : null}
             {loaded && selectedVenue ? (selectedEvent && selectedSlot ?
-                                        <EventPlannerForm slotNumber={selectedSlot} venue={selectedVenue} eventTemplate={selectedEvent} /> : 
+                                        <EventPlannerForm slotNumber={selectedSlot} venue={selectedVenue} eventTemplate={selectedEvent} currentMoney={currentMoney} /> : 
                                           (selectedVenue.category === "shop" ?
                                            <ShopSidebarContent venue={selectedVenue}></ShopSidebarContent> :
                                            <VenueSidebarContent venue={selectedVenue} selectedSlot={selectedSlot}></VenueSidebarContent>) : null) : null}
@@ -796,7 +812,7 @@ async function takeTurn(startTurn, buildLocationEvents) {
   let postData = {...turnData.locationPostData, ...{events: turnData.slots}};
   console.log('Taking turn...', postData)
   let resp = await axios.post('http://localhost:8000/take_turn/', postData)
-  console.log('Turn taken', resp.data)
+  console.log('Turn taken')
   startTurn(resp.data);
   turnData.resetSlots = {"1": [], "2": [], "3": [], "4": []};
   console.log("Finished")
