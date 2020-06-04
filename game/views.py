@@ -16,32 +16,6 @@ def take_turn(request):
   print("Taking turn...")
   if request.method == "POST":
     data = json.loads(request.body.decode())
-  
-
-    # this.slots = {1: [], 2: [], 3: [], 4: []}
-    #       {
-    #         "venue_id": 1,
-    #         "kind": "music lesson",
-    #         "objects": {"Band": []},
-    #       }
-
-
-
-  # Venue attributes - name, location, slots
-  """
-  # location is a dict with id, events, updates
-  eg = {
-        id: 1,
-        events: [{
-          "slot": 1,
-          "kind": "gig",  # EVENT_TYPE
-          "band_ids": [1],
-          "promoter_ids": [],
-          "people_ids": [], # Excludes band musicians, but add this in the backend for bonuses or whatever
-        }]
-        updates: {name: "New name"}
-      }
-  """
 
   Brand.objects.filter(id=1).update(money=data.get('money'))
   print("Updating bank balance to £", data.get('money'))
@@ -61,6 +35,7 @@ def take_turn(request):
         event["location"] = Location.objects.get(id=event["venue_id"])
         outcomes.append(EventType.objects.get(name=event["kind"]).calculate_outcome(event))
 
+  print("Outcomes", outcomes)
   return HttpResponseRedirect('/')
 
   
@@ -97,3 +72,30 @@ def index(request):
   #  Slots, with options available to fill them
   #  PEOPLE
   #  Hire? No, do all from elsewhere  so nothing here.
+
+# Notes
+
+    # this.slots = {1: [], 2: [], 3: [], 4: []}
+    #       {
+    #         "venue_id": 1,
+    #         "kind": "music lesson",
+    #         "objects": {"Band": []},
+    #       }
+
+
+
+  # Venue attributes - name, location, slots
+  """
+  # location is a dict with id, events, updates
+  eg = {
+        id: 1,
+        events: [{
+          "slot": 1,
+          "kind": "gig",  # EVENT_TYPE
+          "band_ids": [1],
+          "promoter_ids": [],
+          "people_ids": [], # Excludes band musicians, but add this in the backend for bonuses or whatever
+        }]
+        updates: {name: "New name"}
+      }
+  """

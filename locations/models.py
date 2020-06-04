@@ -139,7 +139,8 @@ class BuildingType(models.Model):
                                     ]
   BUILDING_CATEGORIES = {
     'venue with stage': ['concert hall', 'music bar'],
-    'pub or cafe': ['local pub', 'club'],
+    'venue without stage': ['dive bar', 'club'],
+    'pub or cafe': ['local pub', 'late night cafe'],
     'shop': ['record store', 'musical instrument shop', 'guitar shop'],
     'public place': ['park'],
     'private place': ['band house'],

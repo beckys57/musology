@@ -141,7 +141,7 @@ class Person(models.Model):
   def display_attrs(self):
     job = {"title": self.job.role, "workplace": self.job.workplace.name if self.job.workplace else "", "brand_id": self.job.brand_id} if self.job else None
     music_career = self.music_career.first()
-    if music_career:
+    if music_career and self.job:
       job.update({"band_id": music_career.band_id, "band_name": music_career.band.name if music_career.band else None})
 
     return {

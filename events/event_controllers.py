@@ -21,13 +21,13 @@ class MusicLesson(object):
       print("{} had fun in their lesson".format(person))
 
     print("That cost £", MusicLesson().requirements["money"])
-    return {
-            "model": "Person", 
-            "id": person.id,
-            "text": person.name + "'s shredding skillz have increased!",
-            "event_type": params.get('kind'),
-            "venue": params.get('location').name
-            }
+    return [{
+                "model": "Person", 
+                "id": person.id,
+                "text": person.name + "'s shredding skillz have increased!",
+                "event_type": params.get('kind'),
+                "venue": params.get('location').name
+                }]
 
 class ScalePractice(object):
   requirements = {
@@ -46,13 +46,13 @@ class ScalePractice(object):
       person.musical_talent = person.musical_talent + 1
       person.save()
 
-    return {
-            "model": "Person", 
-            "id": person.id,
-            "text": person.name + "'s intonation has improved",
-            "event_type": params.get('kind'),
-            "venue": params.get('location').name
-            }
+    return [{
+                "model": "Person", 
+                "id": person.id,
+                "text": person.name + "'s intonation has improved",
+                "event_type": params.get('kind'),
+                "venue": params.get('location').name
+                }]
 
 
 class Gig(object):
@@ -80,14 +80,16 @@ class Gig(object):
     }
     
     # Inherit influence from bands if any who played have more influence
-    highest_influence = bands.aggregate(max_influence=Max("band_influence"))['max_influence'] or 0
+    bands_withinf = bands.order_by('-influence').aggregate(max_influence=Max("band_influence"))
+    highest_influence = bands_withinf['max_influence'] or 0
     influence_diff = highest_influence - location.influence
+    text = ""
     if influence_diff > 0:
       # 25% of the difference, minimum 1
       updates[location]["influence"] = updates[location]["influence"] + math.ceil(influence_diff/4)
+      text += "{} gained influence from the gig with {}".format(location.name, bands_withinf[0])
 
     # How many people came? District analysis
-    # Currently location's don't belong to a district. Rectify this.
     # turnout =
 
     # TODO: this is a wip
@@ -111,3 +113,10 @@ class Gig(object):
     }
     """
 
+    return [{
+                "model": "Venue", 
+                "id": location.id,
+                "text": text,
+                "event_type": params.get('kind'),
+                "venue": params.get('location').name
+                }]
