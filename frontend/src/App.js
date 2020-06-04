@@ -4,8 +4,7 @@ import { ApiDataContext, FnContext, StatsContext } from './Contexts';
 import axios from "axios"
 import geodata from "./bristol.geojson";
 import { Pie } from "react-chartjs-2";
-
-const cl = console.log
+import { Guitar } from "./components/guitars"
 
 class TurnData {
   constructor() {
@@ -134,7 +133,7 @@ function CardHeader({title, caption, img}) {
           {caption && <em>{caption}</em> }
         </div>
         <div className="col col-3">
-          <img className="card-img-top" src={img} />
+          <img className="card-img-top" src={img} alt={caption} />
         </div>
       </div> 
     )
@@ -142,8 +141,6 @@ function CardHeader({title, caption, img}) {
 
 export function CitySidebarContent() {
   const apiData = useContext(ApiDataContext)
-  const gameFns = useContext(FnContext)
-  const stats = useContext(StatsContext)
   return (
     <>
     <CardHeader title={apiData.city.name} caption={"Population " + apiData.city.population} img={"/band.svg"} />
@@ -171,7 +168,6 @@ function getBandMembers({band_id}) {
 
 export function BandSidebarContent({band}) {
   const apiData = useContext(ApiDataContext);
-  const gameFns = useContext(FnContext);
   let genre = apiData.genres[band.genre_id.toString()];
   let img = "/" + genre.name.toLowerCase() + ".svg";
   let band_members = getBandMembers(band.id);
@@ -203,7 +199,6 @@ export function BandSidebarContent({band}) {
 
 export function BandsSidebarContent() {
   const apiData = useContext(ApiDataContext)
-  const gameFns = useContext(FnContext)
   return (
     <>
     <CardHeader title="Bands" caption={null} img={"/band.svg"} />
@@ -223,7 +218,7 @@ export function PersonSidebarContent({person}) {
       "/person.svg"
     ) 
 
-  let band = (person.job && person.job.title === "musician" && person.job.band_id !== null ? apiData.bands.find(b => b.id == person.job.band_id) : null);
+  let band = (person.job && person.job.title === "musician" && person.job.band_id !== null ? apiData.bands.find(b => b.id === person.job.band_id) : null);
   return (
     <>
     <CardHeader title={person.name} caption={person.happiness.text} img={img} />
@@ -376,10 +371,10 @@ export function DistrictSidebarContent({district}) {
 function SlotBar({venue, numOfSlots}) {
   const gameFns = useContext(FnContext);
   let labels = [...Array(numOfSlots+1).keys()].slice(1).map(function z(label) {
-      console.log('turndata', turnData)
-      console.log('things in slot', label, turnData.slots[label])
+      // console.log('turndata', turnData)
+      // console.log('things in slot', label, turnData.slots[label])
       let thingsInSlot = turnData.slots[label].filter(event => event.venue_id === venue.id);
-      console.log('thinginslot?', thingsInSlot.length)
+      // console.log('thinginslot?', thingsInSlot.length)
       return (
         <button 
           onClick={e => {
@@ -445,6 +440,7 @@ function EventPlannerForm({slotNumber, venue, eventTemplate}) {
           <button className="btn btn-primary" onClick={e => {
               e.preventDefault();
               gameFns.selectSomething({selectFn: gameFns.setSelectedVenue, selectVal: venue})
+               
               let event = {
                 venue_id: venue.id,
                 kind: eventTemplate.type,
@@ -482,6 +478,19 @@ function EventPlannerForm({slotNumber, venue, eventTemplate}) {
     )
 }
 
+export function ShopSidebarContent({venue}) {
+  let shop = venue;
+  console.log('Gui', Guitar)
+  return (
+    <>
+      <CardHeader title={shop.name} caption={null} img={shop.type + ".svg"} />
+      <div className="sidebar-scroll">
+       <Guitar />
+      </div>
+    </>
+  )
+}
+
 export function VenueSidebarContent({venue, selectedEvent}) {
   return (
     <>
@@ -517,7 +526,6 @@ export function VenueSidebarContent({venue, selectedEvent}) {
 }
 
 export function VenuePopup({selectedVenue}) {
-  const apiData = useContext(ApiDataContext)
   const gameFns = useContext(FnContext)
 
   let lat = parseFloat(selectedVenue.latitude) 
@@ -542,10 +550,6 @@ export function Map({children}) {
   console.log("Loading map")
   const apiData = useContext(ApiDataContext)
   const gameFns = useContext(FnContext)
-  let setSelectedVenue = gameFns.setSelectedVenue;
-  let setSelectedDistrict = gameFns.setSelectedDistrict;
-  let setSelectedPerson = gameFns.setSelectedPerson;
-  let setSelectedTab = gameFns.setSelectedTab;
   const [viewport, setViewport] = useState();
   const [markers, setMarkers] = useState(null);
 
@@ -577,7 +581,7 @@ export function Map({children}) {
               onClick={e => {
                 e.preventDefault();
                 gameFns.setHoveredVenue(null);
-                gameFns.selectSomething({selectFn: setSelectedVenue, selectVal: venue});
+                gameFns.selectSomething({selectFn: gameFns.setSelectedVenue, selectVal: venue});
               }}
               onMouseEnter={e => {
                 e.preventDefault();
@@ -588,7 +592,7 @@ export function Map({children}) {
                 gameFns.setHoveredVenue(null);
               }}
             >
-              <img src={img} />
+              <img src={img} alt={venue.name}/>
             </button>
           </Marker>
         )
@@ -626,7 +630,7 @@ export function Map({children}) {
 
                 if (e.features.length > 0) {
                   console.log(e.features[0].properties["cmwd11nm"])
-                  gameFns.selectSomething({selectFn: setSelectedDistrict, selectVal: apiData.city.districts.find(d => d.name == e.features[0].properties["cmwd11nm"])});
+                  gameFns.selectSomething({selectFn: gameFns.setSelectedDistrict, selectVal: apiData.city.districts.find(d => d.name === e.features[0].properties["cmwd11nm"])});
                   // console.log("lngLat", e.lngLat)
                 } else {
                   gameFns.selectSomething({selectFn: gameFns.setSelectedCity, selectVal: true});
@@ -640,11 +644,6 @@ export function Map({children}) {
 }
 
 export default function App() {
-  let polygonPaint = ReactMapGL.FillPaint = {
-      'fill-color': "#ff0000",
-      'fill-opacity': 0.3
-  }
-
   const [loaded, setLoaded] = useState(false);
   const [selectedTab, setSelectedTab] = useState();
   const [selectedCity, setSelectedCity] = useState(true);
@@ -680,7 +679,6 @@ export default function App() {
   }
 
   function buildLocationEvents(data) {
-    let key;
     let events = {"locations": []};
 
     for (let i=0; i<data.locations.length; i++) {
@@ -701,12 +699,12 @@ export default function App() {
     //     const genre_ids = [...Array(Object.keys(apiData.genres).length).keys()] 
    
     //     let percentages = genre_ids.map(function(i) {
-    //       let crowd = district.crowds.find(c => c.genre_id == i+1)
+    //       let crowd = district.crowds.find(c => c.genre_id === i+1)
     //       return (crowd ? crowd.proportion : 0)
     //     }); 
    
     //     let colours = genre_ids.map(function(i) {
-    //       let crowd = district.crowds.find(c => c.genre_id == i+1)
+    //       let crowd = district.crowds.find(c => c.genre_id === i+1)
     //       return (crowd ? crowd.colour : "#EEEEEE")
     //     }); 
    
@@ -741,7 +739,9 @@ export default function App() {
     <FnContext.Provider value={gameFns}>
     <StatsContext.Provider value={null}>
       <div id="map" className="col col-9">
-        {loaded && <Map>{hoveredVenue ? ( <VenuePopup selectedVenue={hoveredVenue} /> ) : null} {<GeoJsonLayer data={geodata}/>}</Map>}
+        {loaded && <Map>
+        {loaded && hoveredVenue ? ( <VenuePopup selectedVenue={hoveredVenue} /> ) : null} {<GeoJsonLayer data={geodata}/>}
+        </Map>}
       </div>
       <div id="sidebar" className="col col-3">
         <div className="card text-center">
@@ -750,7 +750,9 @@ export default function App() {
           </div>
           <div className="card-body">
             {loaded && selectedCity ? <CitySidebarContent /> : null}
-            {loaded && selectedVenue ? ( <VenueSidebarContent venue={selectedVenue} selectedEvent={selectedEvent}></VenueSidebarContent> ) : null}
+            {loaded && selectedVenue ? (selectedVenue.category === "shop" ?
+                                         <ShopSidebarContent venue={selectedVenue}></ShopSidebarContent> :
+                                         <VenueSidebarContent venue={selectedVenue} selectedEvent={selectedEvent}></VenueSidebarContent>) : null}
             {loaded && selectedDistrict ? ( <DistrictSidebarContent district={selectedDistrict}></DistrictSidebarContent> ) : null}
             {loaded && selectedTab ? selectedTab : null}
             {loaded && selectedPerson ? (<PersonSidebarContent person={selectedPerson} />): null}
