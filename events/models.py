@@ -2,7 +2,7 @@ import math
 
 from django.db import models
 from django.db.models import Max
-from .event_types import *
+from .event_controllers import *
 
 class EventSlot(models.Model):
   # Usually 4 events can be added to a building's slots. These can be added per turn. Some events can be 

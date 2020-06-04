@@ -1,4 +1,4 @@
-import React, { Component, useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import ReactMapGL, { Source, Layer, Marker, Popup } from "react-map-gl";
 import { ApiDataContext, FnContext, StatsContext } from './Contexts';
 import Select from 'react-select'
@@ -181,7 +181,7 @@ export function BandSidebarContent({band}) {
         <div className="card-text">
           <table key={"stats"+band.id} className="table">
             <thead>
-              <th>Rock credentials</th>
+              <tr><th>Rock credentials</th></tr>
             </thead>
             <tbody>
               <tr>
@@ -228,7 +228,7 @@ export function PersonSidebarContent({person}) {
         <div className="card-text">
           <table key={"stats"+person.id} className="table">
             <thead>
-              <th>Measures of Rad'ness</th>
+              <tr><th>Measures of Rad'ness</th></tr>
             </thead>
             <tbody>
               <tr>
@@ -256,7 +256,7 @@ export function PersonSidebarContent({person}) {
           {person.job && 
             <table key={"job"+person.id} className="table">
               <thead>
-                <th>Job</th>
+                <tr><th>Job</th></tr>
               </thead>
               <tbody>
                 <tr>
@@ -376,13 +376,16 @@ function SlotBar({venue, numOfSlots}) {
       // console.log('things in slot', label, turnData.slots[label])
       let thingsInSlot = turnData.slots[label].filter(event => event.venue_id === venue.id);
       // console.log('thinginslot?', thingsInSlot.length)
+      console.log("Selecting event ", label)
       return (
         <button 
           onClick={e => {
                     e.preventDefault();
-                    gameFns.setSelectedEvent(label)
+                    // gameFns.selectSomething({selectFn: gameFns.setSelectedSlot, selectVal: label});
+
+                    gameFns.setSelectedSlot(label)
                   }}
-          key={"slot"+label} type="button" className="btn btn-secondary">{thingsInSlot.length ? thingsInSlot[0].kind : label}</button>
+          key={"slot"+label} type="button" className={"btn btn-secondary"}>{thingsInSlot.length ? thingsInSlot[0].kind : label}</button>
       )});
 
   return (
@@ -390,74 +393,105 @@ function SlotBar({venue, numOfSlots}) {
   )
 }
 
-function DropDown({modelName, options}) {
-  console.log(options)
+function DropDown({modelName, options, onChange}) {
+  console.log("modelName", modelName, "options", options)
+  let fieldOptions;
+  if (modelName === "generic") {
+    fieldOptions = options.all.map(o => (
+          {
+            key: o.name,
+            value: o.name,
+            label: o.name,
+            disabled: (options.disabledNames.indexOf(o.name) !== -1 ? "disabled" : null)
+          }))
+  } else {
+    fieldOptions = options.all.map(o => (
+          {
+            key: "o"+o.id,
+            value: o.id,
+            label: o.name,
+            disabled: (options.disabledIds.indexOf(o.id.toString()) !== -1 ? "disabled" : null)
+          }))
+  }
+
+  console.log("In Dropdown", fieldOptions)
   return (
-    <Select options={options.all.map((o) => ({key: "o"+o.id, value: o.id, label: o.name }))} />
-      )
+    <Select
+      className={"dropdown "+modelName.toLowerCase()+"Field"}
+      options={fieldOptions}
+      onChange={onChange}  />
+    )
+}
+
+function EventSelectorForm({slotNumber, venue, eventTypes, setSelectedEvent}) {
+  return (
+      <DropDown
+        modelName="generic"
+        options={{all: venue.event_options.map(e => ({name: e.type, cost: e.requirements.money})), disabledNames: ['scale practice'] }}
+        onChange={e => {
+            console.log("setting event to ",e)
+            setSelectedEvent(e)
+            }}
+      />
+    )
 }
 
 function EventPlannerForm({slotNumber, venue, eventTemplate}) {
   const apiData = useContext(ApiDataContext)
   const gameFns = useContext(FnContext)
   let fields;
-  if (eventTemplate === null) {
-    fields = <DropDown modelName="generic" options={{all: venue.event_options.map(e => e.type), disabledIds: [] }} />
-  } else {
-    // let musicians = apiData.people.filter(person => person.job && person.job.title === "musician");
-    // let busyMusicianIds = turnData.busyObjectIds(slotNumber, "Musician");
-    // console.log("busyMusicianIds",busyMusicianIds)
-    // console.log("model",r.model)
-    let options = {
-      "musician": {all: apiData.people.filter(person => person.job && person.job.title === "musician"), disabledIds: turnData.busyObjectIds(slotNumber, "Musician")},
-      "band": {all: apiData.bands, disabledIds: turnData.busyObjectIds(slotNumber, "Band")},
-    }
-    console.log("Options",options)
-    fields = <>
-          <div>Book a {eventTemplate.type}</div>
-          {eventTemplate.requirements.objects.map(r => (
-              <>
-              <p>{r.model}</p>
-              <DropDown modelName={r.model} options={options[r.model.toLowerCase()]} />
-              </>
-          ))}
-          <button className="btn btn-primary" onClick={e => {
-              e.preventDefault();
-              gameFns.selectSomething({selectFn: gameFns.setSelectedVenue, selectVal: venue})
-               
-              let event = {
-                venue_id: venue.id,
-                kind: eventTemplate.type,
-                objects: [],
-                "band_ids": [],
-                "promoter_ids": [],
-                "people_ids": [],
-                "musician_ids": [],
-              }
-
-              eventTemplate.requirements.objects.forEach(function x(r) {
-                let eventKey = r.model.toLowerCase() + "_ids";
-                let ids = Array.from(document.getElementsByClassName(r.model.toLowerCase()+"Field")).map(m => m.value);
-                console.log("Saving", eventKey, ids, r.model.toLowerCase()+"Field")
-                event[eventKey].push(ids)
-                event.objects.push(
-                    { 
-                         "model": r.model,
-                         "ids": ids,
-                      }
-                  )
-                return
-              })
-              console.log("Eevent",event)
-
-              turnData.addEvent(slotNumber, event);
-            }
-          }>Book</button>
-          </>
+  console.log("Options", venue.event_options)
+  // let musicians = apiData.people.filter(person => person.job && person.job.title === "musician");
+  // let busyMusicianIds = turnData.busyObjectIds(slotNumber, "Musician");
+  // console.log("busyMusicianIds",busyMusicianIds)
+  // console.log("model",r.model)
+  let options = {
+    "musician": {all: apiData.people.filter(person => person.job && person.job.title === "musician"), disabledIds: turnData.busyObjectIds(slotNumber, "Musician")},
+    "band": {all: apiData.bands, disabledIds: turnData.busyObjectIds(slotNumber, "Band")},
   }
+  console.log("eventTemplate",eventTemplate)
+  
   return (
       <form>
-        {fields}
+        <div>Book a {eventTemplate.type}</div>
+        {eventTemplate.requirements.objects.map(r => (
+            <>
+            <p>{r.model}</p>
+            <DropDown modelName={r.model} options={options[r.model.toLowerCase()]} />
+            </>
+        ))}
+        <button className="btn btn-primary" onClick={e => {
+            e.preventDefault();
+            gameFns.selectSomething({selectFn: gameFns.setSelectedVenue, selectVal: venue})
+             
+            let event = {
+              venue_id: venue.id,
+              kind: eventTemplate.type,
+              objects: [],
+              "band_ids": [],
+              "promoter_ids": [],
+              "people_ids": [],
+              "musician_ids": [],
+            }
+
+            eventTemplate.requirements.objects.forEach(function x(r) {
+              let eventKey = r.model.toLowerCase() + "_ids";
+              let ids = Array.from(document.getElementsByClassName(r.model.toLowerCase()+"Field")).map(m => m.value);
+              console.log("Saving", eventKey, ids, r.model.toLowerCase()+"Field")
+              event[eventKey].push(ids)
+              event.objects.push(
+                  { 
+                       "model": r.model,
+                       "ids": ids,
+                    }
+                )
+              return
+            })
+            console.log("Eevent",event)
+
+            turnData.addEvent(slotNumber, event);
+          }
+        }>Book</button>
       </form>
     )
 }
@@ -475,19 +509,23 @@ export function ShopSidebarContent({venue}) {
   )
 }
 
-export function VenueSidebarContent({venue, selectedEvent}) {
+
+export function VenueSidebarContent({venue, selectedSlot}) {
+  console.log("Event options", venue.event_options)
+  const [selectedEvent, setSelectedEvent] = useState(venue.event_options.length === 1 ? venue.event_options[0] : null)
+
   return (
     <>
       <CardHeader title={venue.name} caption={null} img={venue.type + ".svg"} />
       <div className="sidebar-scroll">
-      {selectedEvent
+      {selectedSlot && selectedEvent
         ?
-        <EventPlannerForm slotNumber="1" venue={venue} eventTemplate={venue.event_options.length === 1 ? venue.event_options[0] : null} />
+        <EventPlannerForm slotNumber={selectedSlot} venue={venue} eventTemplate={selectedEvent} />
         :
         <>
         <table key={"venue"+venue.id} className="table">
           <thead>
-            <th>Stats</th>
+            <tr><th>Stats</th></tr>
           </thead>
           <tbody>
             {Object.keys(venue.stats).map((stat, i) =>
@@ -502,6 +540,7 @@ export function VenueSidebarContent({venue, selectedEvent}) {
         </table>
         <h5>Events</h5>
         <SlotBar venue={venue} numOfSlots={venue.slots_available}/>
+          {selectedSlot && <EventSelectorForm slotNumber={selectedSlot} venue={venue} eventTypes={venue.event_options} setSelectedEvent={setSelectedEvent} />}
         </>
       }
       </div>
@@ -531,13 +570,13 @@ export function VenuePopup({selectedVenue}) {
 }
 
 export function Map({children}) {
-  console.log("Loading map")
   const apiData = useContext(ApiDataContext)
   const gameFns = useContext(FnContext)
   const [viewport, setViewport] = useState();
   const [markers, setMarkers] = useState(null);
 
   useEffect(() => {
+    console.log("Loading map")
     async function setupMap() {
       setViewport({
         width: "74vw",
@@ -633,7 +672,7 @@ export default function App() {
   const [selectedCity, setSelectedCity] = useState(true);
   const [selectedPerson, setSelectedPerson] = useState();
   const [selectedBand, setSelectedBand] = useState();
-  const [selectedEvent, setSelectedEvent] = useState();
+  const [selectedSlot, setSelectedSlot] = useState();
   const [selectedVenue, setSelectedVenue] = useState();
   const [hoveredVenue, setHoveredVenue] = useState();
   const [selectedDistrict, setSelectedDistrict] = useState();
@@ -643,7 +682,7 @@ export default function App() {
     setSelectedTab(null);
     setSelectedPerson(null);
     setSelectedBand(null);
-    setSelectedEvent(null);
+    setSelectedSlot(null);
     setSelectedVenue(null);
     setSelectedDistrict(null);
     setSelectedCity(false);
@@ -653,7 +692,7 @@ export default function App() {
   const gameFns = {
     "setSelectedPerson": setSelectedPerson,
     "setSelectedBand": setSelectedBand,
-    "setSelectedEvent": setSelectedEvent,
+    "setSelectedSlot": setSelectedSlot,
     "setSelectedTab": setSelectedTab,
     "setSelectedCity": setSelectedCity,
     "setSelectedDistrict": setSelectedDistrict,
@@ -670,7 +709,6 @@ export default function App() {
         "id": data.locations[i].id, 
         "updates": {}
       }
-      console.log("Adding ", data.locations[i].name, " events")
       events.locations.push(e)
     };
     return events
@@ -723,9 +761,7 @@ export default function App() {
     <FnContext.Provider value={gameFns}>
     <StatsContext.Provider value={null}>
       <div id="map" className="col col-9">
-        {loaded && <Map>
-        {loaded && hoveredVenue ? ( <VenuePopup selectedVenue={hoveredVenue} /> ) : null} {<GeoJsonLayer data={geodata}/>}
-        </Map>}
+        {loaded && <Map>{hoveredVenue ? ( <VenuePopup selectedVenue={hoveredVenue} /> ) : null} {<GeoJsonLayer data={geodata}/>}</Map>}
       </div>
       <div id="sidebar" className="col col-3">
         <div className="card text-center">
@@ -736,7 +772,7 @@ export default function App() {
             {loaded && selectedCity ? <CitySidebarContent /> : null}
             {loaded && selectedVenue ? (selectedVenue.category === "shop" ?
                                          <ShopSidebarContent venue={selectedVenue}></ShopSidebarContent> :
-                                         <VenueSidebarContent venue={selectedVenue} selectedEvent={selectedEvent}></VenueSidebarContent>) : null}
+                                         <VenueSidebarContent venue={selectedVenue} selectedSlot={selectedSlot}></VenueSidebarContent>) : null}
             {loaded && selectedDistrict ? ( <DistrictSidebarContent district={selectedDistrict}></DistrictSidebarContent> ) : null}
             {loaded && selectedTab ? selectedTab : null}
             {loaded && selectedPerson ? (<PersonSidebarContent person={selectedPerson} />): null}

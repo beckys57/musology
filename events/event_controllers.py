@@ -1,5 +1,6 @@
 class MusicLesson(object):
   requirements = {
+      "money": 50,
       "objects": [
         {"model": 'Musician', "min": 1, "max": 1},
         # {"model": 'Location', "min": 1, "max": 1},
@@ -10,6 +11,32 @@ class MusicLesson(object):
   def calculate_outcome(params):
     from people.models import Person
     print("Taking a music lesson", params)
+    # {'venue_id': 3, 'kind': 'music lesson', 'objects': [{'model': 'Musician', 'ids': ['18']}], 'band_ids': [], 'promoter_ids': [], 'people_ids': [], 'musician_ids': [['18']], 'location': <Location: Widow Twankey's Honk & Tonk School (music school)>}
+    person = Person.objects.get(id=int(params.get('musician_ids')[0][0]))
+    person.musical_talent = person.musical_talent + 5
+    person.save()
+
+    return {
+            "model": "Person", 
+            "id": person.id,
+            "text": person.name + "'s shredding skillz have increased!",
+            "event_type": params.get('kind'),
+            "venue": params.get('location').name
+            }
+
+class ScalePractice(object):
+  requirements = {
+      "money": 5,
+      "objects": [
+        {"model": 'Musician', "min": 1, "max": 1},
+        # {"model": 'Location', "min": 1, "max": 1},
+      ],
+      "staff": []
+      }
+
+  def calculate_outcome(params):
+    from people.models import Person
+    print("Practising scales", params)
     # {'venue_id': 3, 'kind': 'music lesson', 'objects': [{'model': 'Musician', 'ids': ['18']}], 'band_ids': [], 'promoter_ids': [], 'people_ids': [], 'musician_ids': [['18']], 'location': <Location: Widow Twankey's Honk & Tonk School (music school)>}
     person = Person.objects.get(id=int(params.get('musician_ids')[0][0]))
     person.musical_talent = person.musical_talent + 1
@@ -26,9 +53,10 @@ class MusicLesson(object):
 
 class Gig(object):
   requirements = {
+      "money": 10,
       "objects": [
         {"model": 'Band', "min": 1, "max": 5},
-        # {"model": 'Location', "min": 1, "max": 1},
+        {"model": 'Location', "min": 1, "max": 1},
       ],
       "staff": [
          {"role": "promoter", "min": 0, "max": 1},

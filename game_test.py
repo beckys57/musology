@@ -69,7 +69,7 @@ def setup():
   school, _ = Location.objects.get_or_create(building_type=mschool, name="Widow Twankey's Honk & Tonk School", genre_id=1, brand_id=2, latitude="51.4568828", longitude="-2.6063455", capacity=1, slots_available=2)
   event_type, _ = EventType.objects.get_or_create(name='gig', controller="Gig") # Gig
   event_type_lesson, _ = EventType.objects.get_or_create(name='music lesson', controller="MusicLesson") # Gig
-  event_type_lesson2, _ = EventType.objects.get_or_create(name='scale practice', controller="MusicLesson") # Gig
+  event_type_lesson2, _ = EventType.objects.get_or_create(name='scale practice', controller="ScalePractice") # Gig
   VenueAssessment.objects.get_or_create(suitability=9, building_type=music_bar, event_type=event_type)
   VenueAssessment.objects.get_or_create(suitability=6, building_type=pub, event_type=event_type)
   VenueAssessment.objects.get_or_create(suitability=9, building_type=mschool, event_type=event_type_lesson)
