@@ -47,7 +47,6 @@ class TurnData {
   // }
 
   busyObjectIds(slotNumber, model) {
-    console.log('Busying', this.slots[slotNumber.toString()].map(event => event.objects))
     return this.slots[slotNumber.toString()].map(event => event.objects.filter(o => o.model === model).map(m => m.ids)).flat(2);
   }
 
@@ -60,7 +59,6 @@ class TurnData {
   addEvent(id, event) {
     this.slots[id].push(event)
     console.log("Slots updated", this.slots)
-
   }
 }
 
@@ -376,7 +374,6 @@ function SlotBar({venue, numOfSlots}) {
       // console.log('things in slot', label, turnData.slots[label])
       let thingsInSlot = turnData.slots[label].filter(event => event.venue_id === venue.id);
       // console.log('thinginslot?', thingsInSlot.length)
-      console.log("Selecting event ", label)
       return (
         <button 
           onClick={e => {
@@ -423,14 +420,13 @@ function DropDown({modelName, options, onChange}) {
     )
 }
 
-function EventSelectorForm({slotNumber, venue, eventTypes, setSelectedEvent}) {
+function EventSelectorForm({slotNumber, venue, eventTypes, eventOptions, setSelectedEvent}) {
   return (
       <DropDown
         modelName="generic"
         options={{all: venue.event_options.map(e => ({name: e.type, cost: e.requirements.money})), disabledNames: ['scale practice'] }}
         onChange={e => {
-            console.log("setting event to ",e)
-            setSelectedEvent(e)
+            setSelectedEvent(eventOptions.find(o => o.type === e.value))
             }}
       />
     )
@@ -540,7 +536,7 @@ export function VenueSidebarContent({venue, selectedSlot}) {
         </table>
         <h5>Events</h5>
         <SlotBar venue={venue} numOfSlots={venue.slots_available}/>
-          {selectedSlot && <EventSelectorForm slotNumber={selectedSlot} venue={venue} eventTypes={venue.event_options} setSelectedEvent={setSelectedEvent} />}
+          {selectedSlot && <EventSelectorForm slotNumber={selectedSlot} venue={venue} eventTypes={venue.event_options} eventOptions={venue.event_options} setSelectedEvent={setSelectedEvent} />}
         </>
       }
       </div>
@@ -620,7 +616,7 @@ export function Map({children}) {
           </Marker>
         )
       }));
-      console.log("data set")
+      console.log("Data loaded.")
     }
     setupMap();
   }, [])
