@@ -3,7 +3,6 @@ class MusicLesson(object):
       "money": 50,
       "objects": [
         {"model": 'Musician', "min": 1, "max": 1},
-        # {"model": 'Location', "min": 1, "max": 1},
       ],
       "staff": []
       }
@@ -29,7 +28,6 @@ class ScalePractice(object):
       "money": 5,
       "objects": [
         {"model": 'Musician', "min": 1, "max": 1},
-        # {"model": 'Location', "min": 1, "max": 1},
       ],
       "staff": []
       }
@@ -56,7 +54,6 @@ class Gig(object):
       "money": 10,
       "objects": [
         {"model": 'Band', "min": 1, "max": 5},
-        {"model": 'Location', "min": 1, "max": 1},
       ],
       "staff": [
          {"role": "promoter", "min": 0, "max": 1},
