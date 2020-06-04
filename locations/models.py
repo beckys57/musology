@@ -16,7 +16,9 @@ class City(models.Model):
     return "City of {}".format(self.name)
 
   def initialize(self):
-    [district.initialize() for district in self.districts.all()]
+    # Now doing this in the game_setup function
+    # [district.initialize() for district in self.districts.all()]
+    return
   
   def build_display_attrs():
     city = City.objects.first()
@@ -82,7 +84,11 @@ class District(models.Model):
 
   @property
   def people(self):
-    Person.objects.filter(location__district=self)
+    return Person.objects.filter(location__district=self)
+
+  @property
+  def crowds_in_size_order(self):
+    return list(self.crowds.all().order_by("-proportion").values('genre_id', 'proportion'))
 
 class VenueAssessment(models.Model):
   SUITABILITY_RATINGS = {
@@ -152,22 +158,14 @@ class BuildingType(models.Model):
     return self.name
 
 class Location(models.Model):
-  POSTCODE_CHOICES = [(p, p) for p in [
-                                        'A1', 'A2', 'A3', 'A4', 
-                                        'B1', 'B2', 'B3', 'B4', 
-                                        'C1', 'C2', 'C3', 'C4', 
-                                        'D1', 'D2', 'D3', 'D4', 
-                                      ]]
-
   brand = models.ForeignKey('brand.Brand', null=True, blank=True, on_delete=models.SET_NULL)
+  district = models.ForeignKey('District', null=True, blank=True, on_delete=models.SET_NULL, related_name="locations")
   building_type = models.ForeignKey(BuildingType, on_delete=models.PROTECT)
   name = models.CharField(max_length=127)
   latitude = models.CharField(max_length=12, null=True, blank=True)
   longitude = models.CharField(max_length=12, null=True, blank=True)
-  genre = models.ForeignKey('genres.Genre', on_delete=models.PROTECT)
+  genre = models.ForeignKey('genres.Genre', null=True, blank=True, on_delete=models.PROTECT)
 
-  # slots = models.ForeignKey('events.EventSlot', null=True, blank=True, on_delete=models.SET_NULL)
-  
   slots_available = models.PositiveSmallIntegerField(default=4)
   capacity = models.PositiveSmallIntegerField(null=True, blank=True, default=100)
   influence = models.PositiveSmallIntegerField(default=0)
@@ -184,7 +182,7 @@ class Location(models.Model):
     from events.models import EventType
 
     attrs = {k: v for k, v in self.__dict__.items()
-              if k in ["id", "brand_id", "genre_id", "latitude", "longitude", "name", "slots_available"]}
+              if k in ["id", "brand_id", "district_id", "genre_id", "latitude", "longitude", "name", "slots_available"]}
 
     attrs.update({
         "stats": {
@@ -198,13 +196,6 @@ class Location(models.Model):
         "update_attrs": self.update_attrs,
         "event_options": EventType.options_for_location(self),
         "staff": self.staff_data,
-        "events": [{
-            "slot": i,
-            "kind": "",
-            "band_ids": [],
-            "promoter_ids": [],
-            "people_ids": [],
-          } for i in range(1, self.slots_available+1)]
       })
     return attrs
 

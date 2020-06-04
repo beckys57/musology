@@ -522,7 +522,7 @@ export function ShopSidebarContent({venue}) {
   let shop = venue;
   return (
     <>
-      <CardHeader title={shop.name} caption={null} img={shop.type + ".svg"} />
+      <CardHeader title={shop.name} caption={venue.type} img={shop.type + ".svg"} />
       <div className="sidebar-scroll">
        <Guitar />
       </div>
@@ -536,7 +536,7 @@ export function VenueSidebarContent({venue, selectedSlot}) {
   let eventOptions = venue.event_options;
   return (
     <>
-      <CardHeader title={venue.name} caption={null} img={venue.type + ".svg"} />
+      <CardHeader title={venue.name} caption={venue.genre_id ? gameFns.getGenre(venue.genre_id).name+" "+venue.type : venue.type} img={venue.type + ".svg"} />
       <div className="sidebar-scroll">
         <table key={"venue"+venue.id} className="table">
           <thead>
@@ -706,6 +706,11 @@ export default function App() {
     selectFn(selectVal)
   }
 
+
+  function getGenre(genreId) {
+    return apiData.genres[genreId.toString()]
+  }
+
   const gameFns = {
     "setSelectedPerson": setSelectedPerson,
     "setSelectedBand": setSelectedBand,
@@ -718,6 +723,7 @@ export default function App() {
     "setHoveredVenue": setHoveredVenue,
     "selectSomething": selectSomething,
     "setCurrentMoney": setCurrentMoney,
+    "getGenre": getGenre,
   }
 
   function buildLocationEvents(data) {
