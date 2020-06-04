@@ -134,7 +134,7 @@ class BuildingType(models.Model):
   BUILDING_CATEGORIES = {
     'venue with stage': ['concert hall', 'music bar'],
     'pub or cafe': ['local pub', 'club'],
-    'shop': ['record store', 'musical instrument shop'],
+    'shop': ['record store', 'musical instrument shop', 'guitar shop'],
     'public place': ['park'],
     'private place': ['band house'],
     'training or work': ['music lessons',
@@ -194,6 +194,7 @@ class Location(models.Model):
                     "capacity": {"value": self.capacity, "label": "Capacity"},
                   },
         "type": self.building_type.name,
+        "category": self.building_type.category,
         "update_attrs": self.update_attrs,
         "event_options": EventType.options_for_location(self),
         "staff": self.staff_data,
