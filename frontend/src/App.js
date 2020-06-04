@@ -17,6 +17,7 @@ class TurnData {
 
   newEvent() {
     return {
+          "brand_id": 1,
           "venue_id": null,
           "kind": "",
           "band_ids": [],
@@ -176,24 +177,26 @@ export function BandSidebarContent({band}) {
   return (
     <>
     <CardHeader title={band.name} caption="" img={img} />
-    <div className="row sidebar-scroll">
-      <div className="col col-12">
-        <div className="card-text">
-          <table key={"stats"+band.id} className="table">
-            <thead>
-              <tr><th>Rock credentials</th></tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Influence</td>
-                <td>{band.influence}</td>
-              </tr>              
-            </tbody>
-          </table>
+    <div className="sidebar-scroll">
+      <div className="row">
+        <div className="col col-12">
+          <div className="card-text">
+            <table key={"stats"+band.id} className="table">
+              <thead>
+                <tr><th>Rock credentials</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Influence</td>
+                  <td>{band.influence}</td>
+                </tr>              
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
+      <ListOfNamedObjects title="Members" namedObjects={band_members} selectorFn="setSelectedPerson" />
     </div>
-    <ListOfNamedObjects title="Members" namedObjects={band_members} selectorFn="setSelectedPerson" />
     </>
   )
 }
@@ -448,7 +451,8 @@ function EventPlannerForm({slotNumber, venue, eventTemplate, currentMoney}) {
     "band": {all: apiData.bands,
                   disabledIds: turnData.busyBandIds(slotNumber)},
   }
-  const shortfall = eventTemplate.requirements.money - currentMoney;
+  const cost = eventTemplate.requirements.money;
+
   return (
       <form>
         <div>Book a {eventTemplate.type}</div>
@@ -464,7 +468,7 @@ function EventPlannerForm({slotNumber, venue, eventTemplate, currentMoney}) {
           </div>
         ))}
         {
-          shortFall > 0 ?
+          cost - currentMoney > 0 ?
             <>
             <span>£{cost}</span> <em style={{color: "red"}}>(£{cost - currentMoney} short!)</em><br/>
             <div className="btn btn-secondary">Book</div>
@@ -503,6 +507,8 @@ function EventPlannerForm({slotNumber, venue, eventTemplate, currentMoney}) {
                   event.objects[modelName] = ids
                 })
                 turnData.addEvent(slotNumber, event);
+                console.log('currentMoney', currentMoney-cost)
+                gameFns.setCurrentMoney(currentMoney-cost)
               }
             }>Book</button>
             </>
@@ -686,6 +692,7 @@ export default function App() {
   const [selectedDistrict, setSelectedDistrict] = useState();
   const [apiData, setApiData] = useState({});
   const [currentMoney, setCurrentMoney] = useState();
+  const [currentInfluence, setCurrentInfluence] = useState();
 
   function selectSomething({selectFn, selectVal}) {
     setSelectedTab(null);
@@ -710,6 +717,7 @@ export default function App() {
     "setSelectedVenue": setSelectedVenue,
     "setHoveredVenue": setHoveredVenue,
     "selectSomething": selectSomething,
+    "setCurrentMoney": setCurrentMoney,
   }
 
   function buildLocationEvents(data) {
@@ -766,6 +774,7 @@ export default function App() {
     setLoaded(true);
     turnData.locations = buildLocationEvents(data);
     setCurrentMoney(data.brands["1"].money)
+    setCurrentInfluence(data.brands["1"].influence)
   }
 
   return (
@@ -794,22 +803,35 @@ export default function App() {
             {loaded && selectedBand ? (<BandSidebarContent band={selectedBand} />): null}
           </div>
           <div className="card-footer sidebar-footer text-muted">
-            Money: {currentMoney}
-            <a href="s#" className="btn btn-primary" onClick={function() { 
-              takeTurn(startTurn, buildLocationEvents)
-              selectSomething({selectFn: setSelectedCity, selectVal: true})
-            }}>Take turn</a>
+          <div className="row">
+            <div className="col col-3">
+              <p className="text-left" >
+                <img alt="Money: " src="/pound.svg" width="25rem" />{currentMoney}
+               </p>
+             </div>
+             <div className="col col-3">
+              <p className="text-left">
+                <img alt="Influence: " src="/influence.svg" width="25rem" />{currentInfluence}
+              </p>
+            </div>
+            <div className="col col-6 text-right">
+              <a href="s#" className="btn btn-primary btn-sm" onClick={function() { 
+                takeTurn(startTurn, buildLocationEvents, currentMoney)
+                selectSomething({selectFn: setSelectedCity, selectVal: true})
+              }}>Take turn</a>
+            </div>
           </div>
         </div>
       </div>
+    </div>
     </StatsContext.Provider>
     </FnContext.Provider>
     </ApiDataContext.Provider>
   )
 }
 
-async function takeTurn(startTurn, buildLocationEvents) {
-  let postData = {...turnData.locationPostData, ...{events: turnData.slots}};
+async function takeTurn(startTurn, buildLocationEvents, currentMoney) {
+  let postData = {...turnData.locationPostData, ...{events: turnData.slots}, ...{money: currentMoney}};
   console.log('Taking turn...', postData)
   let resp = await axios.post('http://localhost:8000/take_turn/', postData)
   console.log('Turn taken')

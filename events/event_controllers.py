@@ -20,11 +20,7 @@ class MusicLesson(object):
       person.save()
       print("{} had fun in their lesson".format(person))
 
-    playerBrand = Brand.objects.get(id=1)
-    playerBrand.money -= MusicLesson().requirements["money"]
-    playerBrand.save()
     print("That cost £", MusicLesson().requirements["money"])
-    print("You now have £", playerBrand.money)
     return {
             "model": "Person", 
             "id": person.id,

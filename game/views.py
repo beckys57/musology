@@ -17,73 +17,13 @@ def take_turn(request):
   if request.method == "POST":
     data = json.loads(request.body.decode())
   
-  payload_example = {
-    "locations": [
-      {
-        "id": 1,
-        "events": [
-          {
-            "slot": 1,
-            "kind": "gig",  # EVENT_TYPE
-            "objects": {
-              "Band": [1],
-              "Promoter": [],
-              "Person": [] # Excludes band musicians, but add this in the backend for bonuses or whatever
-            },
-          },
-          {
-            "slot": 2,
-            "kind": "", # Leave all fields empty for nothing to occur in this slot
-            "objects": {
-              "Band": [],
-              "Promoter": [],
-              "Person": [] 
-            },
-          },
-          {
-            "slot": 3,
-            "kind": "gig",
-            "objects": {
-              "Band": [],
-              "Promoter": [],
-              "Person": [] 
-            },
-          },
-          {
-            "slot": 4,
-            "kind": "deep clean upgrade",
-            "objects": {
-              "Band": [],
-              "Promoter": [],
-              "Person": []  # Bar staff can do cleaning and upgrade work
-            },
-          },
-        ],
-        "updates": {
-          "entry_price": 12, # Set the new value, overriding whatever is in there
-          "name": "Swiss Cheese Cafeeeeé"
-        }
-      },
-      {
-        "id": 2,
-        "events": [
-        ],
-      }
-    ]
-  }
-
 
     # this.slots = {1: [], 2: [], 3: [], 4: []}
     #       {
     #         "venue_id": 1,
     #         "kind": "music lesson",
-    #         "band_ids": [],
-    #         "promoter_ids": [],
-    #         "people_ids": [],
-    #         "musician_ids": [],
+    #         "objects": {"Band": []},
     #       }
-
-
 
 
 
@@ -102,6 +42,10 @@ def take_turn(request):
         updates: {name: "New name"}
       }
   """
+
+  Brand.objects.filter(id=1).update(money=data.get('money'))
+  print("Updating bank balance to £", data.get('money'))
+
   outcomes = []
   for location in data.get('locations'):
     # Run all updates
