@@ -736,21 +736,21 @@ export default function App() {
 
     //   });
     // }
-
-
-  
-
     async function getData() {
       let res = await axios.get('http://localhost:8000');
       let data = res.data;
-      setApiData(data);
-      console.log("data", data);
-      setLoaded(true);
-      turnData.locations = buildLocationEvents(data);
-      setCurrentMoney(data.brands["1"].money)
+      startTurn(data);
     }
     getData();
   }, []);
+
+  function startTurn(data) {
+    setApiData(data);
+    console.log("data", data);
+    setLoaded(true);
+    turnData.locations = buildLocationEvents(data);
+    setCurrentMoney(data.brands["1"].money)
+  }
 
   return (
     <ApiDataContext.Provider value={apiData}>
@@ -780,7 +780,7 @@ export default function App() {
           <div className="card-footer sidebar-footer text-muted">
             Money: {currentMoney}
             <a href="s#" className="btn btn-primary" onClick={function() { 
-              takeTurn(setApiData, buildLocationEvents)
+              takeTurn(startTurn, buildLocationEvents)
               selectSomething({selectFn: setSelectedCity, selectVal: true})
             }}>Take turn</a>
           </div>
@@ -792,13 +792,12 @@ export default function App() {
   )
 }
 
-async function takeTurn(setApiData, buildLocationEvents) {
+async function takeTurn(startTurn, buildLocationEvents) {
   let postData = {...turnData.locationPostData, ...{events: turnData.slots}};
   console.log('Taking turn...', postData)
   let resp = await axios.post('http://localhost:8000/take_turn/', postData)
   console.log('Turn taken', resp.data)
-  setApiData(resp.data)
+  startTurn(resp.data);
   turnData.resetSlots = {"1": [], "2": [], "3": [], "4": []};
-  buildLocationEvents(resp.data)
   console.log("Finished")
 }
