@@ -470,22 +470,22 @@ function EventPlannerForm({slotNumber, venue, eventTemplate}) {
                 "Band": [],
                 "Promoter": [],
                 "Musician": [],
-              },
-              "band_ids": [],
-              "promoter_ids": [],
-              "musician_ids": [],
+              }
             }
 
             eventTemplate.requirements.objects.forEach(function x(r, i) {
               let modelName = r.model
               let modelNameLower = modelName.toLowerCase()
-              let eventKey = modelNameLower + "_ids";
               let ids = Array.from(document.getElementsByClassName(modelNameLower+"Field")).map(m => m.value);
-              event[eventKey].push(ids)
               if (modelNameLower === "band") {
                 turnData.addBusyBandsIds(slotNumber, ids);
+                let musicianIds = apiData.people.filter(p => p.job && ids.indexOf(p.job.band_id.toString()) !== -1).map(p => p.id.toString());
+                turnData.addBusyPeopleIds(slotNumber, musicianIds);
               } else {
                 turnData.addBusyPeopleIds(slotNumber, ids);
+                let bandIds = apiData.people.filter(p => ids.indexOf(p.id.toString()) !== -1 && p.job && p.job.band_id).map(p => p.job.band_id.toString())
+                console.log("bandIds", bandIds)
+                turnData.addBusyBandsIds(slotNumber, bandIds);
               }
               event.objects[modelName] = ids
             })
