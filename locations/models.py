@@ -123,12 +123,13 @@ class VenueAssessment(models.Model):
 class BuildingType(models.Model):
   # When adding to BUILDING_CHOICES please also put the building in BUILDING_CATEGORIES
   BUILDING_CHOICES = [(n, n) for n in ['concert hall',
+                                       'gig venue',
                                        'music bar',
                                        'local pub',
                                        'club',
                                        'record store',
                                        'musical instrument shop',
-                                       'music lessons',
+                                       'music school',
                                        'recording studio',
                                        'promo office',
                                        'workshop',
@@ -138,13 +139,13 @@ class BuildingType(models.Model):
                                       ]
                                     ]
   BUILDING_CATEGORIES = {
-    'venue with stage': ['concert hall', 'music bar'],
-    'venue without stage': ['dive bar', 'club'],
+    'venue with stage': ['concert hall', 'music bar', 'gig venue' 'club'],
+    'venue without stage': ['dive bar'],
     'pub or cafe': ['local pub', 'late night cafe'],
     'shop': ['record store', 'musical instrument shop', 'guitar shop'],
     'public place': ['park'],
     'private place': ['band house'],
-    'training or work': ['music lessons',
+    'training or work': ['music school',
                          'recording studio',
                          'promo office',
                          'workshop',],
