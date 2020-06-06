@@ -6,6 +6,7 @@ import axios from "axios"
 import geodata from "./bristol.geojson";
 import { Pie } from "react-chartjs-2";
 import { Guitar } from "./components/guitars"
+import { Character } from "./components/characters"
 
 class TurnData {
   constructor() {
@@ -524,7 +525,7 @@ export function ShopSidebarContent({venue}) {
     <>
       <CardHeader title={shop.name} caption={venue.type} img={shop.type + ".svg"} />
       <div className="sidebar-scroll">
-       <Guitar />
+       <Character />
       </div>
     </>
   )
