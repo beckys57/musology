@@ -6,7 +6,7 @@ import axios from "axios"
 import geodata from "./bristol.geojson";
 import { Pie } from "react-chartjs-2";
 import { Guitar } from "./components/guitars"
-import { CharacterProps, Character } from "./components/characters"
+import { Character } from "./components/characters"
 
 class TurnData {
   constructor() {
@@ -128,7 +128,7 @@ export function SidebarTabs({selectedTab}) {
   )
 }
 
-function CardHeader({title, caption, img}) {
+function CardHeader({title, caption, imgSrc, img}) {
   return (
       <div className="row sidebar-header">
         <div className="col col-9">
@@ -136,7 +136,7 @@ function CardHeader({title, caption, img}) {
           {caption && <em>{caption}</em> }
         </div>
         <div className="col col-3">
-          <img className="card-img-top" src={img} alt={caption} />
+          {img ? img : <img className="card-img-top" src={imgSrc} alt={caption} />}
         </div>
       </div> 
     )
@@ -146,7 +146,7 @@ export function CitySidebarContent() {
   const apiData = useContext(ApiDataContext)
   return (
     <>
-    <CardHeader title={apiData.city.name} caption={"Population " + apiData.city.population} img={"/band.svg"} />
+    <CardHeader title={apiData.city.name} caption={"Population " + apiData.city.population} imgSrc={"/band.svg"} />
     <div className="sidebar-scroll">
       <ListOfNamedObjects title="Districts" namedObjects={apiData.city.districts} selectorFn="setSelectedDistrict" />
       <ListOfNamedObjects title="Brands" namedObjects={Object.values(apiData.brands)} selectorFn={null} />
@@ -177,7 +177,7 @@ export function BandSidebarContent({band}) {
 
   return (
     <>
-    <CardHeader title={band.name} caption="" img={img} />
+    <CardHeader title={band.name} caption="" imgSrc={img} />
     <div className="sidebar-scroll">
       <div className="row">
         <div className="col col-12">
@@ -206,7 +206,7 @@ export function BandsSidebarContent() {
   const apiData = useContext(ApiDataContext)
   return (
     <>
-    <CardHeader title="Bands" caption={null} img={"/band.svg"} />
+    <CardHeader title="Bands" caption={null} imgSrc={"/band.svg"} />
     <div className="sidebar-scroll">
     <ListOfNamedObjects title={null} namedObjects={apiData.bands} selectorFn="setSelectedBand" />
     </div>
@@ -217,10 +217,9 @@ export function BandsSidebarContent() {
 export function PersonSidebarContent({person}) {
   const apiData = useContext(ApiDataContext)
   const gameFns = useContext(FnContext)
+  console.log("appearance props", person.appearance)
   let img = (
-      (person.job !== null ) && (["bar staff", "musician", "person", "techie"].indexOf(person.job.title) !== -1) ?
-      "/" + person.job.title + ".svg" :
-      "/person.svg"
+      <Character appearanceProps={person.appearance} />
     ) 
 
   let band = (person.job && person.job.title === "musician" && person.job.band_id !== null ? apiData.bands.find(b => b.id === person.job.band_id) : null);
@@ -325,7 +324,7 @@ export function PeopleSidebarContent() {
   const gameFns = useContext(FnContext)
   return (
     <>
-    <CardHeader title="People" caption={null} img={"/pub.svg"} />
+    <CardHeader title="People" caption={null} imgSrc={"/pub.svg"} />
     <div className="sidebar-scroll">
 	<ListOfNamedObjects title="People" namedObjects={apiData.people} selectorFn="setSelectedPerson" />
     </div>
@@ -365,7 +364,7 @@ export function DistrictSidebarContent({district}) {
 
   return (
     <>
-    <CardHeader title={district.name} caption={null} img="/map.jpg" />
+    <CardHeader title={district.name} caption={null} imgSrc="/map.jpg" />
     <div className="sidebar-scroll">
       <PieChart percentages={percentages} colours={colours} labels={labels} />
     </div>
@@ -523,21 +522,20 @@ export function ShopSidebarContent({venue}) {
   let shop = venue;
   return (
     <>
-      <CardHeader title={shop.name} caption={venue.type} img={shop.type + ".svg"} />
+      <CardHeader title={shop.name} caption={venue.type} imgSrc={shop.type + ".svg"} />
       <div className="sidebar-scroll">
-       <Character props={CharacterProps} />
+       <Guitar />
       </div>
     </>
   )
 }
-
 
 export function VenueSidebarContent({venue, selectedSlot}) {
   const gameFns = useContext(FnContext)
   let eventOptions = venue.event_options;
   return (
     <>
-      <CardHeader title={venue.name} caption={venue.genre_id ? gameFns.getGenre(venue.genre_id).name+" "+venue.type : venue.type} img={venue.type + ".svg"} />
+      <CardHeader title={venue.name} caption={venue.genre_id ? gameFns.getGenre(venue.genre_id).name+" "+venue.type : venue.type} imgSrc={venue.type + ".svg"} />
       <div className="sidebar-scroll">
         <table key={"venue"+venue.id} className="table">
           <thead>
@@ -606,7 +604,6 @@ export function Map({children}) {
           "/" + venue.type + ".svg" :
           "/pub.svg"
         ) 
-
         return(
           <Marker
             key={venue.id}
