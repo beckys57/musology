@@ -17,19 +17,6 @@ const Frame = styled.div`
   }
 `
 
-const Hair = ({hairColor, hairDetail}) => (
-    <>
-      <linearGradient id="hairGradient" gradientUnits="userSpaceOnUse" x1="340.6" y1="48.89" x2="349.91" y2="606.14">
-        <stop style={{stopColor: hairColor, stopOpacity: 1}} offset="0%">
-        </stop>
-        <stop style={{stopColor: hairDetail, stopOpacity: 1}} offset="100%">
-        </stop>
-      </linearGradient>
-      <path stroke="#000000" strokeWidth="20" strokeOpacity="1" fill="url(#hairGradient)" fillOpacity="1" d="M531.54 127.39C582.85 181.6 545.86 226.13 545.86 254.26C545.86 293.75 544.34 405.05 541.29 588.16C447.88 510.12 382.11 471.1 343.97 471.1C230.68 471.1 145.44 532.06 145.44 412.38C145.44 374.68 116.37 221.54 132.41 190.65C148.11 160.41 123.08 80.52 168.1 52.32C213.13 24.13 297.91 37.41 340.6 37.41C427.26 37.41 480.22 73.18 531.54 127.39Z"></path>
-    </>
-  )
-
-
 export function Character({appearanceProps}) {
   const shadeMap = {
     "#ffc999": "#e89c5d",
@@ -48,10 +35,7 @@ export function Character({appearanceProps}) {
           y1: "48.8",
           x2: "349.9",
           y2: "606.1"},
-    "3": {x1: "0",
-          y1: "0",
-          x2: "0",
-          y2: "0"},
+    "3": null,
     "4": {x1: "348.05",
           y1: "18.74",
           x2: "350.86",
@@ -109,13 +93,13 @@ export function Character({appearanceProps}) {
   return (
       <Frame>
         <svg preserveAspectRatio="xMidYMid meet" viewBox="0 0 681 681" width="681" height="681">
-          <linearGradient id="hairGradient" gradientUnits="userSpaceOnUse" x1={hairGradients[hairStyle].x1} y1={hairGradients[hairStyle].y1} x2={hairGradients[hairStyle].x2} y2={hairGradients[hairStyle].y2}>
+          {hairGradients[hairStyle] && <linearGradient id="hairGradient" gradientUnits="userSpaceOnUse" x1={hairGradients[hairStyle].x1} y1={hairGradients[hairStyle].y1} x2={hairGradients[hairStyle].x2} y2={hairGradients[hairStyle].y2}>
             <stop style={{stopColor: hairColor, stopOpacity: 1}} offset="0%">
             </stop>
             <stop style={{stopColor: hairDetail, stopOpacity: 1}} offset="100%">
             </stop>
-          </linearGradient>
-          {!facePaths[hairStyle].onTop && <path stroke="#000000" strokeWidth="20" strokeOpacity="1" fill="url(#hairGradient)" fillOpacity="1" d={hairPaths[hairStyle]}></path>}
+          </linearGradient>}
+          {!facePaths[hairStyle].onTop && <path stroke="#000000" strokeWidth="20" strokeOpacity="1" fill={hairGradients[hairStyle] ? "url(#hairGradient)" : hairColor} fillOpacity="1" d={hairPaths[hairStyle]}></path>}
           <path stroke="#000000" strokeWidth="20" strokeOpacity="1" fill={skinColor} fillOpacity="1" d="M524.46 672.01L157.85 672.01L189.61 466.66C189.97 464.35 190.17 463.07 190.21 462.82C191.81 452.45 200.73 444.82 211.21 444.82C216.81 444.82 241.26 443.15 284.57 439.82L295.23 363.24L387.08 363.24L399.07 444.82C441.49 444.82 465.51 444.82 471.11 444.82C481.59 444.82 490.5 452.45 492.11 462.82C492.15 463.07 492.34 464.35 492.7 466.66L524.46 672.01Z"></path>
           <path stroke="#000000" strokeWidth="1" strokeOpacity="0" fill={skinDetail} fillOpacity="1" d="M488.28 465.64C488.02 463.44 487.88 462.22 487.85 461.98C486.67 452.1 480.11 444.82 472.4 444.82C470.31 444.82 453.56 444.82 451.47 444.82C459.17 444.82 465.74 452.1 466.91 461.98C466.94 462.22 467.09 463.44 467.35 465.64L490.72 661.42L511.64 661.42L488.28 465.64Z"></path>
           <path stroke="#000000" strokeWidth="20" strokeOpacity="1" fill={skinColor} fillOpacity="1" d="M449.54 240.9L449.54 313.49C476.61 313.49 491.65 313.49 494.66 313.49C507.44 313.49 517.8 303.13 517.8 290.36C517.8 287.72 517.8 266.66 517.8 264.03C517.8 251.25 507.44 240.9 494.66 240.9C488.64 240.9 473.6 240.9 449.54 240.9Z"></path>
