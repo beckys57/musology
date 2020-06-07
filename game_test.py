@@ -18,7 +18,7 @@ def setup():
   brand, _ = Brand.objects.get_or_create(name="Badger Stripes")
   brand2, _ = Brand.objects.get_or_create(name="Rival Records")
   handwash, _ = Band.objects.get_or_create(**{"brand_id": brand.id, "name": "Handwash Experience", "genre_id": 1})
-  erbs, _ = Band.objects.get_or_create(**{"name": "'ERB GIRLS", "genre_id": 1, "influence": 20})
+  erbs, _ = Band.objects.get_or_create(**{"name": "'ERB GIRLS", "genre_id": 1, "popularity": 20})
   shit, _ = Band.objects.get_or_create(**{"brand_id": 2, "name": "HOLY SHIT", "genre_id": 2})
   City.objects.get_or_create(**{"name": "Bristol", "latitude": "51.454514", "longitude": "-2.587910"})
   bedminster, _ = District.objects.get_or_create(**{"city_id": 1, "name": "Bedminster"})

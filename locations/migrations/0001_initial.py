@@ -55,7 +55,7 @@ class Migration(migrations.Migration):
                 ('longitude', models.CharField(blank=True, max_length=12, null=True)),
                 ('slots_available', models.PositiveSmallIntegerField(default=4)),
                 ('capacity', models.PositiveSmallIntegerField(blank=True, default=100, null=True)),
-                ('influence', models.PositiveSmallIntegerField(default=0)),
+                ('popularity', models.PositiveSmallIntegerField(default=0)),
                 ('prestige', models.PositiveSmallIntegerField(default=3)),
                 ('running_cost', models.PositiveSmallIntegerField(default=50)),
                 ('entry_price', models.PositiveSmallIntegerField(default=0)),

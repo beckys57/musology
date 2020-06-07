@@ -170,7 +170,7 @@ class Location(models.Model):
 
   slots_available = models.PositiveSmallIntegerField(default=4)
   capacity = models.PositiveSmallIntegerField(null=True, blank=True, default=100)
-  influence = models.PositiveSmallIntegerField(default=0)
+  popularity = models.PositiveSmallIntegerField(default=0)
   
   prestige = models.PositiveSmallIntegerField(default=3) # Cleanliness, decor, damage etc
   running_cost = models.PositiveSmallIntegerField(default=50) # Cleanliness, decor, damage etc
@@ -188,7 +188,7 @@ class Location(models.Model):
 
     attrs.update({
         "stats": {
-                    "influence": {"value": self.total_influence, "label": "Influence"},
+                    "popularity": {"value": self.total_popularity, "label": "Popularity"},
                     "prestige": {"value": self.prestige, "label": "Prestige"},
                     "running_cost": {"value": self.running_cost, "label": "Running cost"},
                     "capacity": {"value": self.capacity, "label": "Capacity"},
@@ -202,9 +202,9 @@ class Location(models.Model):
     return attrs
 
   @property
-  def total_influence(self):
+  def total_popularity(self):
     from people.models import Person
-    return self.influence + sum([p.influence for p in Person.objects.filter(job__workplace=self)])
+    return self.popularity + sum([p.popularity for p in Person.objects.filter(job__workplace=self)])
 
   @property
   def staff_data(self):
@@ -212,7 +212,7 @@ class Location(models.Model):
     staff = Person.objects.filter(job__workplace=self)
     staff_count = staff.values('job__role').annotate(total=Count('job__role'))
     return {
-      "employees": list(staff.values('genre_id', 'location_id', 'job__role', 'name', 'happiness', 'influence')),
+      "employees": list(staff.values('genre_id', 'location_id', 'job__role', 'name', 'happiness', 'popularity')),
       "role_counts": list(staff_count)
     }
 

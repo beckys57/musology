@@ -49,7 +49,7 @@ def index(request):
   genre_data = {g.id: g.display_attrs for g in Genre.objects.all()}
   brand_data = {b.id: b.display_attrs for b in Brand.objects.all()}
   location_data = [l.display_attrs for l in Location.objects.all()]
-  band_data = [b.display_attrs for b in Band.load_all_with_influence()]
+  band_data = [b.display_attrs for b in Band.load_all_with_popularity()]
   people_data = [p.display_attrs for p in Person.objects.all()]
   response_data = {
                 "genres": genre_data,
@@ -68,7 +68,7 @@ def index(request):
   #  VENUE
   #  Staff management - hire from available unemployed pool
   #  Pricing screen
-  #  Stats/popularity/influence
+  #  Stats/popularity/popularity
   #  Slots, with options available to fill them
   #  PEOPLE
   #  Hire? No, do all from elsewhere  so nothing here.

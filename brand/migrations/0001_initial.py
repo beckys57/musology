@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
             name='Band',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('influence', models.PositiveSmallIntegerField(default=0)),
+                ('popularity', models.PositiveSmallIntegerField(default=0)),
                 ('name', models.CharField(max_length=127)),
             ],
             options={
@@ -29,7 +29,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=127)),
                 ('colour', models.CharField(default='blue', max_length=15)),
-                ('influence', models.PositiveSmallIntegerField(default=0)),
+                ('popularity', models.PositiveSmallIntegerField(default=0)),
                 ('money', models.SmallIntegerField(default=100)),
             ],
         ),
@@ -37,7 +37,7 @@ class Migration(migrations.Migration):
             name='RecordLabel',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('influence', models.PositiveSmallIntegerField(default=0)),
+                ('popularity', models.PositiveSmallIntegerField(default=0)),
                 ('name', models.CharField(max_length=127)),
                 ('brand', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='brand.Brand')),
             ],

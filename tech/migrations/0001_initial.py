@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=60)),
                 ('affects', models.CharField(default="'global", max_length=255)),
-                ('effects', models.CharField(default="{'influence': 0}", max_length=255)),
+                ('effects', models.CharField(default="{'popularity': 0}", max_length=255)),
                 ('category', models.CharField(blank=True, choices=[('event', 'event'), ('instruments', 'instruments'), ('location', 'location')], max_length=27, null=True)),
                 ('progress', models.CharField(choices=[('event', 'event'), ('instruments', 'instruments'), ('location', 'location')], default=0, max_length=27)),
                 ('brand', models.ManyToManyField(related_name='technologies', to='brand.Brand')),

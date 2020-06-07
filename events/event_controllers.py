@@ -73,27 +73,27 @@ class Gig(object):
     location = params["location"]
     print("Calculating outcome of gig at {}..".format(location), params)
     print("Band ids", [int(sid) for sid in params.get("objects")["Band"]])
-    bands = Band.load_all_with_influence({"id__in": [int(sid) for sid in params.get("objects")["Band"]]})
+    bands = Band.load_all_with_popularity({"id__in": [int(sid) for sid in params.get("objects")["Band"]]})
     print("Bands", bands)
     updates = {
-      location: {"influence": location.influence}
+      location: {"popularity": location.popularity}
     }
     
-    # Inherit influence from bands if any who played have more influence
-    bands_withinf = bands.order_by('-influence').aggregate(max_influence=Max("band_influence"))
-    highest_influence = bands_withinf['max_influence'] or 0
-    influence_diff = highest_influence - location.influence
+    # Inherit popularity from bands if any who played have more popularity
+    bands_withinf = bands.order_by('-popularity').aggregate(max_popularity=Max("band_popularity"))
+    highest_popularity = bands_withinf['max_popularity'] or 0
+    popularity_diff = highest_popularity - location.popularity
     text = ""
-    if influence_diff > 0:
+    if popularity_diff > 0:
       # 25% of the difference, minimum 1
-      updates[location]["influence"] = updates[location]["influence"] + math.ceil(influence_diff/4)
-      text += "{} gained influence from the gig with {}".format(location.name, bands_withinf[0])
+      updates[location]["popularity"] = updates[location]["popularity"] + math.ceil(popularity_diff/4)
+      text += "{} gained popularity from the gig with {}".format(location.name, bands_withinf[0])
 
     # How many people came? District analysis
     # turnout =
 
     # TODO: this is a wip
-    # influence
+    # popularity
     # brand
     # genre
     # capacity
@@ -103,13 +103,13 @@ class Gig(object):
     print("Band 1", bands.first())
     print("Updates", updates)
     print("Done", location)
-    # Reward: influence & money
+    # Reward: popularity & money
     # Factors: capacity full, overall capacity
     # Stuff to do with all slots combined should be done at the end, so this should update a growing dict of modifiers
     """
     params eg
     {
-      modifiers: {venue_obj: influence: -5, prestige: 1}
+      modifiers: {venue_obj: popularity: -5, prestige: 1}
     }
     """
 

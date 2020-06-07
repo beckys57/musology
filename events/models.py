@@ -68,7 +68,7 @@ class EventType(models.Model):
     return options
 
 
-# event outcome - modifies influence, update attributes eg increase capacity, new objects, skill up
+# event outcome - modifies popularity, update attributes eg increase capacity, new objects, skill up
 class Event(models.Model):
   event_type = models.ForeignKey(EventType, null=True, blank=True, on_delete=models.SET_NULL)
   brand = models.ForeignKey('brand.Brand', null=True, blank=True, on_delete=models.SET_NULL)

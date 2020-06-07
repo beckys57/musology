@@ -142,7 +142,7 @@ class Person(models.Model):
   musical_talent = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(9)])
   tech_talent = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(9)])
   happiness = models.CharField(max_length=1, default="6", choices=HAPPINESS_LEVELS)
-  influence = models.PositiveSmallIntegerField(default=0)
+  popularity = models.PositiveSmallIntegerField(default=0)
 
   # Character appearance settings
   hair_color = models.CharField(max_length=7, default=HAIR_COLORS)
@@ -181,6 +181,6 @@ class Person(models.Model):
             "musical_talent": self.musical_talent,
             "tech_talent": self.tech_talent,
             "happiness": {"text": self.get_happiness_display(), "value": int(self.happiness)},
-            "influence": self.influence,
+            "popularity": self.popularity,
             "appearance": {k: self.__dict__[k] for k in ["hair_color","hair_detail","hair_style","jacket_color","shirt_color","skin_color","shirt_detail","shirt_style"]}
             }

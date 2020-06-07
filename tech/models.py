@@ -33,7 +33,7 @@ class Tech(models.Model):
   # lasts_for = models.SmallIntegerField(default=-1) # -1 = once applied, always applied. otherwise measured in turns
   # cost_per_turn = models.SmallIntegerField(default=0) # For example hiring pyrotechnic equipment
   affects = models.CharField(max_length=255, default="'global") # String list of models, it's a bit poo but I don't mind too much. eg [Venue, Population]
-  effects = models.CharField(max_length=255, default="{'influence': 0}") # String list of attributes eg prestige, applied to all where attr exists. As an increment value
+  effects = models.CharField(max_length=255, default="{'popularity': 0}") # String list of attributes eg prestige, applied to all where attr exists. As an increment value
   category = models.CharField(max_length=27, null=True, blank=True, choices=TECH_CATEGORIES)
   progress = models.CharField(max_length=27, default=0, choices=TECH_CATEGORIES)
 
