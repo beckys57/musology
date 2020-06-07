@@ -774,6 +774,8 @@ export default function App() {
     setLoaded(true);
     turnData.locations = buildLocationEvents(data);
     turnData.slots = buildDistrictEvents(data);
+    turnData.busyPeopleMap = {"1": [], "2": [], "3": [], "4": []};
+    turnData.busyBandsMap = {"1": [], "2": [], "3": [], "4": []};
     setCurrentMoney(data.brands["1"].money)
     setCurrentInfluence(data.brands["1"].influence)
   }
@@ -837,6 +839,5 @@ async function takeTurn(startTurn, buildLocationEvents, currentMoney) {
   let resp = await axios.post('http://localhost:8000/take_turn/', postData)
   console.log('Turn taken')
   startTurn(resp.data);
-  turnData.resetSlots = {"0": {"1": [], "2": [], "3": [], "4": []}};
   console.log("Finished")
 }
