@@ -10,22 +10,11 @@ import { Character } from "./components/characters"
 
 class TurnData {
   constructor() {
-    this.slots = {"1": [], "2": [], "3": [], "4": []}
+    // Example slots without a district
+    this.slots = {"0": {"1": [], "2": [], "3": [], "4": []}}
     this.busyPeopleMap = {"1": [], "2": [], "3": [], "4": []}
     this.busyBandsMap = {"1": [], "2": [], "3": [], "4": []}
     this.locationPostData = []
-  }
-
-  newEvent() {
-    return {
-          "brand_id": 1,
-          "venue_id": null,
-          "kind": "",
-          "band_ids": [],
-          "promoter_ids": [],
-          "musician_ids": [],
-          "person_ids": [],
-        }
   }
 
   get slotData() {
@@ -52,8 +41,8 @@ class TurnData {
     return this.busyBandsMap[slotNumber.toString()].flat();
   }
 
-  addEvent(slotNumber, event) {
-    this.slots[slotNumber].push(event)
+  addEvent(districtId, slotNumber, event) {
+    this.slots[districtId][slotNumber].push(event)
     console.log("Slots updated", this.slots)
   }
 
@@ -217,7 +206,6 @@ export function BandsSidebarContent() {
 export function PersonSidebarContent({person}) {
   const apiData = useContext(ApiDataContext)
   const gameFns = useContext(FnContext)
-  console.log("appearance props", person.appearance)
   let img = (
       <Character appearanceProps={person.appearance} />
     ) 
@@ -375,7 +363,8 @@ export function DistrictSidebarContent({district}) {
 function SlotBar({venue, numOfSlots, eventOptions}) {
   const gameFns = useContext(FnContext);
   let slotButtons = [...Array(numOfSlots+1).keys()].slice(1).map(function z(label) {
-      let thingsInSlot = turnData.slots[label].filter(event => event.venue_id === venue.id);
+      console.log('turnData', turnData)
+      let thingsInSlot = turnData.slots[venue.district_id || "0"][label].filter(event => event.venue_id === venue.id);
       return (
         <button 
           onClick={e => {
@@ -501,13 +490,11 @@ function EventPlannerForm({slotNumber, venue, eventTemplate, currentMoney}) {
                   } else {
                     turnData.addBusyPeopleIds(slotNumber, ids);
                     let bandIds = apiData.people.filter(p => ids.indexOf(p.id.toString()) !== -1 && p.job && p.job.band_id).map(p => p.job.band_id.toString())
-                    console.log("bandIds", bandIds)
                     turnData.addBusyBandsIds(slotNumber, bandIds);
                   }
                   event.objects[modelName] = ids
                 })
-                turnData.addEvent(slotNumber, event);
-                console.log('currentMoney', currentMoney-cost)
+                turnData.addEvent(venue.district_id || "0", slotNumber, event);
                 gameFns.setCurrentMoney(currentMoney-cost)
               }
             }>Book</button>
@@ -736,6 +723,15 @@ export default function App() {
     };
     return events
   }
+
+  function buildDistrictEvents(data) {
+    let events = {"0": {"1": [], "2": [], "3": [], "4": []}};
+    let districtIds = data.city.districts.map(d => d.id);
+    districtIds.forEach(function z(dId) {
+      events[dId] = {"1": [], "2": [], "3": [], "4": []}
+    });
+    return events
+  }
   
   useEffect(() => {
     // WIP:
@@ -777,6 +773,7 @@ export default function App() {
     console.log("data", data);
     setLoaded(true);
     turnData.locations = buildLocationEvents(data);
+    turnData.slots = buildDistrictEvents(data);
     setCurrentMoney(data.brands["1"].money)
     setCurrentInfluence(data.brands["1"].influence)
   }
@@ -840,6 +837,6 @@ async function takeTurn(startTurn, buildLocationEvents, currentMoney) {
   let resp = await axios.post('http://localhost:8000/take_turn/', postData)
   console.log('Turn taken')
   startTurn(resp.data);
-  turnData.resetSlots = {"1": [], "2": [], "3": [], "4": []};
+  turnData.resetSlots = {"0": {"1": [], "2": [], "3": [], "4": []}};
   console.log("Finished")
 }

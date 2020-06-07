@@ -35,8 +35,6 @@ class District(models.Model):
   city = models.ForeignKey(City, on_delete=models.PROTECT, related_name="districts")
   name = models.CharField(max_length=127)
   population = models.PositiveSmallIntegerField(default=100)
-  latitude = models.CharField(max_length=12, null=True, blank=True)
-  longitude = models.CharField(max_length=12, null=True, blank=True)
 
   class Meta:
     ordering = ['id']
@@ -48,8 +46,6 @@ class District(models.Model):
   def display_attrs(self):
     return {
       "id": self.id,
-      "latitude": self.latitude,
-      "longitude": self.longitude,
       "name": self.name,
       "population": self.population,
       "crowds": [c.display_attrs for c in self.crowds.all()]

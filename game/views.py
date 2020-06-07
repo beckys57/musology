@@ -25,15 +25,18 @@ def take_turn(request):
     # Run all updates
     l = Location.objects.filter(id=location["id"])
     l.update(**location.get("updates", {}))
-    # Sort and group events so they can be logically run. Should this be location at a time or all events? Maybe re-structure if find a reason to
- 
-  for slot, events in data.get('events', []).items():
-    # Pass off to EventType to get the controller
-    for event in events:
-      print("event", event)
-      if event["kind"]:
-        event["location"] = Location.objects.get(id=event["venue_id"])
-        outcomes.append(EventType.objects.get(name=event["kind"]).calculate_outcome(event))
+
+  # Events grouped by district then slots
+  for district_id, eventData in data.get('events', {}).items():
+    for slot, events in eventData.items():
+      gigs = filter(lambda e: e.get('kind') == 'gig', events)
+      # gigs = [{'venue_id': 2, 'kind': 'gig', 'objects': {'Band': ['1'], 'Promoter': [], 'Musician': []}}, {'venue_id': 4, 'kind': 'gig', 'objects': {'Band': ['2'], 'Promoter': [], 'Musician': []}}]
+      # Pass off to EventType to get the controller
+      for event in events:
+        print("event", event)
+        if event["kind"]:
+          event["location"] = Location.objects.get(id=event["venue_id"])
+          outcomes.append(EventType.objects.get(name=event["kind"]).calculate_outcome(event))
 
   print("Outcomes", outcomes)
   return HttpResponseRedirect('/')
