@@ -109,7 +109,13 @@ def SKIN_COLORS():
   return random.choice(["#ffc999", "#754b32"])
 
 def CLOTHING_COLORS():
-  return random.choice(["#280c38", "#32380c", "#38250c", "#6a6b98", "#98816a", "#98986a", "#976a98", "#7393d8", "#d8b673", "#d88473", "#b72f36", "#2fb7a9", "#7ab72f", "#e8fbf8", "#fbece8", "#fbf6e8", "#f0e8fb", ])
+  return random.choice(["#000000", "#280c38", "#32380c", "#38250c", "#6a6b98", "#98816a", "#98986a", "#976a98", "#7393d8", "#d8b673", "#d88473", "#b72f36", "#2fb7a9", "#7ab72f", "#e8fbf8", "#fbece8", "#fbf6e8", "#f0e8fb", ])
+
+def HAIR_STYLES():
+  return str(random.choice([i for i in range(4)])+1)
+
+def SHIRT_STYLES():
+  return str(random.choice([i for i in range(2)])+1)
 
 # All performing musicians should be in a band, even if solo artist
 class Person(models.Model):
@@ -141,11 +147,12 @@ class Person(models.Model):
   # Character appearance settings
   hair_color = models.CharField(max_length=7, default=HAIR_COLORS)
   hair_detail = models.CharField(max_length=7, default=HAIR_COLORS)
-  hair_style = models.CharField(max_length=1, default="1")
+  hair_style = models.CharField(max_length=1, default=HAIR_STYLES)
   skin_color = models.CharField(max_length=7, default=SKIN_COLORS)
   shirt_color = models.CharField(max_length=7, default=CLOTHING_COLORS)
   shirt_detail = models.CharField(max_length=7, default=CLOTHING_COLORS)
-  shirt_style = models.CharField(max_length=1, default="1")
+  shirt_style = models.CharField(max_length=1, default=SHIRT_STYLES)
+  jacket_color = models.CharField(max_length=7, default=CLOTHING_COLORS)
   
   created_at = models.DateTimeField(auto_now_add=True)
 
@@ -175,5 +182,5 @@ class Person(models.Model):
             "tech_talent": self.tech_talent,
             "happiness": {"text": self.get_happiness_display(), "value": int(self.happiness)},
             "influence": self.influence,
-            "appearance": {k: self.__dict__[k] for k in ["hair_color","hair_detail","hair_style","shirt_color","skin_color","shirt_detail","shirt_style"]}
+            "appearance": {k: self.__dict__[k] for k in ["hair_color","hair_detail","hair_style","jacket_color","shirt_color","skin_color","shirt_detail","shirt_style"]}
             }
