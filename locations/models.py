@@ -180,6 +180,18 @@ class Location(models.Model):
     return "{} ({})".format(self.name, self.building_type)
 
   @property
+  def level(self):
+    if self.popularity < 3: return 0
+    if self.popularity < 5: return 1
+    if self.popularity < 8: return 2
+    if self.popularity < 13: return 3
+    if self.popularity < 21: return 4
+    if self.popularity < 34: return 5
+    if self.popularity < 55: return 6
+    if self.popularity < 89: return 7
+    if self.popularity < 144: return 8
+
+  @property
   def display_attrs(self):
     from events.models import EventType
 
@@ -188,6 +200,7 @@ class Location(models.Model):
 
     attrs.update({
         "stats": {
+                    "level": {"value": self.level, "label": "Level"},
                     "popularity": {"value": self.total_popularity, "label": "Popularity"},
                     "prestige": {"value": self.prestige, "label": "Prestige"},
                     "running_cost": {"value": self.running_cost, "label": "Running cost"},

@@ -164,6 +164,18 @@ class Person(models.Model):
     return self.name
 
   @property
+  def level(self):
+    if self.popularity < 3: return 0
+    if self.popularity < 5: return 1
+    if self.popularity < 8: return 2
+    if self.popularity < 13: return 3
+    if self.popularity < 21: return 4
+    if self.popularity < 34: return 5
+    if self.popularity < 55: return 6
+    if self.popularity < 89: return 7
+    if self.popularity < 144: return 8
+
+  @property
   def display_attrs(self):
     job = {"title": self.job.role, "workplace": self.job.workplace.name if self.job.workplace else "", "brand_id": self.job.brand_id} if self.job else None
     music_career = self.music_career.first()
@@ -182,5 +194,6 @@ class Person(models.Model):
             "tech_talent": self.tech_talent,
             "happiness": {"text": self.get_happiness_display(), "value": int(self.happiness)},
             "popularity": self.popularity,
+            "level": self.level,
             "appearance": {k: self.__dict__[k] for k in ["hair_color","hair_detail","hair_style","jacket_color","shirt_color","skin_color","shirt_detail","shirt_style"]}
             }
