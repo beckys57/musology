@@ -106,13 +106,13 @@ def HAIR_COLORS():
   return random.choice(["#000000", "#c7ff92", "#98816a", "#38250c", "#f0e8fb", "#ff9752", "#3bb3ab", "#1e2629", "#d6abc8", "#e8fbf8", "#947d31", "#594527", "#495919", "#94682a"])
 
 def SKIN_COLORS():
-  return random.choice(["#ffc999", "#754b32"])
+  return random.choice(["#ffc999", "#754b32", "#feebe5", "#f5e1c8", "#d7ad93", "#412d29"])
 
 def CLOTHING_COLORS():
   return random.choice(["#000000", "#280c38", "#32380c", "#38250c", "#6a6b98", "#98816a", "#98986a", "#976a98", "#7393d8", "#d8b673", "#d88473", "#b72f36", "#2fb7a9", "#7ab72f", "#e8fbf8", "#fbece8", "#fbf6e8", "#f0e8fb", ])
 
 def HAIR_STYLES():
-  return str(random.choice([i for i in range(4)])+1)
+  return str(random.choice([i for i in range(5)])+1)
 
 def SHIRT_STYLES():
   return str(random.choice([i for i in range(2)])+1)
