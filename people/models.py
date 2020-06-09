@@ -147,7 +147,7 @@ class Person(models.Model):
   musical_talent = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(9)])
   tech_talent = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(9)])
   happiness = models.CharField(max_length=1, default="6", choices=HAPPINESS_LEVELS)
-  popularity = models.PositiveSmallIntegerField(default=0)
+  popularity = models.PositiveSmallIntegerField(default=1)
 
   # Character appearance settings
   hair_color = models.CharField(max_length=7, default=HAIR_COLORS)

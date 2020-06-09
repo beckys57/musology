@@ -6,7 +6,7 @@ class Brand(models.Model):
   game = models.ForeignKey(to='game.Game', null=True, blank=True, on_delete=models.SET_NULL, related_name="brands")
   name = models.CharField(max_length=127)
   colour = models.CharField(max_length=15, default='blue')
-  popularity = models.PositiveSmallIntegerField(default=0)
+  popularity = models.PositiveSmallIntegerField(default=1)
   money = models.SmallIntegerField(default=1000)
   events_unlocked = models.ManyToManyField('events.EventType')
 
@@ -31,7 +31,7 @@ class Brand(models.Model):
 
 class BrandedModel(models.Model):
   brand = models.ForeignKey(to='Brand', null=True, blank=True, on_delete=models.SET_NULL)
-  popularity = models.PositiveSmallIntegerField(default=0)
+  popularity = models.PositiveSmallIntegerField(default=1)
 
   class Meta:
     abstract = True
@@ -40,7 +40,7 @@ class Band(BrandedModel):
   name = models.CharField(max_length=127)
   genre = models.ForeignKey('genres.Genre', null=True, blank=True, on_delete=models.PROTECT)
   location = models.ForeignKey('locations.location', null=True, blank=True, on_delete=models.SET_NULL)
-  popularity = models.PositiveSmallIntegerField(default=0)
+  popularity = models.PositiveSmallIntegerField(default=1)
 
   @property
   def level(self):
@@ -72,7 +72,7 @@ class Band(BrandedModel):
 
 class RecordLabel(BrandedModel):
   name = models.CharField(max_length=127)
-  popularity = models.PositiveSmallIntegerField(default=0)
+  popularity = models.PositiveSmallIntegerField(default=1)
 
   @property
   def level(self):

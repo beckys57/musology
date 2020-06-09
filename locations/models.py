@@ -83,6 +83,10 @@ class District(models.Model):
     return Person.objects.filter(location__district=self)
 
   @property
+  def crowd_counts(self):
+    return {genre_id: count for genre_id, count in [c.genre_count for c in self.crowds.all()]}
+
+  @property
   def crowds_in_size_order(self):
     return list(self.crowds.all().order_by("-proportion").values('genre_id', 'proportion'))
 
@@ -166,7 +170,7 @@ class Location(models.Model):
 
   slots_available = models.PositiveSmallIntegerField(default=4)
   capacity = models.PositiveSmallIntegerField(null=True, blank=True, default=100)
-  popularity = models.PositiveSmallIntegerField(default=0)
+  popularity = models.PositiveSmallIntegerField(default=1)
   
   prestige = models.PositiveSmallIntegerField(default=3) # Cleanliness, decor, damage etc
   running_cost = models.PositiveSmallIntegerField(default=50) # Cleanliness, decor, damage etc

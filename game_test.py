@@ -78,17 +78,17 @@ def setup():
   club, _ = BuildingType.objects.get_or_create(name='club', category='venue_with stage')
   mschool, _ = BuildingType.objects.get_or_create(name='music school', category='pub or cafe')
   guitarshop, _ = BuildingType.objects.get_or_create(name='guitar shop', category='shop')
-  venue, _ = Location.objects.get_or_create(building_type=music_bar, name="Bojo's", district_id=cotham.id, genre_id=int(cotham.crowds_in_size_order[0]["genre_id"]), brand_id=2, latitude="51.4656069", longitude="-2.6087273", capacity=120)
-  venue2, _ = Location.objects.get_or_create(building_type=pub, name="Dancing Pig", district_id=cotham.id, genre_id=int(cotham.crowds_in_size_order[0]["genre_id"]), brand_id=2, latitude="51.4669147", longitude="-2.6008227", capacity=100)
-  Location.objects.get_or_create(building_type=dive_bar, name="Rusty Spoon", district_id=cotham.id, genre_id=int(cotham.crowds_in_size_order[0]["genre_id"]), latitude="51.4380286", longitude="-2.5738362", capacity=80, prestige=0)
-  Location.objects.get_or_create(building_type=pub, name="The Baker's Giblets", district_id=cotham.id, genre_id=int(cotham.crowds_in_size_order[0]["genre_id"]), latitude="51.4659809", longitude="-2.6105696", capacity=50, prestige=6)
-  Location.objects.get_or_create(building_type=pub, name="Ye Olde 'Ole", district_id=knowle.id, genre_id=int(knowle.crowds_in_size_order[0]["genre_id"]), latitude="51.4697231", longitude="-2.6136605", capacity=30)
-  Location.objects.get_or_create(building_type=pub, name="The Black Jack-rabbit", district_id=knowle.id, genre_id=int(knowle.crowds_in_size_order[0]["genre_id"]), latitude="51.4350184", longitude="-2.5714117", capacity=25)
-  c, _ = Location.objects.get_or_create(building_type=pub, name="Lady Volvas Cafe", district_id=knowle.id, genre_id=int(knowle.crowds_in_size_order[0]["genre_id"]), latitude="51.4310019", longitude="-2.5714624", capacity=15)
+  venue, _ = Location.objects.get_or_create(brand_id=2, building_type=music_bar, name="Bojo's", district_id=cotham.id, genre_id=int(cotham.crowds_in_size_order[0]["genre_id"]), latitude="51.4656069", longitude="-2.6087273", capacity=120)
+  venue2, _ = Location.objects.get_or_create(brand_id=2, building_type=pub, name="Dancing Pig", district_id=cotham.id, genre_id=int(cotham.crowds_in_size_order[0]["genre_id"]), latitude="51.4669147", longitude="-2.6008227", capacity=100)
+  Location.objects.get_or_create(brand_id=2, building_type=dive_bar, name="Rusty Spoon", district_id=cotham.id, genre_id=int(cotham.crowds_in_size_order[0]["genre_id"]), latitude="51.4380286", longitude="-2.5738362", capacity=80, prestige=0)
+  Location.objects.get_or_create(brand_id=2, building_type=pub, name="The Baker's Giblets", district_id=cotham.id, genre_id=int(cotham.crowds_in_size_order[0]["genre_id"]), latitude="51.4659809", longitude="-2.6105696", capacity=50, prestige=6)
+  Location.objects.get_or_create(brand_id=1, building_type=pub, name="Ye Olde 'Ole", district_id=knowle.id, genre_id=int(knowle.crowds_in_size_order[0]["genre_id"]), latitude="51.4697231", longitude="-2.6136605", capacity=30)
+  Location.objects.get_or_create(brand_id=2, building_type=pub, name="The Black Jack-rabbit", district_id=knowle.id, genre_id=int(knowle.crowds_in_size_order[0]["genre_id"]), latitude="51.4350184", longitude="-2.5714117", capacity=25)
+  c, _ = Location.objects.get_or_create(brand_id=2, building_type=pub, name="Lady Volvas Cafe", district_id=knowle.id, genre_id=int(knowle.crowds_in_size_order[0]["genre_id"]), latitude="51.4310019", longitude="-2.5714624", capacity=15)
   print("cafe is ", c)
 
-  bliss, _ = Location.objects.get_or_create(building_type=guitarshop, name="Total Bliss", latitude="51.4572499", longitude="-2.596153", capacity=30, slots_available=0)
-  school, _ = Location.objects.get_or_create(building_type=mschool, name="Widow Twankey's Honk & Tonk School", brand_id=2, latitude="51.4568828", longitude="-2.6063455", capacity=1, slots_available=2)
+  bliss, _ = Location.objects.get_or_create(brand_id=2, building_type=guitarshop, name="Total Bliss", latitude="51.4572499", longitude="-2.596153", capacity=30, slots_available=0)
+  school, _ = Location.objects.get_or_create(brand_id=2, building_type=mschool, name="Widow Twankey's Honk & Tonk School", latitude="51.4568828", longitude="-2.6063455", capacity=1, slots_available=2)
   gig, _ = EventType.objects.get_or_create(name='gig', controller="Gig") # Gig
   event_type_lesson, _ = EventType.objects.get_or_create(name='music lesson', controller="MusicLesson") # Gig
   event_type_lesson2, _ = EventType.objects.get_or_create(name='scale practice', controller="ScalePractice") # Gig

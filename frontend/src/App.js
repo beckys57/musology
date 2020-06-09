@@ -471,6 +471,8 @@ function EventPlannerForm({slotNumber, venue, eventTemplate, currentMoney}) {
                  
                 let event = {
                   venue_id: venue.id,
+                  venue_capacity: venue.stats.capacity.value,
+                  venue_popularity: venue.stats.popularity.value,
                   kind: eventTemplate.type,
                   objects: {
                     "Band": [],
@@ -495,6 +497,7 @@ function EventPlannerForm({slotNumber, venue, eventTemplate, currentMoney}) {
                   event.objects[modelName] = ids
                 })
                 turnData.addEvent(venue.district_id || "0", slotNumber, event);
+                console.log("Adding event", event)
                 gameFns.setCurrentMoney(currentMoney-cost)
               }
             }>Book</button>

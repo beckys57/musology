@@ -7,6 +7,7 @@ from django.views.decorators.csrf import csrf_exempt
 from .models import Game
 from brand.models import Band, Brand
 from events.models import EventType
+from events.event_controllers import Gig
 from genres.models import Genre
 from locations.models import City, Location
 from people.models import Person
@@ -29,12 +30,16 @@ def take_turn(request):
   # Events grouped by district then slots
   for district_id, eventData in data.get('events', {}).items():
     for slot, events in eventData.items():
-      gigs = filter(lambda e: e.get('kind') == 'gig', events)
-      # gigs = [{'venue_id': 2, 'kind': 'gig', 'objects': {'Band': ['1'], 'Promoter': [], 'Musician': []}}, {'venue_id': 4, 'kind': 'gig', 'objects': {'Band': ['2'], 'Promoter': [], 'Musician': []}}]
+
+      if district_id != "0":
+        gigs = [e for e in events if e.get("kind") == "gig"]
+        gigs = Gig.calculate_attendance(district_id, gigs)
+        for gig in gigs:
+          outcomes.append(Gig.calculate_outcome(gig))
       # Pass off to EventType to get the controller
       for event in events:
         print("event", event)
-        if event["kind"]:
+        if event["kind"] and not event["kind"] == "gig":
           event["location"] = Location.objects.get(id=event["venue_id"])
           outcomes.append(EventType.objects.get(name=event["kind"]).calculate_outcome(event))
 
