@@ -7,7 +7,7 @@ class Brand(models.Model):
   name = models.CharField(max_length=127)
   colour = models.CharField(max_length=15, default='blue')
   popularity = models.PositiveSmallIntegerField(default=1)
-  money = models.SmallIntegerField(default=1000)
+  money = models.SmallIntegerField(default=100)
   events_unlocked = models.ManyToManyField('events.EventType')
 
   def __str__(self):
@@ -67,7 +67,7 @@ class Band(BrandedModel):
 
   @property
   def display_attrs(self):
-    return {"id": self.id, "name": self.name, "genre_id": self.genre_id, "location_id": self.location_id, "popularity": self.total_popularity, "level": self.level}
+    return {"id": self.id, "name": self.name, "brand_id": self.brand_id, "genre_id": self.genre_id, "location_id": self.location_id, "popularity": self.total_popularity, "level": self.level}
   
 
 class RecordLabel(BrandedModel):

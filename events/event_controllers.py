@@ -117,7 +117,6 @@ class Gig(object):
 
   def calculate_outcome(params):
     from brand.models import Band
-    # {'slot': 3, 'kind': 'gig', 'band_ids': [2], 'promoter_ids': [], 'people_ids': [], 'location': <Location: Bojo's (music bar (building type))>}
     location = params["location"]
     updates = {
       location: {"popularity": location.popularity}
@@ -137,13 +136,13 @@ class Gig(object):
       text += "{}'s popularity rubbed off on the venue.\n".format(bands[0])
 
 
-
-    # Money
+    # Popularity
     capacity_fullness = params["attendance"] / location.capacity
     print("capacity_fullness", capacity_fullness, "band popularity", band_stats['total_popularity'], "proportion full", params["attendance"] * capacity_fullness, "prestige", location.prestige)
     enjoyment = band_stats['total_popularity'] + location.prestige
     popularity_modifier = math.ceil(enjoyment * capacity_fullness)
     updates[location]["popularity"] = updates[location]["popularity"] + popularity_modifier
+    # Money
     takings = (location.entry_price * params["attendance"])
     text += "{} enjoyment.\n £{} taken.\n Venue popularity changed by {}.\n".format(enjoyment, takings, updates[location]["popularity"])
 
@@ -152,6 +151,11 @@ class Gig(object):
 
     brand = Brand.objects.get(id=location.brand_id)
     brand.money = brand.money + takings
+    brand.save()
+
+    # for band in bands:
+    #   band.money += 1
+    #   band.save()
 
     # TODO: this is a wip
     # popularity

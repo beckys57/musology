@@ -433,11 +433,11 @@ function EventSelectorForm({slotNumber, venue, eventTypes, eventOptions, setSele
 function EventPlannerForm({slotNumber, venue, eventTemplate, currentMoney}) {
   const apiData = useContext(ApiDataContext)
   const gameFns = useContext(FnContext)
-
+  let bandChoices = venue.brand_id === 1 ? apiData.bands : apiData.bands.filter(band => band.brand_id === 1);
   let options = {
     "musician": {all: apiData.people.filter(person => person.job && person.job.title === "musician"),
                   disabledIds: turnData.busyPeopleIds(slotNumber)},
-    "band": {all: apiData.bands,
+    "band": {all: bandChoices,
                   disabledIds: turnData.busyBandIds(slotNumber)},
   }
   const cost = eventTemplate.requirements.money;
