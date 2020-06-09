@@ -117,7 +117,7 @@ def CLOTHING_COLORS():
   return random.choice(["#000000", "#280c38", "#32380c", "#38250c", "#6a6b98", "#98816a", "#98986a", "#976a98", "#7393d8", "#d8b673", "#d88473", "#b72f36", "#2fb7a9", "#7ab72f", "#e8fbf8", "#fbece8", "#fbf6e8", "#f0e8fb", ])
 
 def HAIR_STYLES():
-  return str(random.choice([i for i in range(6)])+1)
+  return str(random.choice([i for i in range(7)])+1)
 
 def SHIRT_STYLES():
   return str(random.choice([i for i in range(4)])+1)
