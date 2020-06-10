@@ -1,5 +1,5 @@
 import math
-from django.db.models import Max, Sum
+from django.db.models import Max, Sum, Avg
     # gigs = [{'venue_id': 2, 'kind': 'gig', 'objects': {'Band': ['1'], 'Promoter': [], 'Musician': []}}, {'venue_id': 4, 'kind': 'gig', 'objects': {'Band': ['2'], 'Promoter': [], 'Musician': []}}]
 from brand.models import Band, Brand
 from locations.models import District, Location
@@ -73,13 +73,11 @@ class Gig(object):
 
   def calculate_attendance(district_id, gigs):
     if not gigs: return gigs
-    print("district_id",district_id)
     # Maybe add popularity of bands and venue on data to save lookups
     # gigs = [{'venue_id': 2, 'kind': 'gig', 'objects': {'Band': ['1'], 'Promoter': [], 'Musician': []}}, {'venue_id': 4, 'kind': 'gig', 'objects': {'Band': ['2'], 'Promoter': [], 'Musician': []}}]
     # district_id 5
     # event {'venue_id': 2, 'kind': 'gig', 'objects': {'Band': ['1'], 'Promoter': [], 'Musician': []}}
 
-    print("gigs in", gigs)
     # crowds {2: 60, 1: 28}
     available_crowds = District.objects.get(id=int(district_id)).crowd_counts
     gig_genres = {}
@@ -89,15 +87,15 @@ class Gig(object):
       gig_genres[band.genre_id] = gigs_in_genre + [gig]
 
     print("available_crowds", available_crowds)
-    # print("gig_genres", gig_genres)
-    # gig_genres {1: 4}
+
     gigs_with_more_data = []
-    for gig_genre_id, gig_list in gig_genres.items():
-      crowd_count = available_crowds.get(gig_genre_id)
+    for crowd_genre_id, crowd_count in available_crowds.items():
       overflow = 0
-      if crowd_count:
+      gig_list = gig_genres.get(crowd_genre_id)
+      # There are gigs matching this crowd's genre. Split the entire crowd between count events
+      if gig_list:
         total_venue_popularity = sum([gig["venue_popularity"] for gig in gig_list])
-        print("total_venue_popularity for ", gig_genre_id, total_venue_popularity)
+        print("total_venue_popularity for ", crowd_genre_id, total_venue_popularity)
         for g in gigs:
           bands = Band.load_all_with_popularity({"id__in": [int(gid) for gid in g["objects"]["Band"]]})
           potential_attendees = math.floor(crowd_count / total_venue_popularity / g["venue_popularity"] if g["venue_popularity"] > 0 else 0)
@@ -105,13 +103,15 @@ class Gig(object):
           overflow += max(potential_attendees - g["venue_capacity"], 0)
           g.update(attendance=potential_attendees-overflow, bands=bands, location=Location.objects.get(id=int(g["venue_id"])))
           gigs_with_more_data.append(g)
-      available_crowds["gig_genre_id"] = overflow
+      available_crowds[crowd_genre_id] = overflow
+
+    # Divvy up the remaining folk in the district
+    remaining_punters = sum(available_crowds.values())
+
 
 
     print("gigs out", gigs_with_more_data)
 
-        # There is a crowd with this id. split the entire crowd between count events
-        # Limit capacity in the Gig.calculate_outcome, cap the guests who came
 
     return gigs
 
@@ -123,7 +123,7 @@ class Gig(object):
     }
     print("\nCalculating outcome of gig at {}..".format(location), params)
     bands = Band.load_all_with_popularity({"id__in": [int(sid) for sid in params.get("objects")["Band"]]}).order_by('-popularity')
-    band_stats = bands.aggregate(max_popularity=Max("band_popularity"), total_popularity=Sum("band_popularity"))
+    band_stats = bands.aggregate(max_popularity=Max("band_popularity"), total_popularity=Sum("band_popularity"), avg_popularity=Avg("band_popularity"))
     print("Bands", bands)
     
     # Inherit popularity from bands if any who played have more popularity
@@ -139,9 +139,11 @@ class Gig(object):
     # Popularity
     capacity_fullness = params["attendance"] / location.capacity
     print("capacity_fullness", capacity_fullness, "band popularity", band_stats['total_popularity'], "proportion full", params["attendance"] * capacity_fullness, "prestige", location.prestige)
-    enjoyment = band_stats['total_popularity'] + location.prestige
-    popularity_modifier = math.ceil(enjoyment * capacity_fullness)
-    updates[location]["popularity"] = updates[location]["popularity"] + popularity_modifier
+    enjoyment = band_stats['avg_popularity'] + location.prestige
+    # TODO: Make popularity_modifier a percentage increase, between -50% and +50% more popular but likely a lot less
+    # TODO: implement something similar for bands
+    popularity_modifier = max(min(1 + ((enjoyment * capacity_fullness) / 100), 1.5), 0.5)
+    updates[location]["popularity"] = math.ceil(updates[location]["popularity"] * popularity_modifier)
     # Money
     takings = (location.entry_price * params["attendance"])
     text += "{} enjoyment.\n £{} taken.\n Venue popularity changed by {}.\n".format(enjoyment, takings, updates[location]["popularity"])
