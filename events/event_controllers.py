@@ -1,5 +1,5 @@
 import math
-from django.db.models import Max, Sum, Avg
+from django.db.models import Min, Avg
     # gigs = [{'venue_id': 2, 'kind': 'gig', 'objects': {'Band': ['1'], 'Promoter': [], 'Musician': []}}, {'venue_id': 4, 'kind': 'gig', 'objects': {'Band': ['2'], 'Promoter': [], 'Musician': []}}]
 from brand.models import Band, Brand
 from locations.models import District, Location
@@ -115,45 +115,59 @@ class Gig(object):
 
     return gigs
 
+  def check_happiness(people):
+    return 1
+
   def calculate_outcome(params):
     # TODO: Check people happiness and cancel if any = 0 update on the fly
     from brand.models import Band
     location = params["location"]
+    initial_popularity = location.popularity
     updates = {
-      location: {"popularity": location.popularity}
+      location: {"popularity": initial_popularity}
     }
     print("\nCalculating outcome of gig at {}..".format(location), params)
-    bands = Band.load_all_with_popularity({"id__in": [int(sid) for sid in params.get("objects")["Band"]]}).order_by('-popularity')
-    band_stats = bands.aggregate(max_popularity=Max("band_popularity"), total_popularity=Sum("band_popularity"), avg_popularity=Avg("band_popularity"))
-    print("Bands", bands)
-    
-    # Inherit popularity from bands if any who played have more popularity
-    highest_popularity = band_stats['max_popularity'] or 0
-    popularity_diff = highest_popularity - location.popularity
-    text = "Gig at {}: {} people came.\n ".format(location.name, params["attendance"])
-    if popularity_diff > 0:
-      # 25% of the difference, minimum 1
-      updates[location]["popularity"] = updates[location]["popularity"] + math.ceil(popularity_diff/4)
-      text += "{}'s popularity rubbed off on the venue.\n".format(bands[0])
+    bands = Band.load_all_with_popularity({"id__in": [int(sid) for sid in params.get("objects")["Band"]]}).order_by('-popularity').annotate(min_happiness=Min("musicians__person__happiness"))
+    # Unhappy bands drop out
+    capacity_fullness = params["attendance"] / location.capacity
+    dropout_ids = [band.id for band in bands if int(band.min_happiness) < 1]
+    if len(dropout_ids) == len(bands):
+      updates[location]["popularity"] = updates[location]["popularity"] - math.ceil(5*capacity_fullness)
+      return [{
+                "model": "Location", 
+                "id": location.id,
+                "text": "The gig was cancelled because all the bands dropped out!",
+                "event_type": params.get('kind'),
+                "venue": params.get('location').name,
+                "updates": updates
+                }]
 
+    gigging_bands = bands.exclude(id__in=dropout_ids)
+    gigging_band_stats = gigging_bands.aggregate(avg_popularity=Avg("band_popularity"))
+    text = "Gig at {}: {} people came.\n ".format(location.name, params["attendance"])
 
     # Popularity
-    capacity_fullness = params["attendance"] / location.capacity
-    print("capacity_fullness", capacity_fullness, "band popularity", band_stats['total_popularity'], "proportion full", params["attendance"] * capacity_fullness, "prestige", location.prestige)
-    enjoyment = band_stats['avg_popularity'] + location.prestige
-    # TODO: Make popularity_modifier a percentage increase, between -50% and +50% more popular but likely a lot less
+    # Inherit popularity from bands if average who played have more popularity
+    avg_popularity = gigging_band_stats['avg_popularity']
+    crowd_enjoyment = gigging_band_stats['avg_popularity'] * capacity_fullness
+    popularity_diff = crowd_enjoyment - location.popularity
+    # if popularity_diff > 0:
+    # 25% of the difference, minimum 1
+    updates[location]["popularity"] = updates[location]["popularity"] + math.ceil(popularity_diff/4)
+    text += "{} popularity rubbed off on the venue by hosting popular bands.\n".format(math.ceil(popularity_diff/4))
+
+
+    # print("capacity_fullness", capacity_fullness, "band popularity", gigging_bands['total_popularity'], "proportion full", params["attendance"] * capacity_fullness, "prestige", location.prestige)
     # TODO: implement something similar for bands
-    # TODO: Change all of this. Ignore prestige
     """
     Prestige affects attendance. In calculate_attendance make an equation for entry_price, prestige and band top popularity
     Popularity only from band popularity. Can put on lots of small bands with low entry price you make money
     Pay more money to book more popular bands.
     """
-    popularity_modifier = max(min(1 + ((enjoyment * capacity_fullness) / 100), 1.5), 0.5)
-    updates[location]["popularity"] = math.ceil(updates[location]["popularity"] * popularity_modifier)
+    # popularity_modifier = max(min(1 + ((enjoyment * capacity_fullness) / 100), 1.5), 0.5)
     # Money
     takings = (location.entry_price * params["attendance"])
-    text += "{} enjoyment.\n £{} taken.\n Venue popularity changed by {}.\n".format(enjoyment, takings, updates[location]["popularity"])
+    text += "£{} taken.\n ".format(takings)
 
     # Apply location updates
     Location.objects.filter(id=location.id).update(**updates[location])
@@ -162,9 +176,15 @@ class Gig(object):
     brand.money = brand.money + takings
     brand.save()
 
-    # for band in bands:
-    #   band.money += 1
-    #   band.save()
+    # Pay bands. Money has already been deducted from Brand. No refunds to venues for no shows, but they don't get paid
+    for band in gigging_bands:
+      brand = band.brand
+      if brand:
+        text += "£{} paid to {}.\n ".format(10*band.popularity, band.name)
+        brand.money = brand.money + (10*band.popularity)
+        brand.save()
+
+    # Then band popularity modifiers
 
     # TODO: this is a wip
     # popularity
