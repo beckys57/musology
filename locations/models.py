@@ -181,15 +181,17 @@ class Location(models.Model):
 
   @property
   def level(self):
-    if self.popularity < 3: return 0
-    if self.popularity < 5: return 1
-    if self.popularity < 8: return 2
-    if self.popularity < 13: return 3
-    if self.popularity < 21: return 4
-    if self.popularity < 34: return 5
-    if self.popularity < 55: return 6
-    if self.popularity < 89: return 7
-    if self.popularity < 144: return 8
+    popularity = self.popularity
+    prestige = self.prestige
+    if popularity < 3 or prestige < 1: return 0
+    if popularity < 5 or prestige < 2: return 1
+    if popularity < 8 or prestige < 3: return 2
+    if popularity < 13 or prestige < 4: return 3
+    if popularity < 21 or prestige < 5: return 4
+    if popularity < 34 or prestige < 6: return 5
+    if popularity < 55 or prestige < 7: return 6
+    if popularity < 89 or prestige < 8: return 7
+    if popularity < 144 or prestige < 9: return 8
 
   @property
   def display_attrs(self):
