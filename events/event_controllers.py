@@ -116,6 +116,7 @@ class Gig(object):
     return gigs
 
   def calculate_outcome(params):
+    # TODO: Check people happiness and cancel if any = 0 update on the fly
     from brand.models import Band
     location = params["location"]
     updates = {
@@ -142,6 +143,12 @@ class Gig(object):
     enjoyment = band_stats['avg_popularity'] + location.prestige
     # TODO: Make popularity_modifier a percentage increase, between -50% and +50% more popular but likely a lot less
     # TODO: implement something similar for bands
+    # TODO: Change all of this. Ignore prestige
+    """
+    Prestige affects attendance. In calculate_attendance make an equation for entry_price, prestige and band top popularity
+    Popularity only from band popularity. Can put on lots of small bands with low entry price you make money
+    Pay more money to book more popular bands.
+    """
     popularity_modifier = max(min(1 + ((enjoyment * capacity_fullness) / 100), 1.5), 0.5)
     updates[location]["popularity"] = math.ceil(updates[location]["popularity"] * popularity_modifier)
     # Money
