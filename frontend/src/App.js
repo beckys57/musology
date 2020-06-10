@@ -153,9 +153,9 @@ export function CitySidebarContent() {
 //   return musicians.filter(m => busyMusicianNames.indexOf(m.name) === -1)
 // }
 
-function getBandMembers({band_id}) {
+function getBandMembers(band_id) {
   const apiData = useContext(ApiDataContext);
-  return apiData.people.filter(person => person.job && person.job.title === "musician" && person.band_id === band_id);
+  return apiData.people.filter(person => person.job && person.job.title === "musician" && person.job.band_id == band_id);
 }
 
 export function BandSidebarContent({band}) {
