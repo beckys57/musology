@@ -120,10 +120,10 @@ class Gig(object):
       gig_list = [gig for gig in gigs_wip if gig["genre_id"] == crowd_genre_id]
       # There are gigs matching this crowd's genre. Split the entire crowd between count events
       if gig_list:
-        total_venue_popularity = sum([gig["venue_popularity"] for gig in gig_list])
+        # total_venue_popularity = sum([gig["venue_popularity"] for gig in gig_list])
         total_appeal = sum([calculate_appeal(gig) for gig in gig_list])
         for g in gig_list:
-          potential_attendees = math.floor(crowd_count / (((total_venue_popularity / g["venue_popularity"]) + (total_appeal / g["appeal"])) / 2) )
+          potential_attendees = math.floor(crowd_count / (total_appeal / g["appeal"]) )
           turnaway = max(potential_attendees - g["venue_capacity"], 0)
           actual_attendees = potential_attendees - turnaway
           overflow += turnaway
