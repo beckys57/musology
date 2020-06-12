@@ -82,7 +82,11 @@ class Gig(object):
     print("# Calculating attendance in District {} #".format(district_id))
     available_crowds = District.objects.get(id=int(district_id)).crowd_counts
 
-    # gig_genres = {}
+    def calculate_appeal(gig):
+      value = (gig["avg_band_popularity"] + (gig["location"].prestige / 2)) / ((gig["location"].entry_price or 2) / 2)
+      appeal = (gig["venue_popularity"] * 0.25) + (value * 0.75)
+      return appeal
+    
     gigs_wip = []
 
     for gig in gigs:
@@ -92,36 +96,20 @@ class Gig(object):
       band = bands.first()
       location = Location.objects.get(id=int(gig["venue_id"]))
       gig.update(genre_id=band.genre_id, bands=bands, location=location, avg_band_popularity=avg_band_popularity)
-      # Add to gigs by genre map
-      # gigs_in_genre = gig_genres.get(band.genre_id, [])
-      # gig_genres[band.genre_id] = gigs_in_genre + [gig]
+      # Calculate appeal
+      appeal = calculate_appeal(gig)
+      gig.update(appeal=appeal)
       # Also add gigs to list
       gigs_wip.append(gig)
-
-    def calculate_appeal(gig):
-      value = gig["avg_band_popularity"] / ((gig["location"].entry_price or 4) / 4) + (gig["location"].prestige / 4)
-      appeal = (gig["venue_popularity"] * 0.25) * (value * 0.75)
-      return appeal
     
-
-    gigs_updated = []
-    # Calculate event appeal ratings
-    for g in gigs_wip:
-      value = calculate_appeal(g)
-      appeal = (g["venue_popularity"] * 0.25) * (value * 0.75)
-      g.update(appeal=appeal)
-      gigs_updated.append(g)
-
-    gigs_wip = gigs_updated
     gigs_updated = []
     for crowd_genre_id, crowd_count in available_crowds.items():
       overflow = 0
-      # gig_list = gig_genres.get(crowd_genre_id)
       gig_list = [gig for gig in gigs_wip if gig["genre_id"] == crowd_genre_id]
       # There are gigs matching this crowd's genre. Split the entire crowd between count events
       if gig_list:
         # total_venue_popularity = sum([gig["venue_popularity"] for gig in gig_list])
-        total_appeal = sum([calculate_appeal(gig) for gig in gig_list])
+        total_appeal = sum([gig["appeal"] for gig in gig_list])
         for g in gig_list:
           potential_attendees = math.floor(crowd_count / (total_appeal / g["appeal"]) )
           turnaway = max(potential_attendees - g["venue_capacity"], 0)
