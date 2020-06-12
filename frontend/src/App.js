@@ -452,7 +452,10 @@ function SlotBar({venue, numOfSlots, eventOptions}) {
 
 function DropDown({modelName, options, onChange, dropdownName}) {
   function setHiddenVal(inputId, value) {
-    document.getElementById(inputId).value = value;
+    let hiddenInput = document.getElementById(inputId);
+    console.log("hiddeninput",hiddenInput, "value", value)
+    hiddenInput.value = value;
+    console.log("1", Array.from(document.getElementsByClassName("bandField")).map(m => m.value))
   }
   let fieldOptions;
   if (modelName === "generic") {
@@ -479,7 +482,10 @@ function DropDown({modelName, options, onChange, dropdownName}) {
       key={dropdownName}
       classNamePrefix={modelName.toLowerCase()+"Field"}
       options={fieldOptions}
-      onChange={onChange ? onChange : function z(e) {setHiddenVal(dropdownName, e.value)}}  />
+      onChange={function z(e) {
+        setHiddenVal(dropdownName, e.value)
+        {onChange && onChange(e)}
+      }}  />
     )
 }
 
@@ -505,7 +511,21 @@ function EventPlannerForm({slotNumber, venue, eventTemplate, currentMoney}) {
     "band": {all: bandChoices,
                   disabledIds: turnData.busyBandIds(slotNumber)},
   }
-  const cost = eventTemplate.requirements.money * ;
+  // const cost = eventTemplate.requirements.money * 10;
+  const [cost, setCost] = useState();
+  const [bandIds, setBandIds] = useState(Array.from(document.getElementsByClassName("bandField")).map(m => m.value));
+  useEffect(() => {
+    if (bandChoices) {
+
+      // function for adding two numbers. Easy!
+      const add = (a, b) => a + b
+      // use reduce to sum our array
+      console.log("bandIds",bandIds, "bandChoices", bandChoices)
+      let bandCosts = bandChoices.filter(b => bandIds.indexOf(b.id.toString()) !== -1).map(b => b.popularity * 10)
+      console.log("bandcosts", bandCosts)
+      bandCosts.length > 0 && setCost(bandCosts.reduce(add));
+    }
+  }, [bandIds]);
 
   return (
       <form>
@@ -516,7 +536,12 @@ function EventPlannerForm({slotNumber, venue, eventTemplate, currentMoney}) {
               {r.model+" selector"}
             </div>
             <div className="card-body">
-              <DropDown modelName={r.model} options={options[r.model.toLowerCase()]} dropdownName={r.model+"-"+i} />
+              <DropDown modelName={r.model} options={options[r.model.toLowerCase()]} dropdownName={r.model+"-"+i}
+              onChange={function z(e) {
+                
+                setBandIds(Array.from(document.getElementsByClassName("bandField")).map(m => m.value));
+                console.log("2",Array.from(document.getElementsByClassName("bandField")).map(m => m.value))
+              }} />
               <input id={r.model+"-"+i} type="hidden" className={r.model.toLowerCase()+"Field"} />
             </div>
           </div>
@@ -529,7 +554,7 @@ function EventPlannerForm({slotNumber, venue, eventTemplate, currentMoney}) {
             </>
             :
             <>
-            £{cost}<br/>
+            {cost && "£"+cost}<br/>
             <button className="btn btn-primary" onClick={e => {
                 e.preventDefault();
                 gameFns.selectSomething({selectFn: gameFns.setSelectedVenue, selectVal: venue});
