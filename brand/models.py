@@ -27,7 +27,7 @@ class Brand(models.Model):
 
   @property
   def display_attrs(self):
-    return {"name": self.name, "colour": self.colour, "money": self.money, "popularity": self.popularity, "level": self.level}
+      return {"id": self.id, "name": self.name, "colour": self.colour, "money": self.money, "popularity": self.popularity, "level": self.level}
 
 class BrandedModel(models.Model):
   brand = models.ForeignKey(to='Brand', null=True, blank=True, on_delete=models.SET_NULL)
