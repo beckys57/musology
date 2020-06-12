@@ -92,14 +92,14 @@ const GeoJsonLayer = ({data}) => {
 const tabMap = {
   "✆": (<PeopleSidebarContent />),
   "♫": (<BandsSidebarContent />),
-  "$": null,
+  "©": (<BrandsSidebarContent />),
   "iCal": null
 }
 
 export function SidebarTabs({selectedTab}) {
   const gameFns = useContext(FnContext)
 
-  let labels = ["✆", "♫", "$", "iCal"].map(label => 
+  let labels = ["✆", "♫", "©", "iCal"].map(label => 
       <li key={label} className="nav-item">
         <a className="nav-link btn btn-secondary"
             href="#"
@@ -158,6 +158,43 @@ function getBandMembers(band_id) {
   return apiData.people.filter(person => person.job && person.job.title === "musician" && person.job.band_id == band_id);
 }
 
+function getBrandVenues(brand_id) {
+  const apiData = useContext(ApiDataContext);
+  return apiData.locations.filter(loc => loc.brand_id === brand_id);
+}
+
+export function BrandSidebarContent({brand}) {
+  const apiData = useContext(ApiDataContext);
+  let venues = getBrandVenues(brand.id);
+  let img = "/brand.svg";
+
+  return (
+    <>
+    <CardHeader title={brand.name} caption={"Level "+brand.level} imgSrc={img} />
+    <div className="sidebar-scroll">
+      <div className="row">
+        <div className="col col-12">
+          <div className="card-text">
+            <table key={"stats"+brand.id} className="table">
+              <thead>
+                <tr><th>Rock credentials</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Popularity</td>
+                  <td>{brand.popularity}</td>
+                </tr>              
+              </tbody>
+            </table>
+	    <ListOfNamedObjects title="Venues" namedObjects={venues} selectorFn="setSelectedVenue" />
+	  </div>
+        </div>
+      </div>
+    </div>
+    </>
+  )
+}
+
 export function BandSidebarContent({band}) {
   const apiData = useContext(ApiDataContext);
   let genre = apiData.genres[band.genre_id.toString()];
@@ -186,6 +223,19 @@ export function BandSidebarContent({band}) {
         </div>
       </div>
       <ListOfNamedObjects title="Members" namedObjects={band_members} selectorFn="setSelectedPerson" />
+    </div>
+    </>
+  )
+}
+
+// NOTE: BRandsSidebarContent is not to be confused with BandSideBarContent below
+export function BrandsSidebarContent() {
+  const apiData = useContext(ApiDataContext)
+  return (
+    <>
+    <CardHeader title="Brands" caption={null} imgSrc={"/brand.svg"} />
+    <div className="sidebar-scroll">
+    <ListOfNamedObjects title={null} objectsById={apiData.brands} selectorFn="setSelectedBrand" />
     </div>
     </>
   )
@@ -275,7 +325,7 @@ export function PersonSidebarContent({person}) {
   )
 }
 
-function ListOfNamedObjects({title, namedObjects, selectorFn}) {
+function ListOfNamedObjects({title, namedObjects, objectsById, selectorFn}) {
   const gameFns = useContext(FnContext)
   return (
       <div className="row"> 
@@ -286,19 +336,34 @@ function ListOfNamedObjects({title, namedObjects, selectorFn}) {
                 {title && <tr><th>{title}</th></tr>}
               </thead>
               <tbody>
-              {namedObjects.map(obj => (
-                <tr key={"obj"+obj.name}>
+              {typeof namedObjects !== "undefined" &&
+		namedObjects.map(obj => (
+		  <tr key={"obj"+obj.name}>
+		    <td>
+		      {selectorFn ?
+			<a onClick={e => {
+			  e.preventDefault();
+			  gameFns.selectSomething({selectFn: gameFns[selectorFn], selectVal: obj});
+			}}>{obj.name}</a>
+			: obj.name
+		      }
+		    </td>
+		  </tr>
+		))}
+	      {typeof objectsById !== "undefined" &&
+		Object.keys(objectsById).map((id, i) => (
+                <tr key={"obj"+objectsById[id].name}>
                   <td>
                     {selectorFn ?
                       <a onClick={e => {
                         e.preventDefault();
-                        gameFns.selectSomething({selectFn: gameFns[selectorFn], selectVal: obj});
-                      }}>{obj.name}</a>
-                      : obj.name
+                        gameFns.selectSomething({selectFn: gameFns[selectorFn], selectVal: objectsById[id]});
+                      }}>{objectsById[id].name}</a>
+                      : objectsById[id].name
                     }
                   </td>
                 </tr>
-              ))}
+                ))}
               </tbody>
             </table>
           </div>  
@@ -387,7 +452,10 @@ function SlotBar({venue, numOfSlots, eventOptions}) {
 
 function DropDown({modelName, options, onChange, dropdownName}) {
   function setHiddenVal(inputId, value) {
-    document.getElementById(inputId).value = value;
+    let hiddenInput = document.getElementById(inputId);
+    console.log("hiddeninput",hiddenInput, "value", value)
+    hiddenInput.value = value;
+    console.log("1", Array.from(document.getElementsByClassName("bandField")).map(m => m.value))
   }
   let fieldOptions;
   if (modelName === "generic") {
@@ -414,7 +482,10 @@ function DropDown({modelName, options, onChange, dropdownName}) {
       key={dropdownName}
       classNamePrefix={modelName.toLowerCase()+"Field"}
       options={fieldOptions}
-      onChange={onChange ? onChange : function z(e) {setHiddenVal(dropdownName, e.value)}}  />
+      onChange={function z(e) {
+        setHiddenVal(dropdownName, e.value)
+        {onChange && onChange(e)}
+      }}  />
     )
 }
 
@@ -440,7 +511,21 @@ function EventPlannerForm({slotNumber, venue, eventTemplate, currentMoney}) {
     "band": {all: bandChoices,
                   disabledIds: turnData.busyBandIds(slotNumber)},
   }
-  const cost = eventTemplate.requirements.money;
+  // const cost = eventTemplate.requirements.money * 10;
+  const [cost, setCost] = useState();
+  const [bandIds, setBandIds] = useState(Array.from(document.getElementsByClassName("bandField")).map(m => m.value));
+  useEffect(() => {
+    if (bandChoices) {
+
+      // function for adding two numbers. Easy!
+      const add = (a, b) => a + b
+      // use reduce to sum our array
+      console.log("bandIds",bandIds, "bandChoices", bandChoices)
+      let bandCosts = bandChoices.filter(b => bandIds.indexOf(b.id.toString()) !== -1).map(b => b.popularity * 10)
+      console.log("bandcosts", bandCosts)
+      bandCosts.length > 0 && setCost(bandCosts.reduce(add));
+    }
+  }, [bandIds]);
 
   return (
       <form>
@@ -451,7 +536,12 @@ function EventPlannerForm({slotNumber, venue, eventTemplate, currentMoney}) {
               {r.model+" selector"}
             </div>
             <div className="card-body">
-              <DropDown modelName={r.model} options={options[r.model.toLowerCase()]} dropdownName={r.model+"-"+i} />
+              <DropDown modelName={r.model} options={options[r.model.toLowerCase()]} dropdownName={r.model+"-"+i}
+              onChange={function z(e) {
+                
+                setBandIds(Array.from(document.getElementsByClassName("bandField")).map(m => m.value));
+                console.log("2",Array.from(document.getElementsByClassName("bandField")).map(m => m.value))
+              }} />
               <input id={r.model+"-"+i} type="hidden" className={r.model.toLowerCase()+"Field"} />
             </div>
           </div>
@@ -464,7 +554,7 @@ function EventPlannerForm({slotNumber, venue, eventTemplate, currentMoney}) {
             </>
             :
             <>
-            £{cost}<br/>
+            {cost && "£"+cost}<br/>
             <button className="btn btn-primary" onClick={e => {
                 e.preventDefault();
                 gameFns.selectSomething({selectFn: gameFns.setSelectedVenue, selectVal: venue});
@@ -672,6 +762,7 @@ export default function App() {
   const [selectedTab, setSelectedTab] = useState();
   const [selectedCity, setSelectedCity] = useState(true);
   const [selectedPerson, setSelectedPerson] = useState();
+  const [selectedBrand, setSelectedBrand] = useState();
   const [selectedBand, setSelectedBand] = useState();
   const [selectedSlot, setSelectedSlot] = useState();
   const [selectedEvent, setSelectedEvent] = useState()
@@ -685,6 +776,7 @@ export default function App() {
   function selectSomething({selectFn, selectVal}) {
     setSelectedTab(null);
     setSelectedPerson(null);
+    setSelectedBrand(null);
     setSelectedBand(null);
     setSelectedSlot(null);
     setSelectedEvent(null);
@@ -701,6 +793,7 @@ export default function App() {
 
   const gameFns = {
     "setSelectedPerson": setSelectedPerson,
+    "setSelectedBrand": setSelectedBrand,
     "setSelectedBand": setSelectedBand,
     "setSelectedSlot": setSelectedSlot,
     "setSelectedEvent": setSelectedEvent,
@@ -807,12 +900,13 @@ export default function App() {
             {loaded && selectedTab ? selectedTab : null}
             {loaded && selectedPerson ? (<PersonSidebarContent person={selectedPerson} />): null}
             {loaded && selectedBand ? (<BandSidebarContent band={selectedBand} />): null}
+            {loaded && selectedBrand ? (<BrandSidebarContent brand={selectedBrand} />): null}
           </div>
           <div className="card-footer sidebar-footer text-muted">
           <div className="row">
             <div className="col col-3">
               <p className="text-left" >
-                <img alt="Money: " src="/pound.svg" width="25rem" />{currentMoney}
+                <img alt="Money: " src="/pound.svg" width="20rem" />{currentMoney}
                </p>
              </div>
              <div className="col col-3">
