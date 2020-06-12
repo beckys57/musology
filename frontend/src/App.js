@@ -177,8 +177,8 @@ export function BandSidebarContent({band}) {
               </thead>
               <tbody>
                 <tr>
-                  <td>Influence</td>
-                  <td>{band.influence}</td>
+                  <td>Popularity</td>
+                  <td>{band.popularity}</td>
                 </tr>              
               </tbody>
             </table>
@@ -232,7 +232,7 @@ export function PersonSidebarContent({person}) {
               </tr>              
               <tr>
                 <td>Infuence</td>
-                <td>{person.influence}</td>
+                <td>{person.popularity}</td>
               </tr>                        
               <tr>
                 <td>Musical skillz</td>
@@ -680,7 +680,7 @@ export default function App() {
   const [selectedDistrict, setSelectedDistrict] = useState();
   const [apiData, setApiData] = useState({});
   const [currentMoney, setCurrentMoney] = useState();
-  const [currentInfluence, setCurrentInfluence] = useState();
+  const [currentPopularity, setCurrentPopularity] = useState();
 
   function selectSomething({selectFn, selectVal}) {
     setSelectedTab(null);
@@ -780,7 +780,7 @@ export default function App() {
     turnData.busyPeopleMap = {"1": [], "2": [], "3": [], "4": []};
     turnData.busyBandsMap = {"1": [], "2": [], "3": [], "4": []};
     setCurrentMoney(data.brands["1"].money)
-    setCurrentInfluence(data.brands["1"].influence)
+    setCurrentPopularity(data.brands["1"].popularity)
   }
 
   return (
@@ -817,7 +817,7 @@ export default function App() {
              </div>
              <div className="col col-3">
               <p className="text-left">
-                <img alt="Influence: " src="/influence.svg" width="25rem" />{currentInfluence}
+                <img alt="Popularity: " src="/popularity.svg" width="25rem" />{currentPopularity}
               </p>
             </div>
             <div className="col col-6 text-right">
