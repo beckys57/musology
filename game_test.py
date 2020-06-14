@@ -44,6 +44,7 @@ def setup():
   Person.objects.get_or_create(**{"name": "Gwen Spaghetti", "genre_id": 1})
   Person.objects.get_or_create(**{"name": "Owen Linguini", "genre_id": 1})
   Person.objects.get_or_create(**{"name": "Ella Fitsgerbil", "genre_id": 1})
+  Person.objects.get_or_create(**{"name": "Trevor Moon", "genre_id": 3, "skin_color": "#c9a082", "stamina": 6, "charisma": 9, "popularity": 12, "happiness": "9"})
   musician_job, _ = Job.objects.get_or_create(**{"role": "musician"})
   erb1, _ = Person.objects.get_or_create(**{"happiness": 1, "name": "Parsley Erb", "genre_id": 1,  "job_id": musician_job.id, "hair_style": "2", "skin_color": "#d7ad93", "hair_color": "#495919"})
   erb2, _ = Person.objects.get_or_create(**{"happiness": 1, "name": "Sage Erb", "genre_id": 1,  "job_id": musician_job.id, "hair_style": "2", "skin_color": "#d7ad93", "hair_color": "#495919"})

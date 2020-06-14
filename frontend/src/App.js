@@ -155,7 +155,7 @@ export function CitySidebarContent() {
 
 function getBandMembers(band_id) {
   const apiData = useContext(ApiDataContext);
-  return apiData.people.filter(person => person.job && person.job.title === "musician" && person.job.band_id == band_id);
+  return apiData.people.filter(person => person.job && person.job.title === "musician" && person.job.band_id === band_id);
 }
 
 function getBrandVenues(brand_id) {
@@ -164,7 +164,6 @@ function getBrandVenues(brand_id) {
 }
 
 export function BrandSidebarContent({brand}) {
-  const apiData = useContext(ApiDataContext);
   let venues = getBrandVenues(brand.id);
   let img = "/brand.svg";
 
@@ -272,26 +271,31 @@ export function PersonSidebarContent({person}) {
               <tr><th>Measures of Rad'ness</th></tr>
             </thead>
             <tbody>
+            {person.stamina > 0 &&
               <tr>
                 <td>Stamina</td>
                 <td>{person.stamina}</td>
-              </tr>              
+              </tr> }
+            {person.charisma > 0 &&
               <tr>
                 <td>Charisma</td>
                 <td>{person.charisma}</td>
-              </tr>              
+              </tr> }             
+            {person.popularity > 0 &&
               <tr>
-                <td>Infuence</td>
+                <td>Popularity</td>
                 <td>{person.popularity}</td>
-              </tr>                        
+              </tr> }             
+            {person.musical_talent > 0 &&
               <tr>
                 <td>Musical skillz</td>
                 <td>{person.musical_talent}</td>
-              </tr>                         
+              </tr> }                       
+            {person.tech_talent > 0 &&
               <tr>
                 <td>Tech wizardry</td>
                 <td>{person.tech_talent}</td>
-              </tr>
+              </tr>}                        
             </tbody>
           </table>
           {person.job && 
@@ -385,12 +389,11 @@ function ListOfNamedObjects({title, namedObjects, objectsById, rowExtras, select
 
 export function PeopleSidebarContent() {
   const apiData = useContext(ApiDataContext)
-  const gameFns = useContext(FnContext)
   return (
     <>
     <CardHeader title="People" caption={null} imgSrc={"/pub.svg"} />
     <div className="sidebar-scroll">
-	    <ListOfNamedObjects title="People" namedObjects={apiData.people} rowExtras={apiData.people.map(p => <Character size="2em" appearanceProps={p.appearance} />)} selectorFn="setSelectedPerson" />
+	    <ListOfNamedObjects title="People" namedObjects={apiData.people} rowExtras={apiData.people.map(p => <Character key={p.name+"minicon"} size="2em" appearanceProps={p.appearance} />)} selectorFn="setSelectedPerson" />
     </div>
     </>
   )
@@ -448,8 +451,9 @@ function SlotBar({venue, numOfSlots, eventOptions}) {
                       gameFns.setSelectedSlot(label)
                       if (eventOptions.length === 1) { gameFns.setSelectedEvent(eventOptions[0]) }
                     } else {
-                      let thingInSlot = thingsInSlot[0];
-                      // alert(`Booking: ${thingInSlot.kind}`)
+                      // TODO: Edit the event if you organised it (or something)
+                      // let thingInSlot = thingsInSlot[0];
+                      alert(`#TODO: Edit the event if you organised it (or something)`)
                     }
                   }}
           key={"slot"+label} type="button" className={"btn btn-secondary"}>{thingsInSlot.length ? thingsInSlot[0].kind : label}</button>
@@ -494,7 +498,7 @@ function DropDown({modelName, options, onChange, dropdownName}) {
       options={fieldOptions}
       onChange={function z(e) {
         setHiddenVal(dropdownName, e.value)
-        {onChange && onChange(e)}
+        onChange && onChange(e)
       }}  />
     )
 }

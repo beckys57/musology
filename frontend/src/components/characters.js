@@ -20,6 +20,45 @@ const Frame = styled.div`
   `}
 `
 
+function getMouthPath(appearanceProps) {
+  const mouthPaths = {
+    "happy": "M373.68 329.12C377.37 325.02 377.04 318.71 372.94 315.02C368.85 311.32 362.53 311.65 358.84 315.75C353.99 321.13 347.71 324.1 341.16 324.1C334.6 324.1 328.32 321.13 323.48 315.75C319.78 311.65 313.46 311.32 309.36 315.02C305.26 318.71 304.94 325.03 308.63 329.12C317.31 338.77 328.87 344.08 341.16 344.08C353.45 344.08 364.99 338.77 373.68 329.12Z",
+    "fairly_happy": "M373.68 332.84C377.37 328.74 377.04 322.42 372.94 318.73C368.85 315.04 357.05 320.79 341.16 320.79C325.26 320.79 313.46 315.04 309.36 318.73C305.26 322.42 304.94 328.74 308.63 332.84C317.31 342.48 328.21 342.13 340.5 342.13C352.79 342.13 364.99 342.48 373.68 332.84Z",
+    "neutral": "M368.67 323.72C373.21 323.72 376.89 327.4 376.89 331.94C376.89 333.65 376.89 330.57 376.89 332.28C376.89 336.82 373.21 340.5 368.67 340.5C356.67 340.5 328.86 340.5 316.86 340.5C312.32 340.5 308.64 336.82 308.64 332.28C308.64 330.57 308.64 333.65 308.64 331.94C308.64 327.4 312.32 323.72 316.86 323.72C328.86 323.72 356.67 323.72 368.67 323.72Z",
+    "fairly_sad": "M373.68 328.45C377.37 332.55 377.04 338.86 372.94 342.55C368.85 346.25 357.05 340.5 341.16 340.5C325.26 340.5 313.46 346.25 309.36 342.55C305.26 338.86 304.94 332.54 308.63 328.45C317.31 318.81 328.21 319.16 340.5 319.16C352.79 319.16 364.99 318.81 373.68 328.45Z",
+    "sad": "M373.68 328.45C377.37 332.55 377.04 338.86 372.94 342.55C368.85 346.25 362.53 345.92 358.84 341.82C353.99 336.44 347.71 333.47 341.16 333.47C334.6 333.47 328.32 336.44 323.48 341.82C319.78 345.92 313.46 346.25 309.36 342.55C305.26 338.86 304.94 332.54 308.63 328.45C317.31 318.81 328.87 313.49 341.16 313.49C353.45 313.49 364.99 318.81 373.68 328.45Z"
+  }
+
+  let mouthPath;
+  switch(appearanceProps.happiness) {
+    case '0':
+    case '1':
+    case '2':
+      // code block
+      mouthPath = mouthPaths["sad"]
+      break;
+    case '3':
+    case '4':
+      // code block
+      mouthPath = mouthPaths["fairly_sad"]
+      break;
+    case '5':
+    case '6':
+      // code block
+      mouthPath = mouthPaths["neutral"]
+      break;
+    case '7':
+    case '8':
+      // code block
+      mouthPath = mouthPaths["fairly_happy"]
+      break;
+    default:
+      // code block
+      mouthPath = mouthPaths["happy"]
+  } 
+  return mouthPath;
+}
+
 export function Character({appearanceProps, size}) {
   const shadeMap = {
     "#ffc999": "#e89c5d",
@@ -27,7 +66,8 @@ export function Character({appearanceProps, size}) {
     "#f5e1c8": "#e4c8a5",
     "#d7ad93": "#bc926b",
     "#754b32": "#56281c",
-    "#412d29": "#1d0601",
+    "#63514e": "#3b2825",
+    "#c9a082": "#b98c6b",
   }
   const hairGradients = {
     "1": {x1: "318.45",
@@ -63,7 +103,6 @@ export function Character({appearanceProps, size}) {
   let jacketColor = appearanceProps.jacket_color;
   let shirtDetail = appearanceProps.shirt_detail;
   let shirtStyle = appearanceProps.shirt_style;
-
   const hairPaths = {
     // Side bob
     "1": "M517 89.92C517 61.09 415.9 23.71 387.07 23.71C370.62 23.71 276.53 22.07 190.64 91.43C160.07 116.11 135.81 145.65 117.87 180.04C87.97 237.36 75.56 302.2 82.19 366.51C82.19 366.51 82.19 366.51 82.19 366.51C165.26 381.83 246.86 386.95 327.02 381.88C407.17 376.81 485.87 361.54 563.11 336.08C576.45 225.3 583.11 162.62 583.11 148.06C583.11 120.8 561.02 98.7 533.75 98.7C532.8 98.7 525.21 98.7 524.27 98.7C520.25 98.7 517 95.44 517 91.43C517 91.12 517 90.07 517 89.92Z",
@@ -119,53 +158,18 @@ export function Character({appearanceProps, size}) {
           detailOnTop: true},
   }
 
-  const mouthPaths = {
-    "happy": "M373.68 329.12C377.37 325.02 377.04 318.71 372.94 315.02C368.85 311.32 362.53 311.65 358.84 315.75C353.99 321.13 347.71 324.1 341.16 324.1C334.6 324.1 328.32 321.13 323.48 315.75C319.78 311.65 313.46 311.32 309.36 315.02C305.26 318.71 304.94 325.03 308.63 329.12C317.31 338.77 328.87 344.08 341.16 344.08C353.45 344.08 364.99 338.77 373.68 329.12Z",
-    "fairly_happy": "M373.68 332.84C377.37 328.74 377.04 322.42 372.94 318.73C368.85 315.04 357.05 320.79 341.16 320.79C325.26 320.79 313.46 315.04 309.36 318.73C305.26 322.42 304.94 328.74 308.63 332.84C317.31 342.48 328.21 342.13 340.5 342.13C352.79 342.13 364.99 342.48 373.68 332.84Z",
-    "neutral": "M368.67 323.72C373.21 323.72 376.89 327.4 376.89 331.94C376.89 333.65 376.89 330.57 376.89 332.28C376.89 336.82 373.21 340.5 368.67 340.5C356.67 340.5 328.86 340.5 316.86 340.5C312.32 340.5 308.64 336.82 308.64 332.28C308.64 330.57 308.64 333.65 308.64 331.94C308.64 327.4 312.32 323.72 316.86 323.72C328.86 323.72 356.67 323.72 368.67 323.72Z",
-    "fairly_sad": "M373.68 328.45C377.37 332.55 377.04 338.86 372.94 342.55C368.85 346.25 357.05 340.5 341.16 340.5C325.26 340.5 313.46 346.25 309.36 342.55C305.26 338.86 304.94 332.54 308.63 328.45C317.31 318.81 328.21 319.16 340.5 319.16C352.79 319.16 364.99 318.81 373.68 328.45Z",
-    "sad": "M373.68 328.45C377.37 332.55 377.04 338.86 372.94 342.55C368.85 346.25 362.53 345.92 358.84 341.82C353.99 336.44 347.71 333.47 341.16 333.47C334.6 333.47 328.32 336.44 323.48 341.82C319.78 345.92 313.46 346.25 309.36 342.55C305.26 338.86 304.94 332.54 308.63 328.45C317.31 318.81 328.87 313.49 341.16 313.49C353.45 313.49 364.99 318.81 373.68 328.45Z"
-  }
-
-  console.log('appearanceProps.happiness', appearanceProps.happiness === '6')
-  let mouthPath;
-  switch(appearanceProps.happiness) {
-    case '0':
-    case '1':
-    case '2':
-      // code block
-      mouthPath = mouthPaths["sad"]
-      break;
-    case '3':
-    case '4':
-      // code block
-      mouthPath = mouthPaths["fairly_sad"]
-      break;
-    case '5':
-    case '6':
-      // code block
-      mouthPath = mouthPaths["neutral"]
-      break;
-    case '7':
-    case '8':
-      // code block
-      mouthPath = mouthPaths["fairly_happy"]
-      break;
-    default:
-      // code block
-      mouthPath = mouthPaths["happy"]
-  } 
+  let mouthPath = getMouthPath(appearanceProps);
 
   return (
-      <Frame size={size}>
+      <Frame size={size ? size : "5em"}>
         <svg preserveAspectRatio="xMidYMid meet" viewBox="0 0 681 681" width="681" height="681">
-          {hairGradients[hairStyle] && <linearGradient id="hairGradient" gradientUnits="userSpaceOnUse" x1={hairGradients[hairStyle].x1} y1={hairGradients[hairStyle].y1} x2={hairGradients[hairStyle].x2} y2={hairGradients[hairStyle].y2}>
+          {hairGradients[hairStyle] && <linearGradient id={"hairGradient-"+hairColor+hairDetail} gradientUnits="userSpaceOnUse" x1={hairGradients[hairStyle].x1} y1={hairGradients[hairStyle].y1} x2={hairGradients[hairStyle].x2} y2={hairGradients[hairStyle].y2}>
             <stop style={{stopColor: hairColor, stopOpacity: 1}} offset="0%">
             </stop>
             <stop style={{stopColor: hairDetail, stopOpacity: 1}} offset="100%">
             </stop>
           </linearGradient>}
-          {!facePaths[hairStyle].onTop && <path stroke="#000000" strokeWidth="20" strokeOpacity="1" fill={hairGradients[hairStyle] ? "url(#hairGradient)" : hairColor} fillOpacity="1" d={hairPaths[hairStyle]}></path>}
+          {!facePaths[hairStyle].onTop && <path stroke="#000000" strokeWidth="20" strokeOpacity="1" fill={hairGradients[hairStyle] ? "url(#hairGradient-"+hairColor+hairDetail+")" : hairColor} fillOpacity="1" d={hairPaths[hairStyle]}></path>}
           <path stroke="#000000" strokeWidth="20" strokeOpacity="1" fill={skinColor} fillOpacity="1" d="M524.46 672.01L157.85 672.01L189.61 466.66C189.97 464.35 190.17 463.07 190.21 462.82C191.81 452.45 200.73 444.82 211.21 444.82C216.81 444.82 241.26 443.15 284.57 439.82L295.23 363.24L387.08 363.24L399.07 444.82C441.49 444.82 465.51 444.82 471.11 444.82C481.59 444.82 490.5 452.45 492.11 462.82C492.15 463.07 492.34 464.35 492.7 466.66L524.46 672.01Z"></path>
           <path stroke="#000000" strokeWidth="1" strokeOpacity="0" fill={skinDetail} fillOpacity="1" d="M488.28 465.64C488.02 463.44 487.88 462.22 487.85 461.98C486.67 452.1 480.11 444.82 472.4 444.82C470.31 444.82 453.56 444.82 451.47 444.82C459.17 444.82 465.74 452.1 466.91 461.98C466.94 462.22 467.09 463.44 467.35 465.64L490.72 661.42L511.64 661.42L488.28 465.64Z"></path>
           <path stroke="#000000" strokeWidth="20" strokeOpacity="1" fill={skinColor} fillOpacity="1" d="M449.54 240.9L449.54 313.49C476.61 313.49 491.65 313.49 494.66 313.49C507.44 313.49 517.8 303.13 517.8 290.36C517.8 287.72 517.8 266.66 517.8 264.03C517.8 251.25 507.44 240.9 494.66 240.9C488.64 240.9 473.6 240.9 449.54 240.9Z"></path>
@@ -173,12 +177,12 @@ export function Character({appearanceProps, size}) {
           <path stroke="#000000" strokeWidth="1" strokeOpacity="0" fill={skinDetail} fillOpacity="1" d="M295.23 431.51C305.7 436.62 316.92 440.42 328.69 442.69C337.04 444.31 345.65 445.15 354.47 445.15C365.72 445.15 376.63 443.77 387.07 441.18C387.07 435.99 387.07 410.01 387.07 363.24L295.23 363.24C295.23 399.65 295.23 422.41 295.23 431.51Z"></path>
           <path stroke="#000000" strokeWidth="20" strokeOpacity="1" fill={shirtColor} fillOpacity="1" d={shirtPaths[shirtStyle].shirt}></path>
           {!shirtPaths[shirtStyle].detailOnTop && <path stroke="#000000" strokeWidth="15" strokeOpacity="1" fill={shirtDetail} fillOpacity="1" d={shirtPaths[shirtStyle].detail}></path>}
-          {jacketPaths[jacketStyle] && jacketPaths[jacketStyle].map(jPath => <path stroke="#000000" strokeWidth="20" strokeOpacity="1" fill={jacketColor} fillOpacity="1" d={jPath}></path>)}
+          {jacketPaths[jacketStyle] && jacketPaths[jacketStyle].map((jPath, i) => <path key={"jacketPath"+i} stroke="#000000" strokeWidth="20" strokeOpacity="1" fill={jacketColor} fillOpacity="1" d={jPath}></path>)}
           {shirtPaths[shirtStyle].detailOnTop && <path stroke="#000000" strokeWidth="15" strokeOpacity="1" fill={shirtDetail} fillOpacity="1" d={shirtPaths[shirtStyle].detail}></path>}
           <path id="face" stroke="#000000" strokeWidth="20" strokeOpacity="1" fill={skinColor} fillOpacity="1" d={facePaths[hairStyle].face}></path>
           <path id="faceDetail" stroke="#000000" strokeWidth="1" strokeOpacity="0" fill={skinDetail} fillOpacity="1" d={facePaths[hairStyle].detail}></path>
           <path id="mouth" stroke="#000000" strokeWidth="1" strokeOpacity="0" fill="#000000" fillOpacity="1" d={mouthPath}></path>
-          {facePaths[hairStyle].onTop && <path stroke="#000000" strokeWidth="20" strokeOpacity="1" fill="url(#hairGradient)" fillOpacity="1" d={hairPaths[hairStyle]}></path>}
+          {facePaths[hairStyle].onTop && <path stroke="#000000" strokeWidth="20" strokeOpacity="1" fill={"url(#hairGradient-"+hairColor+hairDetail+")"} fillOpacity="1" d={hairPaths[hairStyle]}></path>}
           <path stroke="#000000" strokeWidth="1" strokeOpacity="0" fill="#000000" fillOpacity="1" d="M287.24 254.28C287.24 253.87 287.24 250.56 287.24 250.14C287.24 244.63 282.77 240.15 277.24 240.15C271.73 240.15 267.25 244.63 267.25 250.14C267.25 250.56 267.25 253.87 267.25 254.28C267.25 259.8 271.73 264.27 277.24 264.27C282.77 264.27 287.24 259.8 287.24 254.28Z"></path>
           <path stroke="#000000" strokeWidth="1" strokeOpacity="0" fill="#000000" fillOpacity="1" d="M415.05 250.14C415.05 244.63 410.58 240.15 405.06 240.15C399.55 240.15 395.07 244.63 395.07 250.14C395.07 250.56 395.07 253.87 395.07 254.28C395.07 259.8 399.55 264.27 405.06 264.27C410.58 264.27 415.05 259.8 415.05 254.28C415.05 253.45 415.05 250.56 415.05 250.14Z"></path>
         </svg>
