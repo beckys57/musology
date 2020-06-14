@@ -696,7 +696,8 @@ export function Map({children}) {
           ["guitar shop", "local pub", "music bar", "music school"].indexOf(venue.type) !== -1 ?
           "/" + venue.type + ".svg" :
           "/pub.svg"
-        ) 
+        );
+        let brandColor = venue.brand_id ? apiData.brands[venue.brand_id.toString()].colour : "rgba(0,0,0,0)"
         return(
           <Marker
             key={venue.id}
@@ -719,7 +720,7 @@ export function Map({children}) {
                 gameFns.setHoveredVenue(null);
               }}
             >
-              <img src={img} alt={venue.name}/>
+              <img style={{padding: "5px", background: "radial-gradient(circle, rgba(255,255,255,1) 0%, "+brandColor+" 00%, rgba(255,255,255,0) 75%)"}} src={img} alt={venue.name}/>
             </button>
           </Marker>
         )

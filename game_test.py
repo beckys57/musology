@@ -15,7 +15,7 @@ def setup():
   Genre.objects.get_or_create(**{"name": "Blues", "year_invented": 1905, "colour": "#46BFBD"})
   Genre.objects.get_or_create(**{"name": "Jazz", "year_invented": 1920, "colour": "#F7464A"})
   Genre.objects.get_or_create(**{"name": "Classical", "year_invented": 1748, "colour": "#FDB45C"})
-  brand, _ = Brand.objects.get_or_create(name="Badger Stripes")
+  brand, _ = Brand.objects.get_or_create(name="Badger Stripes", colour="#FFFF79")
   brand2, _ = Brand.objects.get_or_create(name="Rival Records")
   handwash, _ = Band.objects.get_or_create(**{"brand_id": brand.id, "name": "Handwash Experience", "genre_id": 1})
   erbs, _ = Band.objects.get_or_create(**{"name": "'ERB GIRLS", "genre_id": 1, "popularity": 20})
@@ -86,10 +86,9 @@ def setup():
   Location.objects.get_or_create(brand_id=1, building_type=pub, name="Ye Olde 'Ole", district_id=cotham.id, genre_id=int(cotham.crowds_in_size_order[0]["genre_id"]), latitude="51.4697231", longitude="-2.6136605", capacity=30, entry_price=1)
   Location.objects.get_or_create(brand_id=2, building_type=pub, name="The Black Jack-rabbit", district_id=knowle.id, genre_id=int(knowle.crowds_in_size_order[0]["genre_id"]), latitude="51.4350184", longitude="-2.5714117", capacity=25)
   c, _ = Location.objects.get_or_create(brand_id=2, building_type=pub, name="Lady Volvas Cafe", district_id=knowle.id, genre_id=int(knowle.crowds_in_size_order[0]["genre_id"]), latitude="51.4310019", longitude="-2.5714624", capacity=15)
-  print("cafe is ", c)
 
-  bliss, _ = Location.objects.get_or_create(brand_id=2, building_type=guitarshop, name="Total Bliss", latitude="51.4572499", longitude="-2.596153", capacity=30, slots_available=0)
-  school, _ = Location.objects.get_or_create(brand_id=2, building_type=mschool, name="Widow Twankey's Honk & Tonk School", latitude="51.4568828", longitude="-2.6063455", capacity=1, slots_available=2)
+  bliss, _ = Location.objects.get_or_create(building_type=guitarshop, name="Total Bliss", latitude="51.4572499", longitude="-2.596153", capacity=30, slots_available=0)
+  school, _ = Location.objects.get_or_create(building_type=mschool, name="Widow Twankey's Honk & Tonk School", latitude="51.4568828", longitude="-2.6063455", capacity=1, slots_available=2)
   gig, _ = EventType.objects.get_or_create(name='gig', controller="Gig") # Gig
   event_type_lesson, _ = EventType.objects.get_or_create(name='music lesson', controller="MusicLesson") # Gig
   event_type_lesson2, _ = EventType.objects.get_or_create(name='scale practice', controller="ScalePractice") # Gig
