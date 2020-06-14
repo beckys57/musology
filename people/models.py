@@ -120,7 +120,11 @@ def HAIR_STYLES():
   return str(random.choice([i for i in range(7)])+1)
 
 def SHIRT_STYLES():
-  return str(random.choice([i for i in range(4)])+1)
+  return str(random.choice([i for i in range(5)])+1)
+
+def JACKET_STYLES():
+  # Double the amount of actual choices so only 50% of people wear a jacket
+  return str(random.choice([i for i in range(3*2)])+1)
 
 # All performing musicians should be in a band, even if solo artist
 class Person(models.Model):
@@ -158,6 +162,7 @@ class Person(models.Model):
   shirt_detail = models.CharField(max_length=7, default=CLOTHING_COLORS)
   shirt_style = models.CharField(max_length=1, default=SHIRT_STYLES)
   jacket_color = models.CharField(max_length=7, default=CLOTHING_COLORS)
+  jacket_style = models.CharField(max_length=7, default=JACKET_STYLES)
   
   created_at = models.DateTimeField(auto_now_add=True)
 
@@ -200,7 +205,7 @@ class Person(models.Model):
             "happiness": {"text": self.get_happiness_display(), "value": int(self.happiness)},
             "popularity": self.popularity,
             "level": self.level,
-            "appearance": {k: self.__dict__[k] for k in ["happiness","hair_color","hair_detail","hair_style","jacket_color","shirt_color","skin_color","shirt_detail","shirt_style"]}
+            "appearance": {k: self.__dict__[k] for k in ["happiness","hair_color","hair_detail","hair_style","jacket_color","jacket_style","shirt_color","skin_color","shirt_detail","shirt_style"]}
             }
 
   def calculate_fatigue(self):

@@ -7,6 +7,7 @@ import geodata from "./bristol.geojson";
 import { Pie } from "react-chartjs-2";
 import { Guitar } from "./components/guitars"
 import { Character } from "./components/characters"
+import styled from "styled-components";
 
 class TurnData {
   constructor() {
@@ -221,7 +222,7 @@ export function BandSidebarContent({band}) {
           </div>
         </div>
       </div>
-      <ListOfNamedObjects title="Members" namedObjects={band_members} rowExtras={band_members.map(m => <Character size="1.5em" appearanceProps={m.appearance} />)} selectorFn="setSelectedPerson" />
+      <ListOfNamedObjects title="Members" namedObjects={band_members} rowExtras={band_members.map(m => <Character size="3.5em" appearanceProps={m.appearance} />)} selectorFn="setSelectedPerson" />
     </div>
     </>
   )
@@ -324,6 +325,13 @@ export function PersonSidebarContent({person}) {
   )
 }
 
+const NamedObjectRow = styled.div`
+  display: block;
+  > * {
+    display: inline-block;
+  }
+`
+
 function ListOfNamedObjects({title, namedObjects, objectsById, rowExtras, selectorFn}) {
   const gameFns = useContext(FnContext)
   return (
@@ -339,6 +347,7 @@ function ListOfNamedObjects({title, namedObjects, objectsById, rowExtras, select
               namedObjects.map((obj, i) => (
                 <tr key={"obj"+obj.name}>
                 <td>
+                <NamedObjectRow>
                 {selectorFn ?
                   <a onClick={e => {
                     e.preventDefault();
@@ -346,8 +355,10 @@ function ListOfNamedObjects({title, namedObjects, objectsById, rowExtras, select
                   }}>{obj.name}</a>
                   : obj.name
                 }
-                {rowExtras && rowExtras[i]}
+                </NamedObjectRow>
                 </td>
+                {rowExtras && <td>{rowExtras[i]}</td>}
+
                 </tr>
                 ))}
               {typeof objectsById !== "undefined" &&
