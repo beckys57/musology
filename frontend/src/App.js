@@ -452,9 +452,9 @@ function SlotBar({venue, numOfSlots, eventOptions}) {
 function DropDown({modelName, options, onChange, dropdownName}) {
   function setHiddenVal(inputId, value) {
     let hiddenInput = document.getElementById(inputId);
-    console.log("hiddeninput",hiddenInput, "value", value)
-    hiddenInput.value = value;
-    console.log("1", Array.from(document.getElementsByClassName("bandField")).map(m => m.value))
+    if (hiddenInput) {
+      hiddenInput.value = value;
+    } 
   }
   let fieldOptions;
   if (modelName === "generic") {
