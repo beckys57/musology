@@ -222,7 +222,7 @@ export function BandSidebarContent({band}) {
           </div>
         </div>
       </div>
-      <ListOfNamedObjects title="Members" namedObjects={band_members} selectorFn="setSelectedPerson" />
+      <ListOfNamedObjects title="Members" namedObjects={band_members} rowExtras={band_members.map(m => <Character appearanceProps={m.appearance} />)} selectorFn="setSelectedPerson" />
     </div>
     </>
   )
@@ -325,7 +325,7 @@ export function PersonSidebarContent({person}) {
   )
 }
 
-function ListOfNamedObjects({title, namedObjects, objectsById, selectorFn}) {
+function ListOfNamedObjects({title, namedObjects, objectsById, rowExtras, selectorFn}) {
   const gameFns = useContext(FnContext)
   return (
       <div className="row"> 
@@ -337,31 +337,32 @@ function ListOfNamedObjects({title, namedObjects, objectsById, selectorFn}) {
               </thead>
               <tbody>
               {typeof namedObjects !== "undefined" &&
-		namedObjects.map(obj => (
-		  <tr key={"obj"+obj.name}>
-		    <td>
-		      {selectorFn ?
-			<a onClick={e => {
-			  e.preventDefault();
-			  gameFns.selectSomething({selectFn: gameFns[selectorFn], selectVal: obj});
-			}}>{obj.name}</a>
-			: obj.name
-		      }
-		    </td>
-		  </tr>
-		))}
-	      {typeof objectsById !== "undefined" &&
-		Object.keys(objectsById).map((id, i) => (
+              namedObjects.map((obj, i) => (
+                <tr key={"obj"+obj.name}>
+                <td>
+                {selectorFn ?
+                  <a onClick={e => {
+                    e.preventDefault();
+                    gameFns.selectSomething({selectFn: gameFns[selectorFn], selectVal: obj});
+                  }}>{obj.name}</a>
+                  : obj.name
+                }
+                {rowExtras && rowExtras[i]}
+                </td>
+                </tr>
+                ))}
+              {typeof objectsById !== "undefined" &&
+              Object.keys(objectsById).map((id, i) => (
                 <tr key={"obj"+objectsById[id].name}>
-                  <td>
-                    {selectorFn ?
-                      <a onClick={e => {
-                        e.preventDefault();
-                        gameFns.selectSomething({selectFn: gameFns[selectorFn], selectVal: objectsById[id]});
-                      }}>{objectsById[id].name}</a>
-                      : objectsById[id].name
-                    }
-                  </td>
+                <td>
+                {selectorFn ?
+                  <a onClick={e => {
+                    e.preventDefault();
+                    gameFns.selectSomething({selectFn: gameFns[selectorFn], selectVal: objectsById[id]});
+                  }}>{objectsById[id].name}</a>
+                  : objectsById[id].name
+                }
+                </td>
                 </tr>
                 ))}
               </tbody>
