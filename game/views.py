@@ -12,11 +12,9 @@ from genres.models import Genre
 from locations.models import City, Location
 from people.models import Person
 
-@csrf_exempt
 def take_turn(request):
   print("Taking turn...")
-  if request.method == "POST":
-    data = json.loads(request.body.decode())
+  data = json.loads(request.body.decode())
 
   Brand.objects.filter(id=1).update(money=data.get('money'))
   print("Updating bank balance to £", data.get('money'))
@@ -28,6 +26,7 @@ def take_turn(request):
     l.update(**location.get("updates", {}))
 
   # Events grouped by district then slots
+  print("here you gob", data.get('events', {}))
   for district_id, eventData in data.get('events', {}).items():
     for slot, events in eventData.items():
 
@@ -43,15 +42,19 @@ def take_turn(request):
           event["location"] = Location.objects.get(id=event["venue_id"])
           outcomes.append(EventType.objects.get(name=event["kind"]).calculate_outcome(event))
 
-  print("Outcomes", outcomes)
-  return HttpResponseRedirect('/')
+  return outcomes
 
-  
+@csrf_exempt
 def index(request):
   game = Game.objects.first()
   if not game:
     game = Game.objects.create()
     game.initialize()
+
+  outcomes = []
+  if request.method == "POST":
+    outcomes = take_turn(request)
+    print("Outcomes", outcomes)
 
   city_data = City.build_display_attrs()
   genre_data = {g.id: g.display_attrs for g in Genre.objects.all()}
@@ -65,7 +68,10 @@ def index(request):
                 "city": city_data,
                 "bands": band_data,
                 "brands": brand_data,
-                "people": people_data
+                "people": people_data,
+                "outcomes": outcomes,
+                # Key is district ID, next slot number,then list of events (eg AI events/riders)
+                "preloaded_events": {"5": {"1": [{'venue_id': 2, 'venue_capacity': 100, 'venue_popularity': 1, 'kind': 'gig', 'objects': {'Band': ['1'], 'Promoter': [], 'Musician': []}}], "2": [], "3": [], "4": []}},
       }
 
   return JsonResponse(

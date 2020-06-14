@@ -11,18 +11,18 @@ import { Character } from "./components/characters"
 class TurnData {
   constructor() {
     // Example slots without a district
-    this.slots = {"0": {"1": [], "2": [], "3": [], "4": []}}
+    this.slotData = {"0": {"1": [], "2": [], "3": [], "4": []}}
     this.busyPeopleMap = {"1": [], "2": [], "3": [], "4": []}
     this.busyBandsMap = {"1": [], "2": [], "3": [], "4": []}
     this.locationPostData = []
   }
 
-  get slotData() {
-    return this.slots
+  get slots() {
+    return this.slotData
   }
 
-  set resetSlots(s) {
-    this.slots = s;
+  set slots(s) {
+    this.slotData = s;
   }
 
   get locations() {
@@ -42,8 +42,7 @@ class TurnData {
   }
 
   addEvent(districtId, slotNumber, event) {
-    this.slots[districtId][slotNumber].push(event)
-    console.log("Slots updated", this.slots)
+    this.slotData[districtId][slotNumber].push(event)
   }
 
   addBusyPeopleIds(slotNumber, ids) {
@@ -429,7 +428,6 @@ export function DistrictSidebarContent({district}) {
 function SlotBar({venue, numOfSlots, eventOptions}) {
   const gameFns = useContext(FnContext);
   let slotButtons = [...Array(numOfSlots+1).keys()].slice(1).map(function z(label) {
-      console.log('turnData', turnData)
       let thingsInSlot = turnData.slots[venue.district_id || "0"][label].filter(event => event.venue_id === venue.id);
       return (
         <button 
@@ -588,7 +586,6 @@ function EventPlannerForm({slotNumber, venue, eventTemplate, currentMoney}) {
                   event.objects[modelName] = ids
                 })
                 turnData.addEvent(venue.district_id || "0", slotNumber, event);
-                console.log("Adding event", event)
                 gameFns.setCurrentMoney(currentMoney-cost)
               }
             }>Book</button>
@@ -827,6 +824,12 @@ export default function App() {
     districtIds.forEach(function z(dId) {
       events[dId] = {"1": [], "2": [], "3": [], "4": []}
     });
+    let preloadedEvents = data.preloaded_events;
+    if (preloadedEvents) {
+      Object.keys(preloadedEvents).forEach(function z(dId) {
+        events[dId] = preloadedEvents[dId]
+      });
+    }
     return events
   }
   
@@ -873,6 +876,7 @@ export default function App() {
     turnData.slots = buildDistrictEvents(data);
     turnData.busyPeopleMap = {"1": [], "2": [], "3": [], "4": []};
     turnData.busyBandsMap = {"1": [], "2": [], "3": [], "4": []};
+    console.log("turnData", turnData);
     setCurrentMoney(data.brands["1"].money)
     setCurrentPopularity(data.brands["1"].popularity)
   }
@@ -937,5 +941,4 @@ async function takeTurn(startTurn, buildLocationEvents, currentMoney) {
   let resp = await axios.post('http://localhost:8000/take_turn/', postData)
   console.log('Turn taken')
   startTurn(resp.data);
-  console.log("Finished")
 }

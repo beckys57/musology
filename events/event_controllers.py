@@ -136,7 +136,6 @@ class Gig(object):
     # TODO: Check people happiness and cancel if any = 0 update on the fly
     from brand.models import Band
     location = params["location"]
-    print("BANDS IN", params["bands"])
     initial_popularity = location.popularity
     updates = {
       location: {"popularity": initial_popularity}
@@ -166,13 +165,10 @@ class Gig(object):
     avg_band_popularity = gigging_band_stats['avg_band_popularity']
     crowd_enjoyment = gigging_band_stats['avg_band_popularity'] * capacity_fullness
     popularity_diff = crowd_enjoyment - location.popularity
-    # if popularity_diff > 0:
     # 25% of the difference, minimum 1
     updates[location]["popularity"] = updates[location]["popularity"] + math.ceil(popularity_diff/4)
     text += "{} popularity rubbed off on the venue by hosting popular bands.\n".format(math.ceil(popularity_diff/4))
 
-
-    # print("capacity_fullness", capacity_fullness, "band popularity", gigging_bands['total_popularity'], "proportion full", params["attendance"] * capacity_fullness, "prestige", location.prestige)
     # TODO: implement something similar for bands
     """
     Prestige affects attendance. In calculate_attendance make an equation for entry_price, prestige and band top popularity
@@ -209,15 +205,12 @@ class Gig(object):
     # prestige
     # entry_price
 
-    # print("Updates", updates)
-    print("Done\n", location)
     return [{
                 "model": "Location", 
                 "id": location.id,
+                "name": params.get('location').name,
                 "text": text,
-                "event_type": params.get('kind'),
-                "venue": params.get('location').name,
-                "updates": updates
+                "event_type": params.get('kind')
                 }]
     # Reward: popularity & money
     # Factors: capacity full, overall capacity
