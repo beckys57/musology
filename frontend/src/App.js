@@ -221,7 +221,7 @@ export function BandSidebarContent({band}) {
           </div>
         </div>
       </div>
-      <ListOfNamedObjects title="Members" namedObjects={band_members} rowExtras={band_members.map(m => <Character appearanceProps={m.appearance} />)} selectorFn="setSelectedPerson" />
+      <ListOfNamedObjects title="Members" namedObjects={band_members} rowExtras={band_members.map(m => <Character size="1.5em" appearanceProps={m.appearance} />)} selectorFn="setSelectedPerson" />
     </div>
     </>
   )
@@ -379,7 +379,7 @@ export function PeopleSidebarContent() {
     <>
     <CardHeader title="People" caption={null} imgSrc={"/pub.svg"} />
     <div className="sidebar-scroll">
-	<ListOfNamedObjects title="People" namedObjects={apiData.people} selectorFn="setSelectedPerson" />
+	    <ListOfNamedObjects title="People" namedObjects={apiData.people} rowExtras={apiData.people.map(p => <Character size="2em" appearanceProps={p.appearance} />)} selectorFn="setSelectedPerson" />
     </div>
     </>
   )

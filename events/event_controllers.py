@@ -102,6 +102,11 @@ class Gig(object):
       # Also add gigs to list
       gigs_wip.append(gig)
     
+    def calculate_turnaway(potential_attendees, capacity):
+      turnaway = max(potential_attendees - capacity, 0)
+      actual_attendees = potential_attendees - turnaway
+      return (turnaway, actual_attendees)
+
     gigs_updated = []
     for crowd_genre_id, crowd_count in available_crowds.items():
       overflow = 0
@@ -112,8 +117,7 @@ class Gig(object):
         total_appeal = sum([gig["appeal"] for gig in gig_list])
         for g in gig_list:
           potential_attendees = math.floor(crowd_count / (total_appeal / g["appeal"]) )
-          turnaway = max(potential_attendees - g["venue_capacity"], 0)
-          actual_attendees = potential_attendees - turnaway
+          (turnaway, actual_attendees) = calculate_turnaway(potential_attendees, g["venue_capacity"])
           overflow += turnaway
           g.update(attendance=actual_attendees)
           gigs_updated.append(g)
@@ -126,8 +130,14 @@ class Gig(object):
       gigs_wip = gigs_updated
       gigs_updated = []
       for g in gigs_wip:
-        g["attendance"] = g.get("attendance", 0) + math.floor(remaining_punters / total_appeal_across_gigs * g["appeal"])
+        current_attendance = g.get("attendance", 0)
+        potential_attendees = current_attendance + math.floor(remaining_punters / total_appeal_across_gigs * g["appeal"])
+        (turnaway, actual_attendees) = calculate_turnaway(potential_attendees, g["venue_capacity"])
+        # remaining_punters -= actual_attendees
+        g["attendance"] = actual_attendees
         gigs_updated.append(g)
+
+    print("{} people didn't go to a gig as the one they wanted was full".format(remaining_punters))
 
     print("gigs out", gigs_updated)
     return gigs_updated
@@ -187,6 +197,7 @@ class Gig(object):
     brand.money = brand.money + takings
     brand.save()
 
+    person_outcomes = []
     # Pay bands. Money has already been deducted from Brand. No refunds to venues for no shows, but they don't get paid
     for band in gigging_bands:
       brand = band.brand
@@ -194,6 +205,24 @@ class Gig(object):
         text += "£{} paid out for {} (brand {}).\n ".format(10*band.popularity, band.name, band.brand_id)
         brand.money = brand.money + (10*band.popularity)
         brand.save()
+      # TODO: Make musicians tired
+      print("Musicians", band.musicians.all())
+      for musician in band.musicians.all():
+        person = musician.person
+        fatigue = person.calculate_fatigue()
+        fullness_good_vibes = math.floor(capacity_fullness * 4) - 2
+        happiness_modifier = fatigue + fullness_good_vibes
+        if happiness_modifier != 0:
+          person.happiness = str(int(person.happiness) + happiness_modifier)
+          person.save()
+          person_outcomes.append({
+                "model": "Person", 
+                "id": person.id,
+                "name": person.name,  
+                "text": "The gig at {} changed {}'s happiness by {} from {} fatigue and {} vibes from {}% venue fullness".format(location.name, person.name, happiness_modifier, fatigue, fullness_good_vibes, capacity_fullness*100),
+                "event_type": params.get('kind')
+                })
+
 
     # Then band popularity modifiers
 
@@ -211,7 +240,7 @@ class Gig(object):
                 "name": params.get('location').name,
                 "text": text,
                 "event_type": params.get('kind')
-                }]
+                }] + person_outcomes
     # Reward: popularity & money
     # Factors: capacity full, overall capacity
     # Stuff to do with all slots combined should be done at the end, so this should update a growing dict of modifiers

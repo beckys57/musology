@@ -146,7 +146,7 @@ class Person(models.Model):
   charisma = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(9)])
   musical_talent = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(9)])
   tech_talent = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(9)])
-  happiness = models.CharField(max_length=1, default="6", choices=HAPPINESS_LEVELS)
+  happiness = models.CharField(max_length=1, default="7", choices=HAPPINESS_LEVELS)
   popularity = models.PositiveSmallIntegerField(default=1)
 
   # Character appearance settings
@@ -200,5 +200,11 @@ class Person(models.Model):
             "happiness": {"text": self.get_happiness_display(), "value": int(self.happiness)},
             "popularity": self.popularity,
             "level": self.level,
-            "appearance": {k: self.__dict__[k] for k in ["hair_color","hair_detail","hair_style","jacket_color","shirt_color","skin_color","shirt_detail","shirt_style"]}
+            "appearance": {k: self.__dict__[k] for k in ["happiness","hair_color","hair_detail","hair_style","jacket_color","shirt_color","skin_color","shirt_detail","shirt_style"]}
             }
+
+  def calculate_fatigue(self):
+    return -1 if self.stamina * random.random() > 1 else 0
+
+
+

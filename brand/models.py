@@ -7,7 +7,7 @@ class Brand(models.Model):
   name = models.CharField(max_length=127)
   colour = models.CharField(max_length=15, default='blue')
   popularity = models.PositiveSmallIntegerField(default=1)
-  money = models.SmallIntegerField(default=100)
+  money = models.SmallIntegerField(default=500)
   events_unlocked = models.ManyToManyField('events.EventType')
 
   def __str__(self):

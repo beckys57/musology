@@ -26,7 +26,6 @@ def take_turn(request):
     l.update(**location.get("updates", {}))
 
   # Events grouped by district then slots
-  print("here you gob", data.get('events', {}))
   for district_id, eventData in data.get('events', {}).items():
     for slot, events in eventData.items():
 
@@ -41,7 +40,6 @@ def take_turn(request):
         if event["kind"] and not event["kind"] == "gig":
           event["location"] = Location.objects.get(id=event["venue_id"])
           outcomes.append(EventType.objects.get(name=event["kind"]).calculate_outcome(event))
-
   return outcomes
 
 @csrf_exempt
