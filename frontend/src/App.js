@@ -7,6 +7,7 @@ import geodata from "./bristol.geojson";
 import { Pie } from "react-chartjs-2";
 import { Guitar } from "./components/guitars"
 import { Character } from "./components/characters"
+import { LocationInterior } from "./components/locations"
 import styled from "styled-components";
 
 class TurnData {
@@ -648,6 +649,14 @@ export function VenueSidebarContent({venue, selectedSlot}) {
         <h5>Events</h5>
         <SlotBar venue={venue} numOfSlots={venue.slots_available} eventOptions={eventOptions} setSelectedEvent={gameFns.setSelectedEvent}/>
           {selectedSlot ? <EventSelectorForm slotNumber={selectedSlot} venue={venue} eventTypes={eventOptions} eventOptions={eventOptions} setSelectedEvent={gameFns.setSelectedEvent} /> : null}
+
+        <button
+            onClick={e => {
+              e.preventDefault();
+              gameFns.setVenueInterior(venue)
+              // gameFns.selectSomething({selectFn: gameFns.setVenueInterior, selectVal: venue});
+            }}
+          >Look inside</button>
       </div>
     </>
   )
@@ -668,7 +677,6 @@ export function VenuePopup({selectedVenue}) {
     >
       <div>
         <h2>{selectedVenue.name}</h2>
-        <div>{selectedVenue.stats.prestige.value} {selectedVenue.stats.prestige.label}</div>
       </div>
     </Popup>
   )
@@ -782,6 +790,7 @@ export default function App() {
   const [selectedEvent, setSelectedEvent] = useState()
   const [selectedVenue, setSelectedVenue] = useState();
   const [hoveredVenue, setHoveredVenue] = useState();
+  const [venueInterior, setVenueInterior] = useState(null);
   const [selectedDistrict, setSelectedDistrict] = useState();
   const [apiData, setApiData] = useState({});
   const [currentMoney, setCurrentMoney] = useState();
@@ -795,6 +804,7 @@ export default function App() {
     setSelectedSlot(null);
     setSelectedEvent(null);
     setSelectedVenue(null);
+    setVenueInterior(null);
     setSelectedDistrict(null);
     setSelectedCity(false);
     selectFn(selectVal)
@@ -815,6 +825,7 @@ export default function App() {
     "setSelectedCity": setSelectedCity,
     "setSelectedDistrict": setSelectedDistrict,
     "setSelectedVenue": setSelectedVenue,
+    "setVenueInterior": setVenueInterior,
     "setHoveredVenue": setHoveredVenue,
     "selectSomething": selectSomething,
     "setCurrentMoney": setCurrentMoney,
@@ -902,7 +913,8 @@ export default function App() {
     <FnContext.Provider value={gameFns}>
     <StatsContext.Provider value={null}>
       <div id="map" className="col col-9">
-        {loaded && <Map>{hoveredVenue ? ( <VenuePopup selectedVenue={hoveredVenue} /> ) : null} {<GeoJsonLayer data={geodata}/>}</Map>}
+        {(loaded && venueInterior === null) && <Map>{hoveredVenue ? ( <VenuePopup selectedVenue={hoveredVenue} /> ) : null} {<GeoJsonLayer data={geodata}/>}</Map>}
+        {(loaded && venueInterior) && <LocationInterior />}
       </div>
       <div id="sidebar" className="col col-3">
         <div className="card text-center">
@@ -910,18 +922,18 @@ export default function App() {
             <SidebarTabs selectedTab={selectedTab} />
           </div>
           <div className="card-body">
-            {loaded && selectedCity ? <CitySidebarContent /> : null}
-            {loaded && selectedVenue ? (selectedEvent && selectedSlot ?
+            {(loaded && venueInterior === null) && selectedCity ? <CitySidebarContent /> : null}
+            {(loaded && venueInterior === null) && selectedVenue ? (selectedEvent && selectedSlot ?
                                         <EventPlannerForm slotNumber={selectedSlot} venue={selectedVenue} eventTemplate={selectedEvent} currentMoney={currentMoney} /> : 
                                           (selectedVenue.category === "shop" ?
                                            <ShopSidebarContent venue={selectedVenue}></ShopSidebarContent> :
                                            <VenueSidebarContent venue={selectedVenue} selectedSlot={selectedSlot}></VenueSidebarContent>) : null) : null}
         
-            {loaded && selectedDistrict ? ( <DistrictSidebarContent district={selectedDistrict}></DistrictSidebarContent> ) : null}
-            {loaded && selectedTab ? selectedTab : null}
-            {loaded && selectedPerson ? (<PersonSidebarContent person={selectedPerson} />): null}
-            {loaded && selectedBand ? (<BandSidebarContent band={selectedBand} />): null}
-            {loaded && selectedBrand ? (<BrandSidebarContent brand={selectedBrand} />): null}
+            {(loaded && venueInterior === null) && selectedDistrict ? ( <DistrictSidebarContent district={selectedDistrict}></DistrictSidebarContent> ) : null}
+            {(loaded && venueInterior === null) && selectedTab ? selectedTab : null}
+            {(loaded && venueInterior === null) && selectedPerson ? (<PersonSidebarContent person={selectedPerson} />): null}
+            {(loaded && venueInterior === null) && selectedBand ? (<BandSidebarContent band={selectedBand} />): null}
+            {(loaded && venueInterior === null) && selectedBrand ? (<BrandSidebarContent brand={selectedBrand} />): null}
           </div>
           <div className="card-footer sidebar-footer text-muted">
           <div className="row">

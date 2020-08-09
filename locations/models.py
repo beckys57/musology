@@ -159,6 +159,14 @@ class BuildingType(models.Model):
   def __str__(self):
     return self.name
 
+class LocationFeature(models.Model):
+  locations = models.ManyToManyField('Location', null=True, blank=True, related_name="features")
+  name = models.CharField(max_length=127)
+  filepath = models.CharField(max_length=127)
+  width = models.PositiveSmallIntegerField()
+  height = models.PositiveSmallIntegerField()
+  path_d = models.CharField(max_length=2500, null=True, blank=True)
+
 class Location(models.Model):
   brand = models.ForeignKey('brand.Brand', null=True, blank=True, on_delete=models.SET_NULL)
   district = models.ForeignKey('District', null=True, blank=True, on_delete=models.SET_NULL, related_name="locations")

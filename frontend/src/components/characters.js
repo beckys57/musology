@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "styled-components";
-import {shadeMap, hairPaths, facePaths, jacketPaths, shirtPaths, mouthPaths, hairGradients} from "../svg_data/characters"
+import {shadeMap, hairPaths, facePaths, jacketPaths, shirtPaths, mouthPaths, hairGradients} from "./svg_data/characters"
 
 const Frame = styled.div`
   position: relative;

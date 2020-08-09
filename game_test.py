@@ -9,7 +9,7 @@ def setup():
   from people.models import Person, Job, Musician
   from brand.models import Brand
   from tech.models import Tech
-  from locations.models import Location, BuildingType, VenueAssessment
+  from locations.models import Location, LocationFeature, BuildingType, VenueAssessment
   from events.models import EventType
 
   Genre.objects.get_or_create(**{"name": "Blues", "year_invented": 1905, "colour": "#46BFBD"})
@@ -81,6 +81,8 @@ def setup():
   guitarshop, _ = BuildingType.objects.get_or_create(name='guitar shop', category='shop')
   venue, _ = Location.objects.get_or_create(brand_id=2, building_type=music_bar, name="Bojo's", district_id=cotham.id, genre_id=int(cotham.crowds_in_size_order[0]["genre_id"]), latitude="51.4656069", longitude="-2.6087273", capacity=120)
   venue2, _ = Location.objects.get_or_create(brand_id=2, building_type=pub, name="Dancing Pig", district_id=cotham.id, genre_id=int(cotham.crowds_in_size_order[0]["genre_id"]), latitude="51.4669147", longitude="-2.6008227", capacity=100, entry_price=2)
+  wood_bar, _ = LocationFeature.objects.get_or_create(name="bar", filepath="wood.svg", width=100, height=100, path_d="M0 212.67L595.5 212.67L595.5 354.33L0 354.33L0 212.67Z")
+  wood_bar.locations.add(venue2)
   Location.objects.get_or_create(brand_id=2, building_type=dive_bar, name="Rusty Spoon", district_id=cotham.id, genre_id=int(cotham.crowds_in_size_order[0]["genre_id"]), latitude="51.4380286", longitude="-2.5738362", capacity=80, prestige=0)
   Location.objects.get_or_create(brand_id=2, building_type=pub, name="The Baker's Giblets", district_id=cotham.id, genre_id=int(cotham.crowds_in_size_order[0]["genre_id"]), latitude="51.4659809", longitude="-2.6105696", capacity=50, prestige=6, entry_price=8)
   Location.objects.get_or_create(brand_id=1, building_type=pub, name="Ye Olde 'Ole", district_id=cotham.id, genre_id=int(cotham.crowds_in_size_order[0]["genre_id"]), latitude="51.4697231", longitude="-2.6136605", capacity=30, entry_price=1)
