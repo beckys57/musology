@@ -4,18 +4,16 @@ from .models import LocationFeature
 # Create your views here.
 def create_basic_location_features(location):
   # <path id={feature.name} fill={"url(#"+feature.name+"Pattern)"} stroke="#000000" strokeWidth="5" d={feature.path_d}></path>
-  print("Creating create_basic_location_features")
   for attrs in [
       {"layer": "1", "name": "floor", "path_d": "M0 278.91L1191 278.91L1191 842L0 842L0 278.91Z", "filepath": "Carbon-Fibre.svg", "width": "15", "height": "15"},
       {"layer": "1", "name": "wall", "path_d": "M0 -2.64L1191 -2.64L1191 278.91L0 278.91L0 -2.64Z", "filepath": "Protruding-Squares-Wallpaper.svg", "width": "100", "height": "100"},
-      {"layer": "2", "name": "bar", "path_d": "M0 212.67L595.5 212.67L595.5 354.33L0 354.33L0 212.67Z", "filepath": "wood.svg", "width": "100", "height": "100"},
+      {"layer": "2", "name": "bar", "path_d": "M0 212.67L595.5 212.67L595.5 354.33L0 354.33L0 212.67Z", "filepath": "inside/bar-1.svg", "width": "100", "height": "100"},
       {"layer": "3", "name": "barStool", "path_d": "M64.25 262.41L126.75 262.41L126.75 401.99L64.25 401.99L64.25 262.41Z", "filepath": "", "width": "100", "height": "100"},
       {"layer": "3", "name": "barStool", "path_d": "M270.22 262.41L332.72 262.41L332.72 401.99L270.22 401.99L270.22 262.41Z", "filepath": "", "width": "100", "height": "100"},
       {"layer": "3", "name": "stage", "path_d": "M563.92 554.5L1191 554.5L1191 842L563.92 842L563.92 554.5Z", "filepath": "", "width": "100", "height": "100"},
     ]:
       feature, _ = LocationFeature.objects.get_or_create(**attrs) 
       location.features.add(feature)
-      print("added", feature, "to ", location.name)
 
    # <pattern id="floorPattern" patternUnits="userSpaceOnUse" width="15" height="15">
    #          <image href="/Carbon-Fibre.svg" x="0" y="0" width="15" height="15"/>
