@@ -24,7 +24,7 @@ class Game(models.Model):
   def initialize(self):
     from brand.models import Brand
     from locations.models import City
-    from locations.views import create_basic_location_features
+    from locations.views import load_furni_pack
     print("Initializing..")
     call_command('loaddata', 'fixtures/level1.json')
     self.brands.set([Brand.objects.first()])
@@ -33,7 +33,9 @@ class Game(models.Model):
     [city.initialize() for city in self.cities.all()]
 
     for location in self.all_locations:
-      create_basic_location_features(location)
+      load_furni_pack(1, location)
+      # load_furni_pack(2, location)
+      # load_furni_pack("prohibition theme", location)
 
   def send_data(self):
     data_example = {
