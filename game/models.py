@@ -16,18 +16,24 @@ class Game(models.Model):
     from brand.models import Brand
     return " vs ".join([b.name for b in (Brand.objects.all())])
 
+  @property
   def all_locations(self):
-    return [[v for v in c.locations.all()] for c in self.cities.all()]
+    from locations.models import Location
+    return Location.objects.filter(district__city__game_id=self.id)
 
   def initialize(self):
     from brand.models import Brand
     from locations.models import City
+    from locations.views import create_basic_location_features
     print("Initializing..")
     call_command('loaddata', 'fixtures/level1.json')
     self.brands.set([Brand.objects.first()])
     self.cities.set([City.objects.first()])
     print("Tech:", self.current_tech)
     [city.initialize() for city in self.cities.all()]
+
+    for location in self.all_locations:
+      create_basic_location_features(location)
 
   def send_data(self):
     data_example = {

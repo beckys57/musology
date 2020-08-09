@@ -914,7 +914,7 @@ export default function App() {
     <StatsContext.Provider value={null}>
       <div id="map" className="col col-9">
         {(loaded && venueInterior === null) && <Map>{hoveredVenue ? ( <VenuePopup selectedVenue={hoveredVenue} /> ) : null} {<GeoJsonLayer data={geodata}/>}</Map>}
-        {(loaded && venueInterior) && <LocationInterior />}
+        {(loaded && venueInterior) && <LocationInterior location={venueInterior} />}
       </div>
       <div id="sidebar" className="col col-3">
         <div className="card text-center">

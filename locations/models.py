@@ -161,11 +161,19 @@ class BuildingType(models.Model):
 
 class LocationFeature(models.Model):
   locations = models.ManyToManyField('Location', null=True, blank=True, related_name="features")
+
   name = models.CharField(max_length=127)
   filepath = models.CharField(max_length=127)
   width = models.PositiveSmallIntegerField()
   height = models.PositiveSmallIntegerField()
   path_d = models.CharField(max_length=2500, null=True, blank=True)
+  layer = models.CharField(max_length=1, null=True, blank=True)
+
+  def __str__(self):
+    return self.name
+
+  class Meta:
+    ordering = ['layer']
 
 class Location(models.Model):
   brand = models.ForeignKey('brand.Brand', null=True, blank=True, on_delete=models.SET_NULL)
@@ -208,6 +216,8 @@ class Location(models.Model):
     attrs = {k: v for k, v in self.__dict__.items()
               if k in ["id", "brand_id", "district_id", "genre_id", "latitude", "longitude", "name", "slots_available"]}
 
+    features = self.features.all().values("name", "path_d", "filepath", "width", "height")
+
     attrs.update({
         "stats": {
                     "level": {"value": self.level, "label": "Level"},
@@ -218,6 +228,8 @@ class Location(models.Model):
                   },
         "type": self.building_type.name,
         "category": self.building_type.category,
+        "features": list(features.values("name", "path_d", "filepath")),
+        "feature_patterns": list(features.values("name", "filepath", "width", "height")),
         "update_attrs": self.update_attrs,
         "event_options": EventType.options_for_location(self),
         "staff": self.staff_data,

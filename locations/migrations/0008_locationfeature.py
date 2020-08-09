@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
                 ('filepath', models.CharField(max_length=127)),
                 ('width', models.PositiveSmallIntegerField()),
                 ('height', models.PositiveSmallIntegerField()),
-                ('location', models.ManyToManyField(blank=True, null=True, related_name='features', to='locations.Location')),
+                ('location', models.ManyToManyField(related_name='features', to='locations.Location')),
             ],
         ),
     ]
