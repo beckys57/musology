@@ -82,9 +82,12 @@ class LocationFeature(models.Model):
   filepath = models.CharField(max_length=127)
   width = models.PositiveSmallIntegerField()
   height = models.PositiveSmallIntegerField()
+  x = models.PositiveSmallIntegerField(default=0)
+  y = models.PositiveSmallIntegerField(default=0)
   path_d = models.CharField(max_length=2500, null=True, blank=True)
   layer = models.CharField(max_length=1, null=True, blank=True)
   category = models.CharField(max_length=27, null=True, blank=True, choices=FEATURE_SUBCATEGORIES)
+  has_border = models.BooleanField(default=False)
 
   def __str__(self):
     return self.name

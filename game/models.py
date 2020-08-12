@@ -35,7 +35,7 @@ class Game(models.Model):
     initialise_tech()
     for location in self.all_locations:
       load_furni_pack(1, location)
-      # load_furni_pack(2, location)
+      load_furni_pack(2, location)
       # load_furni_pack("prohibition theme", location)
     assign_initial_techs()
 

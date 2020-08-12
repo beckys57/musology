@@ -23,22 +23,20 @@ const Foundations = styled.div`
 
 export function LocationInterior({location, size}) {
   const locationFeatures = location.features;
-  const locationPatterns = location.feature_patterns;
 
   return (
       <Foundations size={size ? size : "100%"}>
         <svg preserveAspectRatio="xMidYMid meet" viewBox="0 0 1191 842" width="1191" height="842">
-          {locationPatterns.map(featurePattern => {
-           return (
-                <pattern id={featurePattern.category +"Pattern"} key={featurePattern.category +"Pattern"} patternUnits="userSpaceOnUse" width={featurePattern.width} height={featurePattern.height}>
-                  {featurePattern.filepath && <image href={"/"+featurePattern.filepath} x="0" y="0" width={featurePattern.width} height={featurePattern.height}/>}
-                </pattern>
-              )}) 
-          };
           
           {locationFeatures.map(feature => {
+            console.log("Feature,", feature)
            return (
-                <path id={feature.category} fill={feature.filepath === "" ? "#c35239" : ("url(#"+feature.category+"Pattern)") } stroke="#000000" strokeWidth="5" d={feature.path_d}></path>
+             <>
+                <pattern id={"patternF" + feature.id} key={"patternF" + feature.id} patternUnits="userSpaceOnUse" width={feature.width} height={feature.height} x={feature.x} y={feature.y}>
+                  {feature.filepath && <image href={"/"+feature.filepath} width={feature.width} height={feature.height}/>}
+                </pattern>
+                <path id={feature.category} fill={feature.filepath === "" ? "#c35239" : ("url(#"+"patternF"+feature.id + ")") } stroke="#000000" strokeWidth={feature.has_border? "0" : "5"} d={feature.path_d}></path>
+             </>
               )}) 
           };
         </svg>

@@ -200,10 +200,9 @@ class Location(models.Model):
     from events.models import EventType
 
     attrs = {k: v for k, v in self.__dict__.items()
-              if k in ["id", "brand_id", "category", "district_id", "genre_id", "latitude", "longitude", "name", "slots_available"]}
+              if k in ["id", "brand_id", "category", "district_id", "genre_id", "latitude", "longitude", "name", "slots_available", "x", "y"]}
 
-    features = self.features.all().values("category", "name", "path_d", "filepath", "width", "height", "tech__effects")
-    feature_patterns = [v for v in features.values("category", "filepath", "name", "width", "height")]
+    features = self.features.all().values("id", "name", "path_d", "filepath", "width", "height", "has_border", "tech__effects", "filepath", "width", "height", "x", "y")
 
     features_with_effects = list()
     for feature in features:
@@ -224,7 +223,6 @@ class Location(models.Model):
         "type": self.building_type.name,
         "category": self.building_type.category,
         "features": features_with_effects,
-        "feature_patterns": feature_patterns,
         "update_attrs": self.update_attrs,
         "event_options": EventType.options_for_location(self),
         "staff": self.staff_data,

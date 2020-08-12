@@ -67,9 +67,9 @@ def setup():
   holy2, _=Musician.objects.get_or_create(**{"person": holy1, "band_id": shit.id})
   shit1, _=Musician.objects.get_or_create(**{"person": shit2, "band_id": shit.id})
 
-  t1, _ = Tech.objects.get_or_create(name="open mic", affects="[Venue]", effects="{'prestige': 1}")
+  t1, _ = Tech.objects.get_or_create(name="open mic", affects="[Venue]", effects="")
   t1.brand.set([brand])
-  Tech.objects.get_or_create(category="location", name="dishwasher", affects="[Venue]", effects="{'prestige': 1, 'running_costs': 5}")
+  # Tech.objects.get_or_create(category="location", name="dishwasher", affects="[Venue]", effects="{'prestige': 1, 'running_costs': 5}")
   concert_hall, _ = BuildingType.objects.get_or_create(name='concert hall', category='venue with stage')
   gig_venue, _ = BuildingType.objects.get_or_create(name='gig venue', category='venue with stage')
   music_bar, _ = BuildingType.objects.get_or_create(name='music bar', category='venue with stage')
