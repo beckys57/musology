@@ -30,7 +30,7 @@ export function LocationInterior({location, size}) {
         <svg preserveAspectRatio="xMidYMid meet" viewBox="0 0 1191 842" width="1191" height="842">
           {locationPatterns.map(featurePattern => {
            return (
-                <pattern id={featurePattern.name +"Pattern"} key={featurePattern.name +"Pattern"} patternUnits="userSpaceOnUse" width={featurePattern.width} height={featurePattern.height}>
+                <pattern id={featurePattern.category +"Pattern"} key={featurePattern.category +"Pattern"} patternUnits="userSpaceOnUse" width={featurePattern.width} height={featurePattern.height}>
                   {featurePattern.filepath && <image href={"/"+featurePattern.filepath} x="0" y="0" width={featurePattern.width} height={featurePattern.height}/>}
                 </pattern>
               )}) 
@@ -38,7 +38,7 @@ export function LocationInterior({location, size}) {
           
           {locationFeatures.map(feature => {
            return (
-                <path id={feature.name} fill={feature.filepath === "" ? "#c35239" : ("url(#"+feature.name+"Pattern)") } stroke="#000000" strokeWidth="5" d={feature.path_d}></path>
+                <path id={feature.category} fill={feature.filepath === "" ? "#c35239" : ("url(#"+feature.category+"Pattern)") } stroke="#000000" strokeWidth="5" d={feature.path_d}></path>
               )}) 
           };
         </svg>

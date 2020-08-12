@@ -160,21 +160,6 @@ class BuildingType(models.Model):
   def __str__(self):
     return self.name
 
-class LocationFeature(models.Model):
-  locations = models.ManyToManyField('Location', null=True, blank=True, related_name="features")
-  tech = models.ForeignKey('tech.Tech', null=True, blank=True, on_delete=models.SET_NULL)
-  name = models.CharField(max_length=127)
-  filepath = models.CharField(max_length=127)
-  width = models.PositiveSmallIntegerField()
-  height = models.PositiveSmallIntegerField()
-  path_d = models.CharField(max_length=2500, null=True, blank=True)
-  layer = models.CharField(max_length=1, null=True, blank=True)
-
-  def __str__(self):
-    return self.name
-
-  class Meta:
-    ordering = ['layer']
 
 class Location(models.Model):
   brand = models.ForeignKey('brand.Brand', null=True, blank=True, on_delete=models.SET_NULL)
@@ -215,10 +200,10 @@ class Location(models.Model):
     from events.models import EventType
 
     attrs = {k: v for k, v in self.__dict__.items()
-              if k in ["id", "brand_id", "district_id", "genre_id", "latitude", "longitude", "name", "slots_available"]}
+              if k in ["id", "brand_id", "category", "district_id", "genre_id", "latitude", "longitude", "name", "slots_available"]}
 
-    features = self.features.all().values("name", "path_d", "filepath", "width", "height", "tech__effects")
-    feature_patterns = [v for v in features.values("name", "filepath", "width", "height")]
+    features = self.features.all().values("category", "name", "path_d", "filepath", "width", "height", "tech__effects")
+    feature_patterns = [v for v in features.values("category", "filepath", "name", "width", "height")]
 
     features_with_effects = list()
     for feature in features:

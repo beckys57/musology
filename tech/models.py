@@ -25,12 +25,6 @@ class Tech(models.Model):
     ]
   ]
 
-  TECH_SUBCATEGORIES = [(c, c) for c in [
-      'wallpaper',
-      'flooring',
-      'bar',
-    ]
-  ]
 
   PROGRESS_STAGES = [
       ('0', 'undiscovered'),
@@ -53,7 +47,6 @@ class Tech(models.Model):
   affects = models.CharField(max_length=255, default="'global'") # String list of models, it's a bit poo but I don't mind too much. eg [Venue, Population]
   effects = models.CharField(max_length=255, default="{'popularity': 0}") # String dict of attributes eg prestige, applied to all where attr exists. As an increment value
   category = models.CharField(max_length=27, null=True, blank=True, choices=TECH_CATEGORIES)
-  subcategory = models.CharField(max_length=27, null=True, blank=True, choices=TECH_SUBCATEGORIES)
   progress = models.CharField(max_length=27, default=0, choices=TECH_CATEGORIES)
 
   def __str__(self):
@@ -72,3 +65,29 @@ class Tech(models.Model):
         for o in objects:
           objects.filter(id=o.id).update(**applicable_effects)
 
+FEATURE_SUBCATEGORIES = [(c, c) for c in [
+    'wallpaper',
+    'flooring',
+    'bar',
+    'equipment',
+    'music equipment',
+  ]
+]
+
+## Specific techs ##
+class LocationFeature(models.Model):
+  locations = models.ManyToManyField('locations.Location', null=True, blank=True, related_name="features")
+  tech = models.ForeignKey('Tech', null=True, blank=True, on_delete=models.SET_NULL)
+  name = models.CharField(max_length=127)
+  filepath = models.CharField(max_length=127)
+  width = models.PositiveSmallIntegerField()
+  height = models.PositiveSmallIntegerField()
+  path_d = models.CharField(max_length=2500, null=True, blank=True)
+  layer = models.CharField(max_length=1, null=True, blank=True)
+  category = models.CharField(max_length=27, null=True, blank=True, choices=FEATURE_SUBCATEGORIES)
+
+  def __str__(self):
+    return self.name
+
+  class Meta:
+    ordering = ['layer']

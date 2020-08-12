@@ -8,8 +8,8 @@ def setup():
   from locations.models import District
   from people.models import Person, Job, Musician
   from brand.models import Brand
-  from tech.models import Tech
-  from locations.models import Location, LocationFeature, BuildingType, VenueAssessment
+  from tech.models import Tech, LocationFeature
+  from locations.models import Location, BuildingType, VenueAssessment
   from events.models import EventType
 
   Genre.objects.get_or_create(**{"name": "Blues", "year_invented": 1905, "colour": "#46BFBD"})
@@ -69,7 +69,7 @@ def setup():
 
   t1, _ = Tech.objects.get_or_create(name="open mic", affects="[Venue]", effects="{'prestige': 1}")
   t1.brand.set([brand])
-  Tech.objects.get_or_create(category="location", subcategory="equipment", name="dishwasher", affects="[Venue]", effects="{'prestige': 1, 'running_costs': 5}")
+  Tech.objects.get_or_create(category="location", name="dishwasher", affects="[Venue]", effects="{'prestige': 1, 'running_costs': 5}")
   concert_hall, _ = BuildingType.objects.get_or_create(name='concert hall', category='venue with stage')
   gig_venue, _ = BuildingType.objects.get_or_create(name='gig venue', category='venue with stage')
   music_bar, _ = BuildingType.objects.get_or_create(name='music bar', category='venue with stage')
