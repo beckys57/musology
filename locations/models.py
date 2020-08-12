@@ -1,3 +1,4 @@
+import json
 import random
 
 from django.db import models
@@ -161,7 +162,7 @@ class BuildingType(models.Model):
 
 class LocationFeature(models.Model):
   locations = models.ManyToManyField('Location', null=True, blank=True, related_name="features")
-
+  tech = models.ForeignKey('tech.Tech', null=True, blank=True, on_delete=models.SET_NULL)
   name = models.CharField(max_length=127)
   filepath = models.CharField(max_length=127)
   width = models.PositiveSmallIntegerField()
@@ -216,7 +217,16 @@ class Location(models.Model):
     attrs = {k: v for k, v in self.__dict__.items()
               if k in ["id", "brand_id", "district_id", "genre_id", "latitude", "longitude", "name", "slots_available"]}
 
-    features = self.features.all().values("name", "path_d", "filepath", "width", "height")
+    features = self.features.all().values("name", "path_d", "filepath", "width", "height", "tech__effects")
+    feature_patterns = [v for v in features.values("name", "filepath", "width", "height")]
+
+    features_with_effects = list()
+    for feature in features:
+      f = feature.copy()
+      effects_string = feature["tech__effects"]
+      if effects_string:
+        f.update(tech__effects=json.dumps(eval(effects_string)))
+      features_with_effects.append(f)
 
     attrs.update({
         "stats": {
@@ -228,8 +238,8 @@ class Location(models.Model):
                   },
         "type": self.building_type.name,
         "category": self.building_type.category,
-        "features": list(features.values("name", "path_d", "filepath")),
-        "feature_patterns": list(features.values("name", "filepath", "width", "height")),
+        "features": features_with_effects,
+        "feature_patterns": feature_patterns,
         "update_attrs": self.update_attrs,
         "event_options": EventType.options_for_location(self),
         "staff": self.staff_data,

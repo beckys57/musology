@@ -247,6 +247,6 @@ class Gig(object):
     """
     params eg
     {
-      modifiers: {venue_obj: popularity: -5, prestige: 1}
+      modifiers: {venue_obj: 'popularity': -5, 'prestige': 1}
     }
     """

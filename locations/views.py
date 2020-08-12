@@ -1,20 +1,62 @@
 from django.shortcuts import render
 from .models import LocationFeature
 
+# Initialise with general tech effect ratings but also possible to have specific to each item
+FURNI_TECH = {
+  "decor": [
+      {
+        "affects": "Venue",
+        "effects": "{'prestige': 1}",
+        "category": "location",
+      },
+      {
+        "affects": "Venue",
+        "effects": "{'prestige': 2}",
+        "category": "location",
+      },
+  ],
+  "stage": [
+      {
+        "affects": "Venue",
+        "effects": "{'prestige': 1}",
+        "category": "location",
+      },
+      {
+        "affects": "Venue",
+        "effects": "{'prestige': -1, 'popularity': 3}",
+        "category": "location",
+      },
+  ],
+  "venue equipment": [
+      {
+        "affects": "Venue",
+        "effects": "{'prestige': 1}",
+        "category": "location",
+      },
+  ],
+  "music equipment": [
+      {
+        "affects": "Venue",
+        "effects": "{'prestige': 1}",
+        "category": "location",
+      },
+  ]
+}
+
 FURNI_PACKS = {
   1: [
       {"layer": "1", "name": "floor", "path_d": "M0 278.91L1191 278.91L1191 842L0 842L0 278.91Z", "filepath": "Carbon-Fibre.svg", "width": "15", "height": "15"},
       {"layer": "1", "name": "wall", "path_d": "M0 -2.64L1191 -2.64L1191 278.91L0 278.91L0 -2.64Z", "filepath": "Protruding-Squares-Wallpaper.svg", "width": "100", "height": "100"},
       {"layer": "2", "name": "bar", "path_d": "M0 212.24L595 212.24L595 352.24L0 352.24L0 212.24Z", "filepath": "inside/bar-1.svg", "width": "600", "height": "430"},
-      {"layer": "3", "name": "barStool", "path_d": "M64.25 262.41L126.75 262.41L126.75 401.99L64.25 401.99L64.25 262.41Z", "filepath": "", "width": "100", "height": "100"},
-      {"layer": "3", "name": "barStool", "path_d": "M270.22 262.41L332.72 262.41L332.72 401.99L270.22 401.99L270.22 262.41Z", "filepath": "", "width": "100", "height": "100"},
+      {"layer": "3", "name": "bar stool", "path_d": "M64.25 262.41L126.75 262.41L126.75 401.99L64.25 401.99L64.25 262.41Z", "filepath": "", "width": "100", "height": "100"},
+      {"layer": "3", "name": "bar stool", "path_d": "M270.22 262.41L332.72 262.41L332.72 401.99L270.22 401.99L270.22 262.41Z", "filepath": "", "width": "100", "height": "100"},
       {"layer": "3", "name": "stage", "path_d": "M563.92 554.5L1191 554.5L1191 842L563.92 842L563.92 554.5Z", "filepath": "", "width": "100", "height": "100"},],
   2: [
       {"layer": "2", "name": "wallObj", "path_d":"M640.92 82.66L751.33 82.66L751.33 222.24L640.92 222.24L640.92 82.66Z", "filepath": "", "width": "100", "height": "100"},
       {"layer": "2", "name": "wallObj", "path_d":"M792.72 33.07L903.14 33.07L903.14 172.66L792.72 172.66L792.72 33.07Z", "filepath": "", "width": "100", "height": "100"},
       {"layer": "2", "name": "wallObj", "path_d":"M937.17 101.82L1047.58 101.82L1047.58 241.41L937.17 241.41L937.17 101.82Z", "filepath": "", "width": "100", "height": "100"},
-      {"layer": "3", "name": "barStool", "path_d":"M168.14 262.41L230.64 262.41L230.64 401.99L168.14 401.99L168.14 262.41Z", "filepath": "", "width": "100", "height": "100"},
-      {"layer": "3", "name": "barStool", "path_d":"M374.1 262.41L436.6 262.41L436.6 401.99L374.1 401.99L374.1 262.41Z", "filepath": "", "width": "100", "height": "100"},
+      {"layer": "3", "name": "bar stool", "path_d":"M168.14 262.41L230.64 262.41L230.64 401.99L168.14 401.99L168.14 262.41Z", "filepath": "", "width": "100", "height": "100"},
+      {"layer": "3", "name": "bar stool", "path_d":"M374.1 262.41L436.6 262.41L436.6 401.99L374.1 401.99L374.1 262.41Z", "filepath": "", "width": "100", "height": "100"},
       {"layer": "2", "name": "drinksCabinet", "path_d":"M0 30.99L595 30.99L595 170.99L0 170.99L0 30.99Z", "filepath": "", "width": "100", "height": "100"},
       {"layer": "3", "name": "barLighting", "path_d":"M0 0L595 0L595 30.96L0 30.96L0 0Z", "filepath": "", "width": "100", "height": "100"},
       {"layer": "3", "name": "soundSystem", "path_d":"M937.17 362.24L1076.75 362.24L1076.75 554.5L937.17 554.5L937.17 362.24Z", "filepath": "", "width": "100", "height": "100"},
@@ -24,7 +66,25 @@ FURNI_PACKS = {
       {"layer": "3", "name": "danceFloor", "path_d":"M0 739.01L563.92 739.01L563.92 842L0 842L0 739.01Z", "filepath": "", "width": "100", "height": "100"},],
 }
 
-# Create your views here.
+def initialise_tech():
+  from tech.models import Tech
+  for name, furnis in FURNI_TECH.items():
+    for attrs in furnis:
+      attrs.update(subcategory=name, name=name)
+      tech, _ = Tech.objects.get_or_create(**attrs)
+
+def assign_initial_techs():
+  from tech.models import Tech
+  decor_tech = Tech.objects.filter(name="decor").first()
+  stage_tech = Tech.objects.filter(name="stage").first()
+  equipment_tech = Tech.objects.filter(name="equipment").first()
+  music_tech = Tech.objects.filter(name="music_equipment").first()
+  # Start with no tech effects on "bar stool", "wallObj", "drinksCabinet", "barLighting"
+  LocationFeature.objects.filter(name__in=["floor", "wall", "bar"]).update(tech=decor_tech)
+  LocationFeature.objects.filter(name__in=["stage", "danceFloor"]).update(tech=stage_tech)
+  LocationFeature.objects.filter(name__in=["stageTop", "stageBack", "stageBottom"]).update(tech=equipment_tech)
+  LocationFeature.objects.filter(name__in=["soundSystem"]).update(tech=music_tech)
+
 def load_furni_pack(pack_number, location):
   # <path id={feature.name} fill={"url(#"+feature.name+"Pattern)"} stroke="#000000" strokeWidth="5" d={feature.path_d}></path>
   for attrs in FURNI_PACKS[pack_number]:
@@ -49,8 +109,8 @@ def load_furni_pack(pack_number, location):
 #         {"layer": "1", "name": "wallObj", "path_d":"M640.92 82.66L751.33 82.66L751.33 222.24L640.92 222.24L640.92 82.66Z", "filepath": "", "width": "100", "height": "100"},
 #         {"layer": "1", "name": "wallObj", "path_d":"M792.72 33.07L903.14 33.07L903.14 172.66L792.72 172.66L792.72 33.07Z", "filepath": "", "width": "100", "height": "100"},
 #         {"layer": "1", "name": "wallObj", "path_d":"M937.17 101.82L1047.58 101.82L1047.58 241.41L937.17 241.41L937.17 101.82Z", "filepath": "", "width": "100", "height": "100"},
-#         {"layer": "1", "name": "barStool", "path_d":"M168.14 262.41L230.64 262.41L230.64 401.99L168.14 401.99L168.14 262.41Z", "filepath": "", "width": "100", "height": "100"},
-#         {"layer": "1", "name": "barStool", "path_d":"M374.1 262.41L436.6 262.41L436.6 401.99L374.1 401.99L374.1 262.41Z", "filepath": "", "width": "100", "height": "100"},
+#         {"layer": "1", "name": "bar stool", "path_d":"M168.14 262.41L230.64 262.41L230.64 401.99L168.14 401.99L168.14 262.41Z", "filepath": "", "width": "100", "height": "100"},
+#         {"layer": "1", "name": "bar stool", "path_d":"M374.1 262.41L436.6 262.41L436.6 401.99L374.1 401.99L374.1 262.41Z", "filepath": "", "width": "100", "height": "100"},
 #         {"layer": "1", "name": "drinksCabinet", "path_d":"M0 30.99L595.5 30.99L595.5 172.66L0 172.66L0 30.99Z", "filepath": "", "width": "100", "height": "100"},
 #         {"layer": "1", "name": "barLighting", "path_d":"M0 0L595.5 0L595.5 30.99L0 30.99L0 0Z", "filepath": "", "width": "100", "height": "100"},
 #         {"layer": "1", "name": "soundSystem", "path_d":"M937.17 362.24L1076.75 362.24L1076.75 554.5L937.17 554.5L937.17 362.24Z", "filepath": "", "width": "100", "height": "100"},
@@ -67,10 +127,10 @@ def load_furni_pack(pack_number, location):
 # <path id="wallObj" fill="#f3ff03" stroke="#000000" strokeWidth="5" d="M640.92 82.66L751.33 82.66L751.33 222.24L640.92 222.24L640.92 82.66Z"></path>
 # <path id="wallObj" fill="url(#wallObject)" stroke="#000000" strokeWidth="5" d="M792.72 33.07L903.14 33.07L903.14 172.66L792.72 172.66L792.72 33.07Z"></path>
 # <path id="wallObj" fill="#f3ff03" stroke="#000000" strokeWidth="5" d="M937.17 101.82L1047.58 101.82L1047.58 241.41L937.17 241.41L937.17 101.82Z"></path>
-# <path id="barStool" fill="#c35239" stroke="#000000" strokeWidth="5" d="M64.25 262.41L126.75 262.41L126.75 401.99L64.25 401.99L64.25 262.41Z"></path>
-# <path id="barStool" fill="#c35239" stroke="#000000" strokeWidth="5" d="M168.14 262.41L230.64 262.41L230.64 401.99L168.14 401.99L168.14 262.41Z"></path>
-# <path id="barStool" fill="#c35239" stroke="#000000" strokeWidth="5" d="M270.22 262.41L332.72 262.41L332.72 401.99L270.22 401.99L270.22 262.41Z"></path>
-# <path id="barStool" fill="#c35239" stroke="#000000" strokeWidth="5" d="M374.1 262.41L436.6 262.41L436.6 401.99L374.1 401.99L374.1 262.41Z"></path>
+# <path id="bar stool" fill="#c35239" stroke="#000000" strokeWidth="5" d="M64.25 262.41L126.75 262.41L126.75 401.99L64.25 401.99L64.25 262.41Z"></path>
+# <path id="bar stool" fill="#c35239" stroke="#000000" strokeWidth="5" d="M168.14 262.41L230.64 262.41L230.64 401.99L168.14 401.99L168.14 262.41Z"></path>
+# <path id="bar stool" fill="#c35239" stroke="#000000" strokeWidth="5" d="M270.22 262.41L332.72 262.41L332.72 401.99L270.22 401.99L270.22 262.41Z"></path>
+# <path id="bar stool" fill="#c35239" stroke="#000000" strokeWidth="5" d="M374.1 262.41L436.6 262.41L436.6 401.99L374.1 401.99L374.1 262.41Z"></path>
 # <path id="drinksCabinet" fill="#bc25b3" stroke="#000000" strokeWidth="5" d="M0 30.99L595.5 30.99L595.5 172.66L0 172.66L0 30.99Z"></path>
 # <path id="barLighting" fill="#2d3879" stroke="#000000" strokeWidth="5" d="M0 0L595.5 0L595.5 30.99L0 30.99L0 0Z"></path>
 # <path id="stage" fill="#662078" stroke="#000000" strokeWidth="5" d="M563.92 554.5L1191 554.5L1191 842L563.92 842L563.92 554.5Z"></path>

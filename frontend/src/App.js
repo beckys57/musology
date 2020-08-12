@@ -145,6 +145,35 @@ export function CitySidebarContent() {
   )
 }
 
+function FeatureStats({feature}) {
+  console.log('feature', feature)
+  if (feature !== undefined) {
+    const effects = JSON.parse(feature.tech__effects)
+    return (effects && 
+        <>
+            {Object.keys(effects).map(effect_name => (
+              <span>{effects[effect_name] + " " + effect_name}</span>
+            ))}
+        </> 
+      )
+  } else {
+    console.log('null')
+    return <>-</>
+  }
+}
+
+export function VenueInteriorSidebarContent({venue}) {
+  console.log("venue", venue)
+  return (
+    <>
+      <CardHeader title={venue.name} caption={"Inside " + venue.name} imgSrc={"/band.svg"} />
+      <div className="sidebar-scroll">
+        <ListOfNamedObjects title="Features" namedObjects={venue.features} rowExtras={venue.features.map(f => <FeatureStats feature={f} />)} selectorFn="console.log" />
+      </div>
+    </>
+  )
+}
+
 // function getAvailableMusicians({slotNumber}) {
 //   const apiData = useContext(ApiDataContext);
 //   const gameFns = useContext(FnContext);
@@ -653,8 +682,7 @@ export function VenueSidebarContent({venue, selectedSlot}) {
         <button
             onClick={e => {
               e.preventDefault();
-              gameFns.setVenueInterior(venue)
-              // gameFns.selectSomething({selectFn: gameFns.setVenueInterior, selectVal: venue});
+              gameFns.selectSomething({selectFn: gameFns.setVenueInterior, selectVal: venue});
             }}
           >Look inside</button>
       </div>
@@ -922,6 +950,7 @@ export default function App() {
             <SidebarTabs selectedTab={selectedTab} />
           </div>
           <div className="card-body">
+            {(loaded && venueInterior !== null) && <VenueInteriorSidebarContent venue={venueInterior} />}
             {(loaded && venueInterior === null) && selectedCity ? <CitySidebarContent /> : null}
             {(loaded && venueInterior === null) && selectedVenue ? (selectedEvent && selectedSlot ?
                                         <EventPlannerForm slotNumber={selectedSlot} venue={selectedVenue} eventTemplate={selectedEvent} currentMoney={currentMoney} /> : 

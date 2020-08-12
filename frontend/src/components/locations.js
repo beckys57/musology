@@ -25,14 +25,13 @@ export function LocationInterior({location, size}) {
   const locationFeatures = location.features;
   const locationPatterns = location.feature_patterns;
 
-
   return (
       <Foundations size={size ? size : "100%"}>
         <svg preserveAspectRatio="xMidYMid meet" viewBox="0 0 1191 842" width="1191" height="842">
           {locationPatterns.map(featurePattern => {
            return (
                 <pattern id={featurePattern.name +"Pattern"} key={featurePattern.name +"Pattern"} patternUnits="userSpaceOnUse" width={featurePattern.width} height={featurePattern.height}>
-                  <image href={"/"+featurePattern.filepath} x="0" y="0" width={featurePattern.width} height={featurePattern.height}/>
+                  {featurePattern.filepath && <image href={"/"+featurePattern.filepath} x="0" y="0" width={featurePattern.width} height={featurePattern.height}/>}
                 </pattern>
               )}) 
           };
