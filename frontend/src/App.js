@@ -163,13 +163,17 @@ function FeatureStats({feature}) {
 }
 
 export function VenueInteriorSidebarContent({venue}) {
-  console.log("venue", venue)
+  const gameFns = useContext(FnContext)
   return (
     <>
       <CardHeader title={venue.name} caption={"Inside " + venue.name} imgSrc={"/band.svg"} />
       <div className="sidebar-scroll">
         <ListOfNamedObjects title="Features" namedObjects={venue.features} rowExtras={venue.features.map(f => <FeatureStats feature={f} />)} selectorFn="console.log" />
       </div>
+       <button onClick={e => {
+          e.preventDefault();
+          gameFns.setVenueInterior(null)
+        }}>Back to map</button>
     </>
   )
 }
