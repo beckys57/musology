@@ -1,5 +1,13 @@
 from django.shortcuts import render
+from django.http import JsonResponse
 from tech.models import LocationFeature
+
+
+def catalogue(request, location_id):
+  features = list(LocationFeature.objects.all().prefetch_related("tech").values())
+  return JsonResponse(
+                features, safe=False
+            )
 
 # Initialise with general tech effect ratings but also possible to have specific to each item
 FURNI_TECH = {

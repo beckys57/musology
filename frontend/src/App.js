@@ -6,8 +6,9 @@ import axios from "axios"
 import geodata from "./bristol.geojson";
 import { Pie } from "react-chartjs-2";
 import { Guitar } from "./components/guitars"
+import { Catalogue } from "./components/catalogue"
 import { Character } from "./components/characters"
-import { LocationInterior } from "./components/locations"
+import { ItemSVG } from "./components/catalogue"
 import styled from "styled-components";
 
 class TurnData {
@@ -172,7 +173,14 @@ export function VenueInteriorSidebarContent({venue}) {
       </div>
        <button onClick={e => {
           e.preventDefault();
-          gameFns.setVenueInterior(null)
+          gameFns.openCatalogue(venue);
+          // gameFns.selectSomething({selectFn: gameFns.openCatalogue, selectVal: venue});
+        }}>Catalogue</button>
+       <button onClick={e => {
+          e.preventDefault();
+          console.log("Leaving")
+          gameFns.selectSomething({selectFn: gameFns.setSelectedVenue, selectVal: venue});
+          console.log("Left")
         }}>Back to map</button>
     </>
   )
@@ -823,6 +831,7 @@ export default function App() {
   const [selectedVenue, setSelectedVenue] = useState();
   const [hoveredVenue, setHoveredVenue] = useState();
   const [venueInterior, setVenueInterior] = useState(null);
+  const [cataloguePage, openCatalogue] = useState();
   const [selectedDistrict, setSelectedDistrict] = useState();
   const [apiData, setApiData] = useState({});
   const [currentMoney, setCurrentMoney] = useState();
@@ -837,6 +846,7 @@ export default function App() {
     setSelectedEvent(null);
     setSelectedVenue(null);
     setVenueInterior(null);
+    openCatalogue(null);
     setSelectedDistrict(null);
     setSelectedCity(false);
     selectFn(selectVal)
@@ -858,6 +868,7 @@ export default function App() {
     "setSelectedDistrict": setSelectedDistrict,
     "setSelectedVenue": setSelectedVenue,
     "setVenueInterior": setVenueInterior,
+    "openCatalogue": openCatalogue,
     "setHoveredVenue": setHoveredVenue,
     "selectSomething": selectSomething,
     "setCurrentMoney": setCurrentMoney,
@@ -946,7 +957,7 @@ export default function App() {
     <StatsContext.Provider value={null}>
       <div id="map" className="col col-9">
         {(loaded && venueInterior === null) && <Map>{hoveredVenue ? ( <VenuePopup selectedVenue={hoveredVenue} /> ) : null} {<GeoJsonLayer data={geodata}/>}</Map>}
-        {(loaded && venueInterior) && <LocationInterior location={venueInterior} />}
+        {(loaded && venueInterior) && (cataloguePage ? <Catalogue venue={venueInterior} /> : <ItemSVG items={venueInterior.features} />)}
       </div>
       <div id="sidebar" className="col col-3">
         <div className="card text-center">
@@ -954,7 +965,7 @@ export default function App() {
             <SidebarTabs selectedTab={selectedTab} />
           </div>
           <div className="card-body">
-            {(loaded && venueInterior !== null) && <VenueInteriorSidebarContent venue={venueInterior} />}
+            {(loaded && venueInterior && cataloguePage === null) && <VenueInteriorSidebarContent venue={venueInterior} />}
             {(loaded && venueInterior === null) && selectedCity ? <CitySidebarContent /> : null}
             {(loaded && venueInterior === null) && selectedVenue ? (selectedEvent && selectedSlot ?
                                         <EventPlannerForm slotNumber={selectedSlot} venue={selectedVenue} eventTemplate={selectedEvent} currentMoney={currentMoney} /> : 
