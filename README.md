@@ -95,7 +95,7 @@ Please post data to /take_turn (this endpoint currently doesn't do anything) in 
   ```
 
 # Reset from game_test and create new fixtures
-alias musreset='rm -f db.sqlite3 && python manage.py migrate && python manage.py resetgame && python manage.py dumpdata > fixtures/l$
+alias musreset='rm -f db.sqlite3 && python manage.py migrate && python manage.py resetgame && python manage.py dumpdata > fixtures/level1.json
 # Fresh load from fixtures
 alias musload='rm -f db.sqlite3 && python manage.py migrate && python manage.py loaddata fixtures/level1.json'
 # Resets and creates fixtures, then tests them by dropping DB and loading them
