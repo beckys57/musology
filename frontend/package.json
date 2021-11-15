@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@babel/plugin-transform-react-jsx": "^7.16.0",
+    "@babel/plugin-transform-react-jsx-self": "^7.16.0",
     "axios": "^0.19.2",
     "chart.js": "^2.9.3",
     "react": "^16.8.6",
