@@ -15,9 +15,9 @@ const Case = styled.div`
 export function Guitar() {
   return (
       <Case>
-        <img src="guitar-body.svg" />
-        <img src="guitar-neck.svg" />
-        <img src="guitar-head.svg" />
+        <img alt="guitar body" src="guitar-body.svg" />
+        <img alt="guitar neck" src="guitar-neck.svg" />
+        <img alt="guitar head" src="guitar-head.svg" />
       </Case>
     )
 };

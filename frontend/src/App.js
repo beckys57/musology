@@ -391,7 +391,7 @@ function ListOfNamedObjects({title, namedObjects, objectsById, rowExtras, select
               <tbody>
               {typeof namedObjects !== "undefined" &&
               namedObjects.map((obj, i) => (
-                <tr key={"obj"+obj.name}>
+                <tr key={`obj-${i}-${obj.name}`}>
                 <td>
                 <NamedObjectRow>
                 {selectorFn ?
@@ -409,7 +409,7 @@ function ListOfNamedObjects({title, namedObjects, objectsById, rowExtras, select
                 ))}
               {typeof objectsById !== "undefined" &&
               Object.keys(objectsById).map((id, i) => (
-                <tr key={"obj"+objectsById[id].name}>
+                <tr key={`obj-${objectsById[id].name}-${i}`}>
                 <td>
                 {selectorFn ?
                   <a onClick={e => {
